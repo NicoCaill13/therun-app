@@ -1,108 +1,98 @@
-# 🏃 PROJET : THE RUN - ROADMAP FRONT-END (WEB & MOBILE)
+# 🏃 THE RUN - ROADMAP CHRONOLOGIQUE FRONT-END (V3.1)
 
-Ce document définit l'architecture technique, les choix technologiques et le découpage industriel des travaux pour les interfaces Web (Next.js) et Mobile (Expo).
-
----
-
-## 🏗️ 1. ARCHITECTURE & STANDARDS TECHNIQUES
-
-### 1.1 Core Stack
-- **Monorepo** : `TurboRepo` (orchestration des builds et partage des types entre Back et Front).
-- **Architecture de Navigation** : `Solito` (Unification de `next/router` et `react-navigation`).
-- **Styling** : `NativeWind v4` (Tailwind CSS pour React Native). **Règle : 0 fichier .css, 0 StyleSheet.create.**
-- **Data Fetching** : `TanStack Query v5` (Hooks `useQuery` et `useMutation` obligatoires).
-
-### 1.2 Data Access Layer (Intransigeance Qualité)
-- **Validation Runtime** : `Zod` pour valider chaque payload entrant de l'API.
-- **Client HTTP** : `Axios` avec intercepteurs pour la gestion automatique du cycle de vie du JWT (Refresh/Injection).
-- **Type Safety** : Utilisation des types générés du backend (D.T.O) via le workspace `packages/api`.
+Document de référence pour l'implémentation (Web Next.js / Mobile Expo).
 
 ---
 
-## 📈 2. DÉCOUPAGE DES EPICS (ROADMAP MVP)
+## 📅 PHASE 0 : LE SOCLE (Semaine 1)
+*Objectif : Mise en place de l'usine logicielle et des contrats d'interface.*
 
-### EPIC 0 : Fondations & Core Architecture
-*Objectif : Initialiser l'usine logicielle et le contrat d'interface.*
+### 0.1 Infrastructure & Unified Routing
+- **Decision lock** : **Solito** est retenu comme source de vérité du routing (Next App Router ↔ Expo Router).
+- **Deep Linking** : Setup des Universal Links (`https://the.run/join/[code]`) et du scheme (`the-run://`).
+- Mapping : `/join/[code]` (Web) <-> `the-run://join/[code]` (Native).
 
-- **T0.1 : Setup TurboRepo & Workspaces**
-  - Configurer `apps/web` (Next.js), `apps/mobile` (Expo), `packages/app` (Code partagé), `packages/ui` (Design System).
-- **T0.2 : Provider & Client API**
-  - Configurer l'instance Axios globale avec intercepteurs.
-  - Setup du `QueryClientProvider` pour TanStack Query.
-- **T0.3 : Design System Primitif (UI-Kit)**
-  - Implémenter les composants fondamentaux : `<Button>`, `<Input>`, `<Typography>`, `<Card>`, `<Avatar>`.
-  - Intégrer les variantes de thèmes (Dark/Light) via NativeWind.
-- **T0.4 : Auth Logic (Zustand)**
-  - Créer le store d'authentification.
-  - Gestion du stockage sécurisé (`expo-secure-store` pour mobile / `cookies-next` pour web).
+### 0.2 Data & Error Layer (Normalisation)
+- **Client API** : Instance Axios centralisée.
+- **Normalisation des erreurs** (`normalizeApiError.ts`) :
+  - `kind` : `PLAN_LIMIT` (403), `VALIDATION` (400), `UNAUTHORIZED` (401), `NOT_FOUND` (404), `NETWORK` (timeout/offline), `UNKNOWN` (fallback).
+- **TanStack Query Defaults** :
+  - `staleTime`: 5 min, `refetchOnWindowFocus`: false.
+  - `retry`: (count, err) => err.kind !== 'UNAUTHORIZED' && count < 2.
 
----
+### 0.3 Auth Storage & Rehydration
+- **Persistance** : `SecureStore` (Native) / `Cookies` (Web).
+- **Boot Sequence** : Logique de "rehydrate" au démarrage pour éviter le flash d'écran (DoD 6).
 
-### EPIC 1 : Discovery & Event Details (MVP-1 / MVP-4)
-*Objectif : Affichage des données et consultation des sorties.*
-
-- **T1.1 : Feed des événements (Home)**
-  - Implémenter `useInfiniteQuery` pour la liste des sorties.
-  - Créer le composant `<EventCard>` (Responsive : 1 colonne mobile / Grid web).
-- **T1.2 : Fiche Détail Événement**
-  - Routing dynamique : `[id]`.
-  - Header d'événement (Date, Heure, Lieu, Organisateur).
-  - Intégration de la Map (Lecture seule) : MapKit/Google Maps natif vs Google JS API sur Web.
-- **T1.3 : Liste des Participants (MVP-4)**
-  - Sectionner l'affichage par rôle (Organisateur, Encadrant, Participant).
-  - Implémenter le compteur de participants en temps réel.
+### 0.4 Design System Primitif
+- Composants **NativeWind v4** : `Button`, `Input`, `Typography`, `Container`.
+- Intégration d'un `UpsellModalProvider` (basé sur `error.kind === 'PLAN_LIMIT'`).
 
 ---
 
-### EPIC 2 : Check-in & RSVP (MVP-3 / MVP-6)
-*Objectif : Le flux critique du "Pressure Test" (Inscription rapide).*
+## 🚀 PHASE 1 : ORGANIZER CORE FLOW (MVP-1)
+*Objectif : "Créer en 2 minutes" + Affichage instantané.*
 
-- **T2.1 : Logique RSVP (Join/Leave)**
-  - Créer les mutations `useJoinEvent` et `useLeaveEvent`.
-  - Implémenter les **Mises à jour Optimistes** (UI mise à jour avant retour serveur).
-- **T2.2 : Scan QR Code & Saisie Code Court**
-  - Intégration `expo-camera` pour le scan mobile.
-  - Champ de saisie "Code Court" (S3.3.1) avec validation auto après 6 caractères.
-- **T2.3 : Flux Guest (Web Mobile)**
-  - Développer la landing page ultra-légère pour les utilisateurs sans compte (S6.1.1).
-  - Gestion de l'anonymisation / création de compte temporaire.
+### 1.1 Dashboard Accueil (Minimal)
+- État vide (Empty State) avec bouton CTA unique : **"Créer une sortie"**.
 
----
+### 1.2 Formulaire de Création (Wizard)
+- `React Hook Form` + Zod.
+- Gestion des erreurs via le normaliseur : déclenchement de la modale Upsell globale sur 403.
 
-### EPIC 3 : Création & Management (MVP-1 / MVP-2)
-*Objectif : Outiller l'organisateur pour la création de contenu.*
-
-- **T3.1 : Wizard de création d'événement**
-  - Utilisation de `React Hook Form` pour un formulaire multi-étapes.
-  - Composant de sélection de date/heure natif (DatePicker).
-- **T3.2 : Configurateur de Groupes d'Allure**
-  - Interface de gestion dynamique de listes (Ajouter/Supprimer une allure).
-  - Validation Zod croisée (Ex: Vitesse min < Vitesse max).
-- **T3.3 : Traceur de Parcours (MVP-2)**
-  - Intégration de l'édition de carte (Placer des points).
-  - Import / Upload de fichier GPX.
+### 1.3 Écran Détail & Séquence de Cache
+- **Séquence post-POST** : 
+  1. `setQueryData(['events', id], created)`
+  2. `Maps(/events/${id})` 
+  3. `invalidateQueries(['events', id])` + `invalidateQueries(['events', 'mine'])`.
 
 ---
 
-### EPIC 4 : Historique & Réutilisation (MVP-7 / MVP-8)
-*Objectif : Capitalisation des données et modèle Premium.*
+## 📲 PHASE 2 : PRESSURE TEST & GUEST FLOW (MVP-3 / MVP-6)
+*Objectif : Check-in en < 30 secondes.*
 
-- **T4.1 : Vue Historique**
-  - Filtres par date (Passé / À venir).
-  - Agrégats personnels (Nombre de kms parcourus sur The Run).
-- **T4.2 : Duplication d'événement**
-  - Logique de clonage de structure (Reprendre parcours + groupes sans les participants).
-- **T4.3 : Paywall & Limites Free/Premium**
-  - Logique de blocage UI si > 1 event actif (S8.2.1).
-  - Modale d'Upsell Premium.
+### 2.1 Interface d'accès (Organisateur)
+- Affichage du **QR Code** (encodant strictement l'URL universelle `https://the.run/join/[code]`).
+- Affichage du **Code Court** (6 caractères).
+
+### 2.2 Join Flow Mobile (App Native)
+- Intégration `expo-camera` (Scan) et champ de saisie manuelle.
+
+### 2.3 Landing Guest (Web Mobile / Next.js)
+- **Séquence API** : `POST /auth/guest` -> `POST /events/join-by-code`.
+- **Session** : JWT guest (24h) stocké en Cookie/SessionStorage pour éviter la perte de state au refresh.
 
 ---
 
-## 🛠️ 3. DÉFINITION DU "DONE" (CRITÈRES DE QUALITÉ)
+## 🏃 PHASE 3 : STRUCTURE DE COURSE (MVP-4 / MVP-2)
 
-Pour chaque tâche, le développeur doit garantir :
-1. **Zod Validation** : Tout appel API est validé par un schéma.
-2. **Cross-Platform** : Le rendu est testé sur iOS (Simulator) et Chrome (Responsive).
-3. **Accessibility** : Les zones de clic (HitSlop) font au minimum 44x44dp sur mobile.
-4. **Performance** : Utilisation de `FlashList` pour toute liste dépassant 20 éléments.
-5. **Types** : Aucun `any` autorisé. Utilisation des types `Partial` ou `Omit` proscrite au profit de types explicites.
+### 3.1 Liste des Participants & Allures
+- Utilisation de `FlashList` (60 FPS).
+- Actions **Join/Leave** avec **Optimistic UI** (update immédiat du cache local).
+- Sélection du groupe d'allure (S4.1.2).
+
+### 3.2 Cartographie (Split Technique)
+- **3.2.a Map Placeholder** : Affichage du point de RDV (Pin + zone de départ).
+- **3.2.b Tracé GPX (Polyline)** : Parsing et affichage du tracé sur la carte.
+
+---
+
+## 📈 PHASE 4 : CYCLE DE VIE & HISTORIQUE (MVP-7)
+
+### 4.1 Clôture & Status
+- Action "Clôturer" (Organisateur) -> Passage en `status = COMPLETED` (Lecture seule).
+
+### 4.2 Home v2 (Feed)
+- Remplacement du CTA unique par un feed paginé (`useInfiniteQuery`).
+- Tri : **Upcoming** (startDate ASC) / **Past** (startDate DESC).
+
+---
+
+## ✅ DEFINITION OF DONE (D.O.D) GÉNÉRALE
+
+1. **Zod Validation** : Chaque réponse API est castée et validée.
+2. **Error Normalization** : Aucun parsing Axios dans les écrans ; usage du `kind`.
+3. **Instant Experience** : Usage de `setQueryData` post-création (pas de loader).
+4. **Optimistic UI** : Participation (Join/Leave) perçue comme instantanée.
+5. **Universal Routing** : Scan QR -> Web (si pas d'app) ou Deep Link (si app).
+6. **Auth Rehydrate** : État de connexion restauré au boot sans flash UI incohérent.
