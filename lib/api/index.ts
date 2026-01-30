@@ -7,3 +7,6 @@ export {
   type ApiErrorKind,
   type NormalizedApiError,
 } from './normalizeApiError';
+
+// Events API
+export * from './events';

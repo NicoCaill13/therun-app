@@ -96,6 +96,7 @@ function RootLayoutNav() {
       <Stack>
         <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
         <Stack.Screen name="join/[code]" options={{ headerShown: false, presentation: 'modal' }} />
+        <Stack.Screen name="event/create" options={{ headerShown: true, title: 'Nouvelle sortie' }} />
         <Stack.Screen name="event/[id]" options={{ headerShown: true, title: 'Sortie' }} />
         <Stack.Screen name="modal" options={{ presentation: 'modal' }} />
       </Stack>
