@@ -1,11 +1,17 @@
 {
+  "extends": "expo/tsconfig.base",
   "compilerOptions": {
-    "strictNullChecks": true,
-    "noUncheckedIndexedAccess": true,
+    "strict": true,
     "paths": {
-      "app/*": ["./packages/app/*"]
-    },
-    "baseUrl": ".",
-    "jsx": "react-jsx"
-  }
+      "@/*": [
+        "./*"
+      ]
+    }
+  },
+  "include": [
+    "**/*.ts",
+    "**/*.tsx",
+    ".expo/types/**/*.ts",
+    "expo-env.d.ts"
+  ]
 }
