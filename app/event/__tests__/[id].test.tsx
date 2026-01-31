@@ -40,10 +40,16 @@ jest.mock('@/lib/auth', () => ({
   })),
 }));
 
+const mockCompleteEvent = jest.fn();
+
 jest.mock('@/lib/api', () => ({
   useEventDetails: jest.fn(),
   useUpsertParticipation: jest.fn(() => ({
     mutate: jest.fn(),
+    isPending: false,
+  })),
+  useCompleteEvent: jest.fn(() => ({
+    mutate: mockCompleteEvent,
     isPending: false,
   })),
   useEventRoutes: jest.fn(() => ({
@@ -54,7 +60,9 @@ jest.mock('@/lib/api', () => ({
 }));
 
 import { useAuth } from '@/lib/auth';
-import { useEventDetails, useEventRoutes } from '@/lib/api';
+import { useEventDetails, useEventRoutes, useCompleteEvent } from '@/lib/api';
+
+const mockedUseCompleteEvent = useCompleteEvent as jest.MockedFunction<typeof useCompleteEvent>;
 
 const mockedUseAuth = useAuth as jest.MockedFunction<typeof useAuth>;
 const mockedUseEventDetails = useEventDetails as jest.MockedFunction<typeof useEventDetails>;
@@ -421,6 +429,149 @@ describe('EventDetailScreen', () => {
       render(<EventDetailScreen />, { wrapper: createWrapper() });
 
       expect(screen.queryByText('Participer')).toBeNull();
+    });
+  });
+
+  // ==========================================================================
+  // Phase 4.1 - Complete Event Button
+  // ==========================================================================
+
+  describe('Complete Event Button (Phase 4.1)', () => {
+    beforeEach(() => {
+      mockCompleteEvent.mockClear();
+      mockedUseCompleteEvent.mockReturnValue({
+        mutate: mockCompleteEvent,
+        isPending: false,
+      } as any);
+    });
+
+    it('should show complete button for organiser on SCHEDULED event', () => {
+      render(<EventDetailScreen />, { wrapper: createWrapper() });
+
+      expect(screen.getByText('Cloturer la sortie')).toBeTruthy();
+    });
+
+    it('should show complete button for organiser on ONGOING event', () => {
+      const ongoingEvent = {
+        ...mockEventDetails,
+        event: { ...mockEventDetails.event, status: 'ONGOING' as const },
+      };
+
+      mockedUseEventDetails.mockReturnValue({
+        data: ongoingEvent,
+        isLoading: false,
+        error: null,
+        refetch: mockRefetch,
+        isRefetching: false,
+      } as any);
+
+      render(<EventDetailScreen />, { wrapper: createWrapper() });
+
+      expect(screen.getByText('Cloturer la sortie')).toBeTruthy();
+    });
+
+    it('should not show complete button for non-organiser', () => {
+      mockedUseAuth.mockReturnValue({
+        user: { id: 'other-user', displayName: 'Other User', email: 'other@example.com', isGuest: false },
+      } as any);
+
+      render(<EventDetailScreen />, { wrapper: createWrapper() });
+
+      expect(screen.queryByText('Cloturer la sortie')).toBeNull();
+    });
+
+    it('should not show complete button for COMPLETED events', () => {
+      const completedEvent = {
+        ...mockEventDetails,
+        event: { ...mockEventDetails.event, status: 'COMPLETED' as const },
+      };
+
+      mockedUseEventDetails.mockReturnValue({
+        data: completedEvent,
+        isLoading: false,
+        error: null,
+        refetch: mockRefetch,
+        isRefetching: false,
+      } as any);
+
+      render(<EventDetailScreen />, { wrapper: createWrapper() });
+
+      expect(screen.queryByText('Cloturer la sortie')).toBeNull();
+    });
+
+    it('should not show complete button for CANCELLED events', () => {
+      const cancelledEvent = {
+        ...mockEventDetails,
+        event: { ...mockEventDetails.event, status: 'CANCELLED' as const },
+      };
+
+      mockedUseEventDetails.mockReturnValue({
+        data: cancelledEvent,
+        isLoading: false,
+        error: null,
+        refetch: mockRefetch,
+        isRefetching: false,
+      } as any);
+
+      render(<EventDetailScreen />, { wrapper: createWrapper() });
+
+      expect(screen.queryByText('Cloturer la sortie')).toBeNull();
+    });
+  });
+
+  // ==========================================================================
+  // Phase 4.1 - Read-only Mode
+  // ==========================================================================
+
+  describe('Read-only Mode (Phase 4.1)', () => {
+    it('should show read-only indicator for COMPLETED events', () => {
+      const completedEvent = {
+        ...mockEventDetails,
+        event: {
+          ...mockEventDetails.event,
+          status: 'COMPLETED' as const,
+          completedAt: '2025-12-15T21:00:00.000Z',
+        },
+      };
+
+      mockedUseEventDetails.mockReturnValue({
+        data: completedEvent,
+        isLoading: false,
+        error: null,
+        refetch: mockRefetch,
+        isRefetching: false,
+      } as any);
+
+      render(<EventDetailScreen />, { wrapper: createWrapper() });
+
+      expect(screen.getByText(/Cette sortie est terminee/)).toBeTruthy();
+      expect(screen.getByText(/Mode lecture seule/)).toBeTruthy();
+    });
+
+    it('should show cancelled indicator for CANCELLED events', () => {
+      const cancelledEvent = {
+        ...mockEventDetails,
+        event: { ...mockEventDetails.event, status: 'CANCELLED' as const },
+      };
+
+      mockedUseEventDetails.mockReturnValue({
+        data: cancelledEvent,
+        isLoading: false,
+        error: null,
+        refetch: mockRefetch,
+        isRefetching: false,
+      } as any);
+
+      render(<EventDetailScreen />, { wrapper: createWrapper() });
+
+      expect(screen.getByText(/Cette sortie a ete annulee/)).toBeTruthy();
+    });
+
+    it('should not show read-only indicator for SCHEDULED events', () => {
+      render(<EventDetailScreen />, { wrapper: createWrapper() });
+
+      expect(screen.queryByText(/Cette sortie est terminee/)).toBeNull();
+      expect(screen.queryByText(/Cette sortie a ete annulee/)).toBeNull();
     });
   });
 });
