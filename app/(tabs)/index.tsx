@@ -1,8 +1,11 @@
 import { useCallback, useState } from 'react';
 import { View, FlatList, Pressable, RefreshControl, ActivityIndicator } from 'react-native';
 import { useRouter } from 'expo-router';
-import { Container, Typography, H1, H3, Button } from '@/components/ui';
+import { Container, Typography, H1, Button } from '@/components/ui';
+import { LoadingState, ErrorState, EmptyState } from '@/components/states';
+import { EventStatusBadge } from '@/components/event';
 import { useMyEventsInfinite, flattenInfiniteEvents, type MeEventItem, type EventScope } from '@/lib/api';
+import { formatEventDate } from '@/lib/utils';
 import { useAuth } from '@/lib/auth';
 
 // ============================================================================
@@ -64,48 +67,29 @@ function Tabs({ activeScope, onScopeChange }: TabsProps) {
 }
 
 // ============================================================================
-// Empty State Component
+// Events Empty State Component
 // ============================================================================
 
-interface EmptyStateProps {
+interface EventsEmptyStateProps {
   scope: EventScope;
 }
 
-function EmptyState({ scope }: EmptyStateProps) {
+function EventsEmptyState({ scope }: EventsEmptyStateProps) {
   const router = useRouter();
-
   const isFuture = scope === 'future';
 
   return (
-    <Container isCenter padding="lg" className="flex-1">
-      <View className="items-center max-w-xs">
-        <View className="w-20 h-20 rounded-full bg-primary-100 dark:bg-primary-900/30 items-center justify-center mb-6">
-          <Typography className="text-4xl">{isFuture ? '🏃' : '📚'}</Typography>
-        </View>
-
-        <H3 className="text-center mb-2">
-          {isFuture ? 'Aucune sortie a venir' : 'Aucun historique'}
-        </H3>
-
-        <Typography color="muted" className="text-center mb-8">
-          {isFuture
-            ? 'Vous n\'avez pas de sortie planifiee. Creez votre premiere sortie pour commencer !'
-            : 'Vous n\'avez pas encore participe a une sortie.'}
-        </Typography>
-
-        {isFuture && (
-          <Button
-            variant="primary"
-            size="lg"
-            isFullWidth
-            onPress={() => router.push('/event/create')}
-            accessibilityLabel="Creer une sortie"
-          >
-            Creer une sortie
-          </Button>
-        )}
-      </View>
-    </Container>
+    <EmptyState
+      icon={isFuture ? '🏃' : '📚'}
+      title={isFuture ? 'Aucune sortie a venir' : 'Aucun historique'}
+      description={
+        isFuture
+          ? 'Vous n\'avez pas de sortie planifiee. Creez votre premiere sortie pour commencer !'
+          : 'Vous n\'avez pas encore participe a une sortie.'
+      }
+      actionLabel={isFuture ? 'Creer une sortie' : undefined}
+      onAction={isFuture ? () => router.push('/event/create') : undefined}
+    />
   );
 }
 
@@ -120,7 +104,6 @@ interface EventCardProps {
 
 function EventCard({ event, onPress }: EventCardProps) {
   const formattedDate = formatEventDate(event.startDateTime);
-  const statusBadge = getStatusBadge(event.status);
 
   return (
     <Pressable
@@ -133,13 +116,7 @@ function EventCard({ event, onPress }: EventCardProps) {
         <Typography variant="h4" className="flex-1 mr-2" numberOfLines={2}>
           {event.title}
         </Typography>
-        {statusBadge && (
-          <View className={`px-2 py-1 rounded-full ${statusBadge.bgClass}`}>
-            <Typography variant="caption" className={statusBadge.textClass}>
-              {statusBadge.label}
-            </Typography>
-          </View>
-        )}
+        <EventStatusBadge status={event.status} size="sm" />
       </View>
 
       <View className="flex-row items-center mb-2">
@@ -163,37 +140,6 @@ function EventCard({ event, onPress }: EventCardProps) {
         </Typography>
       </View>
     </Pressable>
-  );
-}
-
-// ============================================================================
-// Loading State Component
-// ============================================================================
-
-function LoadingState() {
-  return (
-    <Container isCenter padding="lg">
-      <ActivityIndicator size="large" color="#16a34a" />
-      <Typography color="muted" className="mt-4">Chargement...</Typography>
-    </Container>
-  );
-}
-
-// ============================================================================
-// Error State Component
-// ============================================================================
-
-interface ErrorStateProps {
-  message: string;
-  onRetry: () => void;
-}
-
-function ErrorState({ message, onRetry }: ErrorStateProps) {
-  return (
-    <Container isCenter padding="lg">
-      <Typography color="error" className="text-center mb-4">{message}</Typography>
-      <Button variant="outline" onPress={onRetry}>Reessayer</Button>
-    </Container>
   );
 }
 
@@ -276,7 +222,7 @@ export default function DashboardScreen() {
 
   // Show empty state with CTA if not authenticated
   if (!isAuthenticated) {
-    return <EmptyState scope="future" />;
+    return <EventsEmptyState scope="future" />;
   }
 
   // Show loading state only for initial load
@@ -290,6 +236,7 @@ export default function DashboardScreen() {
       <ErrorState
         message={error.message || 'Une erreur est survenue'}
         onRetry={refetch}
+        variant="compact"
       />
     );
   }
@@ -300,7 +247,7 @@ export default function DashboardScreen() {
       <Container padding="lg" className="flex-1">
         <H1 className="mb-4">Mes sorties</H1>
         <Tabs activeScope={activeScope} onScopeChange={handleScopeChange} />
-        <EmptyState scope={activeScope} />
+        <EventsEmptyState scope={activeScope} />
       </Container>
     );
   }
@@ -350,68 +297,3 @@ export default function DashboardScreen() {
   );
 }
 
-// ============================================================================
-// Helpers
-// ============================================================================
-
-function formatEventDate(dateString: string): string {
-  const date = new Date(dateString);
-  const now = new Date();
-  const isToday = date.toDateString() === now.toDateString();
-  const isTomorrow = date.toDateString() === new Date(now.getTime() + 86400000).toDateString();
-
-  const timeOptions: Intl.DateTimeFormatOptions = {
-    hour: '2-digit',
-    minute: '2-digit',
-  };
-
-  const time = date.toLocaleTimeString('fr-FR', timeOptions);
-
-  if (isToday) {
-    return `Aujourd'hui a ${time}`;
-  }
-
-  if (isTomorrow) {
-    return `Demain a ${time}`;
-  }
-
-  const dateOptions: Intl.DateTimeFormatOptions = {
-    weekday: 'long',
-    day: 'numeric',
-    month: 'long',
-  };
-
-  const formattedDate = date.toLocaleDateString('fr-FR', dateOptions);
-  return `${formattedDate} a ${time}`;
-}
-
-interface StatusBadge {
-  label: string;
-  bgClass: string;
-  textClass: string;
-}
-
-function getStatusBadge(status: MeEventItem['status']): StatusBadge | null {
-  switch (status) {
-    case 'ONGOING':
-      return {
-        label: 'En cours',
-        bgClass: 'bg-green-100 dark:bg-green-900/30',
-        textClass: 'text-green-700 dark:text-green-400',
-      };
-    case 'COMPLETED':
-      return {
-        label: 'Termine',
-        bgClass: 'bg-secondary-100 dark:bg-secondary-700',
-        textClass: 'text-secondary-600 dark:text-secondary-400',
-      };
-    case 'CANCELLED':
-      return {
-        label: 'Annule',
-        bgClass: 'bg-red-100 dark:bg-red-900/30',
-        textClass: 'text-red-700 dark:text-red-400',
-      };
-    default:
-      return null;
-  }
-}

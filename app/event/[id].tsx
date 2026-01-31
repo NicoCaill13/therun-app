@@ -1,9 +1,10 @@
 import { useCallback, useState } from 'react';
-import { View, ActivityIndicator, Share, Pressable, RefreshControl, useColorScheme, Alert } from 'react-native';
+import { View, Share, Pressable, RefreshControl, useColorScheme, Alert } from 'react-native';
 import { useLocalSearchParams, useRouter, Stack } from 'expo-router';
 import QRCode from 'react-native-qrcode-svg';
-import { ScrollContainer, Container, Typography, H1, H3, Button } from '@/components/ui';
-import { PaceGroupSelector } from '@/components/event';
+import { ScrollContainer, Typography, H1, H3, Button } from '@/components/ui';
+import { LoadingState, ErrorState } from '@/components/states';
+import { PaceGroupSelector, EventStatusBadge, getParticipantStatusIcon, getParticipationStatusText } from '@/components/event';
 import { EventMapPlaceholder, RouteInfoCard } from '@/components/map';
 import {
   useEventDetails,
@@ -14,88 +15,9 @@ import {
   type EventStatus,
   type ParticipantStatus,
 } from '@/lib/api';
+import { formatEventDate, formatCompletedDate } from '@/lib/utils';
 import { useAuth } from '@/lib/auth';
 import { config } from '@/lib/config';
-
-// ============================================================================
-// Loading State
-// ============================================================================
-
-function LoadingState() {
-  return (
-    <Container isCenter padding="lg">
-      <ActivityIndicator size="large" color="#16a34a" />
-      <Typography color="muted" className="mt-4">Chargement...</Typography>
-    </Container>
-  );
-}
-
-// ============================================================================
-// Error State
-// ============================================================================
-
-interface ErrorStateProps {
-  message: string;
-  onRetry: () => void;
-}
-
-function ErrorState({ message, onRetry }: ErrorStateProps) {
-  return (
-    <Container isCenter padding="lg">
-      <Typography color="error" className="text-center mb-4">{message}</Typography>
-      <Button variant="outline" onPress={onRetry}>Reessayer</Button>
-    </Container>
-  );
-}
-
-// ============================================================================
-// Status Badge
-// ============================================================================
-
-interface StatusBadgeProps {
-  status: EventStatus;
-}
-
-function StatusBadge({ status }: StatusBadgeProps) {
-  const config = getStatusConfig(status);
-
-  return (
-    <View className={`px-3 py-1.5 rounded-full ${config.bgClass}`}>
-      <Typography variant="bodySmall" className={config.textClass}>
-        {config.label}
-      </Typography>
-    </View>
-  );
-}
-
-function getStatusConfig(status: EventStatus) {
-  switch (status) {
-    case 'ONGOING':
-      return {
-        label: 'En cours',
-        bgClass: 'bg-green-100 dark:bg-green-900/30',
-        textClass: 'text-green-700 dark:text-green-400',
-      };
-    case 'COMPLETED':
-      return {
-        label: 'Termine',
-        bgClass: 'bg-secondary-100 dark:bg-secondary-700',
-        textClass: 'text-secondary-600 dark:text-secondary-400',
-      };
-    case 'CANCELLED':
-      return {
-        label: 'Annule',
-        bgClass: 'bg-red-100 dark:bg-red-900/30',
-        textClass: 'text-red-700 dark:text-red-400',
-      };
-    default:
-      return {
-        label: 'Planifie',
-        bgClass: 'bg-primary-100 dark:bg-primary-900/30',
-        textClass: 'text-primary-700 dark:text-primary-400',
-      };
-  }
-}
 
 // ============================================================================
 // Info Section
@@ -148,20 +70,6 @@ function ParticipantItem({ participant }: ParticipantItemProps) {
       <Typography>{statusIcon}</Typography>
     </View>
   );
-}
-
-function getParticipantStatusIcon(status: EventParticipant['status']): string {
-  switch (status) {
-    case 'GOING':
-      return '✅';
-    case 'MAYBE':
-      return '🤔';
-    case 'DECLINED':
-      return '❌';
-    case 'INVITED':
-    default:
-      return '📨';
-  }
 }
 
 // ============================================================================
@@ -363,20 +271,6 @@ function ParticipationActions({
   );
 }
 
-function getParticipationStatusText(status: ParticipantStatus): string {
-  switch (status) {
-    case 'GOING':
-      return 'Vous participez a cet evenement';
-    case 'MAYBE':
-      return 'Vous avez indique "peut-etre"';
-    case 'DECLINED':
-      return 'Vous avez decline cet evenement';
-    case 'INVITED':
-      return 'Vous etes invite';
-    default:
-      return '';
-  }
-}
 
 // ============================================================================
 // Complete Event Button (Phase 4.1)
@@ -522,7 +416,7 @@ export default function EventDetailScreen() {
         {/* Header */}
         <View className="flex-row items-start justify-between mb-4">
           <H1 className="flex-1 mr-4">{event.title}</H1>
-          <StatusBadge status={event.status} />
+          <EventStatusBadge status={event.status} />
         </View>
 
         {/* Organiser */}
@@ -664,48 +558,3 @@ export default function EventDetailScreen() {
   );
 }
 
-// ============================================================================
-// Helpers
-// ============================================================================
-
-function formatEventDate(dateString: string): string {
-  const date = new Date(dateString);
-  const now = new Date();
-  const isToday = date.toDateString() === now.toDateString();
-  const isTomorrow = date.toDateString() === new Date(now.getTime() + 86400000).toDateString();
-
-  const timeOptions: Intl.DateTimeFormatOptions = {
-    hour: '2-digit',
-    minute: '2-digit',
-  };
-
-  const time = date.toLocaleTimeString('fr-FR', timeOptions);
-
-  if (isToday) {
-    return `Aujourd'hui a ${time}`;
-  }
-
-  if (isTomorrow) {
-    return `Demain a ${time}`;
-  }
-
-  const dateOptions: Intl.DateTimeFormatOptions = {
-    weekday: 'long',
-    day: 'numeric',
-    month: 'long',
-    year: 'numeric',
-  };
-
-  const formattedDate = date.toLocaleDateString('fr-FR', dateOptions);
-  return `${formattedDate} a ${time}`;
-}
-
-function formatCompletedDate(dateString: string): string {
-  const date = new Date(dateString);
-  const dateOptions: Intl.DateTimeFormatOptions = {
-    day: 'numeric',
-    month: 'long',
-    year: 'numeric',
-  };
-  return date.toLocaleDateString('fr-FR', dateOptions);
-}
