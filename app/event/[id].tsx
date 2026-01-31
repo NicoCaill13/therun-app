@@ -1,9 +1,11 @@
-import { useCallback } from 'react';
-import { View, ActivityIndicator, Share, Pressable, RefreshControl } from 'react-native';
+import { useCallback, useState } from 'react';
+import { View, ActivityIndicator, Share, Pressable, RefreshControl, useColorScheme } from 'react-native';
 import { useLocalSearchParams, useRouter, Stack } from 'expo-router';
+import QRCode from 'react-native-qrcode-svg';
 import { ScrollContainer, Container, Typography, H1, H2, H3, Button } from '@/components/ui';
 import { useEventDetails, type EventParticipant, type EventStatus } from '@/lib/api';
 import { useAuth } from '@/lib/auth';
+import { config } from '@/lib/config';
 
 // ============================================================================
 // Loading State
@@ -153,7 +155,7 @@ function getParticipantStatusIcon(status: EventParticipant['status']): string {
 }
 
 // ============================================================================
-// Share Code Section
+// Share Code Section with QR Code
 // ============================================================================
 
 interface ShareCodeSectionProps {
@@ -162,35 +164,68 @@ interface ShareCodeSectionProps {
 }
 
 function ShareCodeSection({ eventCode, eventTitle }: ShareCodeSectionProps) {
+  const colorScheme = useColorScheme();
+  const [showQR, setShowQR] = useState(false);
+
+  // Build the join URL (universal link)
+  const joinUrl = `${config.webUrl}/join/${eventCode}`;
+
   const handleShare = useCallback(async () => {
     try {
-      const shareUrl = `https://the.run/join/${eventCode}`;
       await Share.share({
-        message: `Rejoins-moi pour "${eventTitle}" ! ${shareUrl}`,
-        url: shareUrl,
+        message: `Rejoins-moi pour "${eventTitle}" ! ${joinUrl}`,
+        url: joinUrl,
       });
     } catch {
       // User cancelled share
     }
-  }, [eventCode, eventTitle]);
+  }, [eventTitle, joinUrl]);
+
+  const toggleQR = useCallback(() => {
+    setShowQR((prev) => !prev);
+  }, []);
 
   return (
     <View className="bg-primary-50 dark:bg-primary-900/30 rounded-xl p-4 mb-6">
-      <Typography variant="label" className="mb-2">Code de partage</Typography>
+      <Typography variant="label" className="mb-3">Code de partage</Typography>
 
-      <View className="flex-row items-center justify-between">
+      {/* Code display */}
+      <View className="flex-row items-center justify-between mb-4">
         <View className="bg-white dark:bg-secondary-800 px-4 py-2 rounded-lg">
           <Typography variant="h3" className="font-mono tracking-widest">
             {eventCode}
           </Typography>
         </View>
 
-        <Button variant="primary" size="sm" onPress={handleShare}>
-          Partager
-        </Button>
+        <View className="flex-row gap-2">
+          <Button variant="outline" size="sm" onPress={toggleQR}>
+            {showQR ? 'Masquer QR' : 'QR Code'}
+          </Button>
+          <Button variant="primary" size="sm" onPress={handleShare}>
+            Partager
+          </Button>
+        </View>
       </View>
 
-      <Typography variant="caption" color="muted" className="mt-2">
+      {/* QR Code display */}
+      {showQR && (
+        <View className="items-center bg-white rounded-xl p-4 mb-4">
+          <QRCode
+            value={joinUrl}
+            size={200}
+            color="#000000"
+            backgroundColor="#FFFFFF"
+            logo={undefined}
+            logoSize={40}
+            logoBackgroundColor="transparent"
+          />
+          <Typography variant="caption" color="muted" className="mt-3 text-center">
+            Scannez ce QR code pour rejoindre
+          </Typography>
+        </View>
+      )}
+
+      <Typography variant="caption" color="muted">
         Les participants peuvent rejoindre avec ce code ou scanner le QR code
       </Typography>
     </View>
