@@ -1,5 +1,5 @@
-import { useQueryClient } from '@tanstack/react-query';
-import { useApiQuery, useApiMutation } from '@/lib/hooks';
+import { useQueryClient, InfiniteData } from '@tanstack/react-query';
+import { useApiQuery, useApiMutation, useApiInfiniteQuery } from '@/lib/hooks';
 import { apiClient } from '@/lib/api/client';
 import {
   CreateEventInput,
@@ -8,6 +8,7 @@ import {
   MeEventsListResponse,
   MeEventsListResponseSchema,
   MeEventsQueryParams,
+  EventScope,
 } from './types';
 
 // ============================================================================
@@ -54,6 +55,59 @@ export function useMyEvents(params: MeEventsQueryParams, options?: UseMyEventsOp
       enabled: options?.enabled ?? true,
     }
   );
+}
+
+// ============================================================================
+// useMyEventsInfinite - Infinite scroll for events (Phase 4.2)
+// ============================================================================
+
+interface UseMyEventsInfiniteOptions {
+  enabled?: boolean;
+  pageSize?: number;
+}
+
+/**
+ * Hook to fetch current user's events with infinite scroll.
+ * Uses GET /me/events endpoint with pagination.
+ * 
+ * Phase 4.2: Home v2 (Feed) implementation.
+ */
+export function useMyEventsInfinite(scope: EventScope, options?: UseMyEventsInfiniteOptions) {
+  const pageSize = options?.pageSize ?? 10;
+
+  return useApiInfiniteQuery<MeEventsListResponse>(
+    [...eventKeys.lists(), { scope, infinite: true }],
+    async ({ pageParam }) => {
+      const response = await apiClient.get('/me/events', {
+        params: {
+          scope,
+          page: pageParam.page,
+          pageSize,
+        },
+      });
+
+      // Validate response with Zod (DoD 1)
+      return MeEventsListResponseSchema.parse(response.data);
+    },
+    {
+      enabled: options?.enabled ?? true,
+      getNextPageParam: (lastPage) => {
+        const totalPages = Math.ceil(lastPage.total / lastPage.pageSize);
+        if (lastPage.page < totalPages) {
+          return { page: lastPage.page + 1 };
+        }
+        return undefined;
+      },
+    }
+  );
+}
+
+/**
+ * Helper to flatten infinite query pages into a single array.
+ */
+export function flattenInfiniteEvents(data: InfiniteData<MeEventsListResponse> | undefined) {
+  if (!data) return [];
+  return data.pages.flatMap((page) => page.items);
 }
 
 // ============================================================================
@@ -111,6 +165,39 @@ export function useCreateEvent() {
         queryClient.setQueryData(eventKeys.detail(created.event.id), created);
 
         // Invalidate list queries to include the new event
+        queryClient.invalidateQueries({ queryKey: ['me', 'events'] });
+      },
+    }
+  );
+}
+
+// ============================================================================
+// useCompleteEvent - Mark event as COMPLETED (Phase 4.1)
+// ============================================================================
+
+/**
+ * Hook to mark an event as COMPLETED.
+ * Uses PATCH /events/:eventId/complete endpoint.
+ * 
+ * Only the organiser can complete an event.
+ * Events transition from SCHEDULED/ONGOING -> COMPLETED.
+ */
+export function useCompleteEvent() {
+  const queryClient = useQueryClient();
+
+  return useApiMutation<EventDetailsResponse, { eventId: string }>(
+    async ({ eventId }) => {
+      const response = await apiClient.patch(`/events/${eventId}/complete`);
+
+      // Validate response with Zod (DoD 1)
+      return EventDetailsResponseSchema.parse(response.data);
+    },
+    {
+      onSuccess: (updated, { eventId }) => {
+        // Update cache immediately
+        queryClient.setQueryData(eventKeys.detail(eventId), updated);
+
+        // Invalidate list queries to reflect new status
         queryClient.invalidateQueries({ queryKey: ['me', 'events'] });
       },
     }

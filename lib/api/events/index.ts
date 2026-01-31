@@ -34,4 +34,12 @@ export {
 } from './types';
 
 // Event hooks
-export { eventKeys, useMyEvents, useEventDetails, useCreateEvent } from './hooks';
+export {
+  eventKeys,
+  useMyEvents,
+  useMyEventsInfinite,
+  flattenInfiniteEvents,
+  useEventDetails,
+  useCreateEvent,
+  useCompleteEvent,
+} from './hooks';

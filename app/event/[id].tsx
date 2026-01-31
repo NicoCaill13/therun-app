@@ -9,6 +9,7 @@ import {
   useEventDetails,
   useUpsertParticipation,
   useEventRoutes,
+  useCompleteEvent,
   type EventParticipant,
   type EventStatus,
   type ParticipantStatus,
@@ -378,6 +379,69 @@ function getParticipationStatusText(status: ParticipantStatus): string {
 }
 
 // ============================================================================
+// Complete Event Button (Phase 4.1)
+// ============================================================================
+
+interface CompleteEventButtonProps {
+  eventId: string;
+  eventStatus: EventStatus;
+  isOrganiser: boolean;
+}
+
+function CompleteEventButton({ eventId, eventStatus, isOrganiser }: CompleteEventButtonProps) {
+  const { mutate: completeEvent, isPending } = useCompleteEvent();
+
+  // Only show for organiser when event is SCHEDULED or ONGOING
+  if (!isOrganiser || (eventStatus !== 'SCHEDULED' && eventStatus !== 'ONGOING')) {
+    return null;
+  }
+
+  const handleComplete = useCallback(() => {
+    Alert.alert(
+      'Cloturer la sortie',
+      'Etes-vous sur de vouloir cloturer cette sortie ? Cette action est irreversible et la sortie passera en mode lecture seule.',
+      [
+        { text: 'Annuler', style: 'cancel' },
+        {
+          text: 'Cloturer',
+          style: 'destructive',
+          onPress: () => {
+            completeEvent(
+              { eventId },
+              {
+                onError: (error) => {
+                  Alert.alert('Erreur', error.message || 'Impossible de cloturer la sortie');
+                },
+                onSuccess: () => {
+                  Alert.alert('Succes', 'La sortie a ete cloturee avec succes');
+                },
+              }
+            );
+          },
+        },
+      ]
+    );
+  }, [eventId, completeEvent]);
+
+  return (
+    <View className="mb-6">
+      <Button
+        variant="outline"
+        size="lg"
+        isFullWidth
+        isLoading={isPending}
+        onPress={handleComplete}
+      >
+        Cloturer la sortie
+      </Button>
+      <Typography variant="caption" color="muted" className="text-center mt-2">
+        Une fois cloturee, la sortie passera en mode lecture seule
+      </Typography>
+    </View>
+  );
+}
+
+// ============================================================================
 // Main Event Detail Screen
 // ============================================================================
 
@@ -462,14 +526,48 @@ export default function EventDetailScreen() {
         </View>
 
         {/* Organiser */}
-        <Typography color="muted" className="mb-6">
+        <Typography color="muted" className="mb-4">
           Organise par {organiser.displayName || organiser.email || 'Anonyme'}
         </Typography>
 
-        {/* Share Code (only for organiser) */}
-        {isOrganiser && event.status === 'SCHEDULED' && (
+        {/* Read-only mode indicator (Phase 4.1) */}
+        {event.status === 'COMPLETED' && (
+          <View className="bg-secondary-100 dark:bg-secondary-800 rounded-lg p-3 mb-6 flex-row items-center">
+            <Typography className="mr-2">🔒</Typography>
+            <View className="flex-1">
+              <Typography variant="bodySmall" color="muted">
+                Cette sortie est terminee - Mode lecture seule
+              </Typography>
+              {event.completedAt && (
+                <Typography variant="caption" color="muted">
+                  Cloturee le {formatCompletedDate(event.completedAt)}
+                </Typography>
+              )}
+            </View>
+          </View>
+        )}
+
+        {/* Cancelled indicator */}
+        {event.status === 'CANCELLED' && (
+          <View className="bg-red-100 dark:bg-red-900/30 rounded-lg p-3 mb-6 flex-row items-center">
+            <Typography className="mr-2">❌</Typography>
+            <Typography variant="bodySmall" className="text-red-700 dark:text-red-400">
+              Cette sortie a ete annulee
+            </Typography>
+          </View>
+        )}
+
+        {/* Share Code (only for organiser when event is active) */}
+        {isOrganiser && (event.status === 'SCHEDULED' || event.status === 'ONGOING') && (
           <ShareCodeSection eventCode={event.eventCode} eventTitle={event.title} />
         )}
+
+        {/* Complete Event Button (Phase 4.1 - organiser only) */}
+        <CompleteEventButton
+          eventId={event.id}
+          eventStatus={event.status}
+          isOrganiser={isOrganiser}
+        />
 
         {/* Event Info */}
         <View className="mb-6">
@@ -600,4 +698,14 @@ function formatEventDate(dateString: string): string {
 
   const formattedDate = date.toLocaleDateString('fr-FR', dateOptions);
   return `${formattedDate} a ${time}`;
+}
+
+function formatCompletedDate(dateString: string): string {
+  const date = new Date(dateString);
+  const dateOptions: Intl.DateTimeFormatOptions = {
+    day: 'numeric',
+    month: 'long',
+    year: 'numeric',
+  };
+  return date.toLocaleDateString('fr-FR', dateOptions);
 }
