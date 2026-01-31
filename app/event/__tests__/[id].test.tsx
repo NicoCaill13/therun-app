@@ -1,6 +1,6 @@
+import React, { ReactNode } from 'react';
 import { render, screen, fireEvent, waitFor } from '@testing-library/react-native';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
-import { ReactNode } from 'react';
 import EventDetailScreen from '../[id]';
 
 // Mock hooks and navigation
@@ -25,9 +25,46 @@ jest.mock('react-native/Libraries/Share/Share', () => ({
 }));
 
 // Mock new Phase 3 components to avoid dependency issues
-jest.mock('@/components/event', () => ({
-  PaceGroupSelector: () => null,
-}));
+jest.mock('@/components/event', () => {
+  const MockText = require('react-native').Text;
+  return {
+    PaceGroupSelector: jest.fn(() => null),
+    EventStatusBadge: jest.fn(({ status }: { status: string }) => {
+      const labels: Record<string, string> = {
+        SCHEDULED: 'Planifie',
+        ONGOING: 'En cours',
+        COMPLETED: 'Termine',
+        CANCELLED: 'Annule',
+      };
+      return <MockText testID="status-badge">{labels[status] || status}</MockText>;
+    }),
+    getParticipantStatusIcon: jest.fn(() => '✓'),
+    getParticipationStatusText: jest.fn((status: string) => `Status: ${status}`),
+  };
+});
+
+// Mock state components
+jest.mock('@/components/states', () => {
+  const MockText = require('react-native').Text;
+  const MockPressable = require('react-native').Pressable;
+  const MockView = require('react-native').View;
+  return {
+    LoadingState: jest.fn(({ message }: { message?: string }) => (
+      <MockText testID="loading-state">{message || 'Chargement...'}</MockText>
+    )),
+    ErrorState: jest.fn(({ message, onRetry }: { message: string; onRetry?: () => void }) => (
+      <MockView testID="error-state">
+        <MockText>{message}</MockText>
+        {onRetry && (
+          <MockPressable onPress={onRetry} testID="retry-button">
+            <MockText>Reessayer</MockText>
+          </MockPressable>
+        )}
+      </MockView>
+    )),
+    EmptyState: jest.fn(() => null),
+  };
+});
 
 jest.mock('@/components/map', () => ({
   EventMapPlaceholder: () => null,

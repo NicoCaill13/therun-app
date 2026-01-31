@@ -2,13 +2,18 @@ import { useQueryClient, InfiniteData } from '@tanstack/react-query';
 import { useApiQuery, useApiMutation, useApiInfiniteQuery } from '@/lib/hooks';
 import { apiClient } from '@/lib/api/client';
 import {
+  BroadcastEventInput,
+  BroadcastEventResponse,
+  BroadcastEventResponseSchema,
   CreateEventInput,
+  DuplicateEventInput,
   EventDetailsResponse,
   EventDetailsResponseSchema,
   MeEventsListResponse,
   MeEventsListResponseSchema,
   MeEventsQueryParams,
   EventScope,
+  UpdateEventInput,
 } from './types';
 
 // ============================================================================
@@ -200,6 +205,109 @@ export function useCompleteEvent() {
         // Invalidate list queries to reflect new status
         queryClient.invalidateQueries({ queryKey: ['me', 'events'] });
       },
+    }
+  );
+}
+
+// ============================================================================
+// useUpdateEvent - Update an existing event
+// ============================================================================
+
+interface UpdateEventParams {
+  eventId: string;
+  data: UpdateEventInput;
+}
+
+/**
+ * Hook to update an existing event.
+ * Uses PATCH /events/:eventId endpoint.
+ * 
+ * Only the organiser can update an event.
+ * Critical changes (time/location/cancellation) trigger notifications.
+ */
+export function useUpdateEvent() {
+  const queryClient = useQueryClient();
+
+  return useApiMutation<EventDetailsResponse, UpdateEventParams>(
+    async ({ eventId, data }) => {
+      const response = await apiClient.patch(`/events/${eventId}`, data);
+
+      // Validate response with Zod (DoD 1)
+      return EventDetailsResponseSchema.parse(response.data);
+    },
+    {
+      onSuccess: (updated, { eventId }) => {
+        // Update cache immediately
+        queryClient.setQueryData(eventKeys.detail(eventId), updated);
+
+        // Invalidate list queries to reflect changes
+        queryClient.invalidateQueries({ queryKey: ['me', 'events'] });
+      },
+    }
+  );
+}
+
+// ============================================================================
+// useDuplicateEvent - Duplicate a COMPLETED event
+// ============================================================================
+
+interface DuplicateEventParams {
+  eventId: string;
+  data: DuplicateEventInput;
+}
+
+/**
+ * Hook to duplicate a COMPLETED event.
+ * Uses POST /events/:eventId/duplicate endpoint.
+ * 
+ * Only the organiser can duplicate an event.
+ * Creates new event with routes/groups structure but without participants.
+ */
+export function useDuplicateEvent() {
+  const queryClient = useQueryClient();
+
+  return useApiMutation<EventDetailsResponse, DuplicateEventParams>(
+    async ({ eventId, data }) => {
+      const response = await apiClient.post(`/events/${eventId}/duplicate`, data);
+
+      // Validate response with Zod (DoD 1)
+      return EventDetailsResponseSchema.parse(response.data);
+    },
+    {
+      onSuccess: (created) => {
+        // Set cache for the new event
+        queryClient.setQueryData(eventKeys.detail(created.event.id), created);
+
+        // Invalidate list queries to include the new event
+        queryClient.invalidateQueries({ queryKey: ['me', 'events'] });
+      },
+    }
+  );
+}
+
+// ============================================================================
+// useBroadcastEvent - Send message to event participants
+// ============================================================================
+
+interface BroadcastEventParams {
+  eventId: string;
+  data: BroadcastEventInput;
+}
+
+/**
+ * Hook to broadcast a message to event participants.
+ * Uses POST /events/:eventId/broadcast endpoint.
+ * 
+ * Only the organiser can broadcast.
+ * Sends notification to all participants except DECLINED.
+ */
+export function useBroadcastEvent() {
+  return useApiMutation<BroadcastEventResponse, BroadcastEventParams>(
+    async ({ eventId, data }) => {
+      const response = await apiClient.post(`/events/${eventId}/broadcast`, data);
+
+      // Validate response with Zod (DoD 1)
+      return BroadcastEventResponseSchema.parse(response.data);
     }
   );
 }
