@@ -10,3 +10,6 @@ export {
 
 // Events API
 export * from './events';
+
+// Join API
+export * from './join';

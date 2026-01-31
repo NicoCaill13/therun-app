@@ -1,160 +1,530 @@
-import { useLocalSearchParams, router } from 'expo-router';
-import { useEffect, useReducer, useCallback } from 'react';
-import { View, ActivityIndicator } from 'react-native';
-import { Container, Typography, H1, Button } from '@/components/ui';
+import { useCallback, useReducer, useEffect } from 'react';
+import { View, ActivityIndicator, KeyboardAvoidingView, Platform } from 'react-native';
+import { useLocalSearchParams, useRouter, Stack } from 'expo-router';
+import { useForm, Controller } from 'react-hook-form';
+import { zodResolver } from '@hookform/resolvers/zod';
+import { Container, ScrollContainer, Typography, H1, H2, H3, Button, Input } from '@/components/ui';
 import { useAuth } from '@/lib/auth';
+import {
+  usePublicEventByCode,
+  useJoinParticipate,
+  useGuestJoin,
+  GuestJoinInputSchema,
+  type GuestJoinInput,
+  type PublicEventByCode,
+} from '@/lib/api';
 
 // ============================================================================
-// Reducer
+// Types & State
 // ============================================================================
+
+type JoinStep = 'loading' | 'preview' | 'guest_form' | 'joining' | 'success' | 'error';
 
 interface JoinState {
-  status: 'loading' | 'error' | 'success';
+  step: JoinStep;
   errorMessage: string | null;
 }
 
 type JoinAction =
-  | { type: 'START_LOADING' }
-  | { type: 'SUCCESS' }
-  | { type: 'ERROR'; payload: string };
+  | { type: 'SET_STEP'; payload: JoinStep }
+  | { type: 'SET_ERROR'; payload: string }
+  | { type: 'RESET' };
 
 const initialState: JoinState = {
-  status: 'loading',
+  step: 'loading',
   errorMessage: null,
 };
 
 function joinReducer(state: JoinState, action: JoinAction): JoinState {
   switch (action.type) {
-    case 'START_LOADING':
-      return { status: 'loading', errorMessage: null };
-
-    case 'SUCCESS':
-      return { status: 'success', errorMessage: null };
-
-    case 'ERROR':
-      return { status: 'error', errorMessage: action.payload };
-
+    case 'SET_STEP':
+      return { ...state, step: action.payload, errorMessage: null };
+    case 'SET_ERROR':
+      return { step: 'error', errorMessage: action.payload };
+    case 'RESET':
+      return initialState;
     default:
       return state;
   }
 }
 
 // ============================================================================
-// Component
+// Loading State Component
 // ============================================================================
 
-/**
- * Join screen - Entry point for event join via deep link.
- * Route: /join/[code] or the-run://join/[code]
- *
- * Based on spec.md Phase 2.3 requirements:
- * - Sequence API: POST /auth/guest -> POST /events/join-by-code
- * - Session: JWT guest (24h) stored in Cookie/SessionStorage
- */
-export default function JoinScreen() {
-  const { code } = useLocalSearchParams<{ code: string }>();
-  const { isAuthenticated, signInAsGuest } = useAuth();
-  const [state, dispatch] = useReducer(joinReducer, initialState);
-
-  const joinEvent = useCallback(async () => {
-    dispatch({ type: 'START_LOADING' });
-
-    try {
-      // TODO: Implement actual API calls
-      // 1. If not authenticated, create guest session
-      // 2. Join event by code
-      // 3. Navigate to event detail
-
-      // Simulate API call
-      await new Promise((resolve) => setTimeout(resolve, 1500));
-
-      dispatch({ type: 'SUCCESS' });
-
-      // Navigate to event detail (placeholder)
-      setTimeout(() => {
-        router.replace('/(tabs)');
-      }, 1000);
-    } catch {
-      dispatch({ type: 'ERROR', payload: 'Impossible de rejoindre la sortie. Veuillez réessayer.' });
-    }
-  }, []);
-
-  useEffect(() => {
-    if (!code) {
-      dispatch({ type: 'ERROR', payload: 'Code de sortie invalide.' });
-      return;
-    }
-
-    joinEvent();
-  }, [code, joinEvent]);
-
-  const handleRetry = useCallback(() => {
-    joinEvent();
-  }, [joinEvent]);
-
-  const handleBack = useCallback(() => {
-    router.back();
-  }, []);
-
-  if (state.status === 'loading') {
-    return (
-      <Container isCenter hasSafeArea>
-        <ActivityIndicator
-          size="large"
-          color="#16a34a"
-          accessibilityLabel="Chargement"
-        />
-        <Typography className="mt-4" color="muted">
-          Connexion à la sortie...
-        </Typography>
-        <Typography className="mt-2 text-lg font-mono" color="primary">
-          {code}
-        </Typography>
-      </Container>
-    );
-  }
-
-  if (state.status === 'error') {
-    return (
-      <Container isCenter hasSafeArea padding="lg">
-        <View className="items-center">
-          <View
-            className="w-20 h-20 rounded-full bg-red-100 items-center justify-center mb-4"
-            accessibilityRole="image"
-            accessibilityLabel="Erreur"
-          >
-            <Typography className="text-4xl">❌</Typography>
-          </View>
-          <H1 className="text-center mb-2">Oups !</H1>
-          <Typography color="muted" className="text-center mb-6">
-            {state.errorMessage}
-          </Typography>
-          <Button variant="primary" onPress={handleRetry}>
-            Réessayer
-          </Button>
-          <Button variant="ghost" onPress={handleBack} className="mt-2">
-            Retour
-          </Button>
-        </View>
-      </Container>
-    );
-  }
-
+function LoadingState() {
   return (
     <Container isCenter hasSafeArea>
-      <View className="items-center">
-        <View
-          className="w-20 h-20 rounded-full bg-primary-100 items-center justify-center mb-4"
-          accessibilityRole="image"
-          accessibilityLabel="Succès"
-        >
-          <Typography className="text-4xl">✓</Typography>
+      <ActivityIndicator size="large" color="#16a34a" accessibilityLabel="Chargement" />
+      <Typography className="mt-4" color="muted">
+        Chargement de l'evenement...
+      </Typography>
+    </Container>
+  );
+}
+
+// ============================================================================
+// Error State Component
+// ============================================================================
+
+interface ErrorStateProps {
+  message: string;
+  onRetry: () => void;
+  onBack: () => void;
+}
+
+function ErrorState({ message, onRetry, onBack }: ErrorStateProps) {
+  return (
+    <Container isCenter hasSafeArea padding="lg">
+      <View className="items-center max-w-xs">
+        <View className="w-20 h-20 rounded-full bg-red-100 dark:bg-red-900/30 items-center justify-center mb-4">
+          <Typography className="text-4xl">!</Typography>
         </View>
-        <H1 className="text-center mb-2">Bienvenue !</H1>
-        <Typography color="muted" className="text-center">
-          Vous avez rejoint la sortie.
+        <H3 className="text-center mb-2">Oups !</H3>
+        <Typography color="muted" className="text-center mb-6">
+          {message}
         </Typography>
+        <Button variant="primary" size="lg" isFullWidth onPress={onRetry} className="mb-3">
+          Reessayer
+        </Button>
+        <Button variant="ghost" size="lg" isFullWidth onPress={onBack}>
+          Retour
+        </Button>
       </View>
     </Container>
   );
+}
+
+// ============================================================================
+// Success State Component
+// ============================================================================
+
+interface SuccessStateProps {
+  eventTitle: string;
+  onContinue: () => void;
+}
+
+function SuccessState({ eventTitle, onContinue }: SuccessStateProps) {
+  return (
+    <Container isCenter hasSafeArea padding="lg">
+      <View className="items-center max-w-xs">
+        <View className="w-20 h-20 rounded-full bg-green-100 dark:bg-green-900/30 items-center justify-center mb-4">
+          <Typography className="text-4xl">✓</Typography>
+        </View>
+        <H3 className="text-center mb-2">Bienvenue !</H3>
+        <Typography color="muted" className="text-center mb-2">
+          Vous avez rejoint
+        </Typography>
+        <Typography className="text-center font-semibold mb-6">
+          "{eventTitle}"
+        </Typography>
+        <Button variant="primary" size="lg" isFullWidth onPress={onContinue}>
+          Voir l'evenement
+        </Button>
+      </View>
+    </Container>
+  );
+}
+
+// ============================================================================
+// Event Preview Component
+// ============================================================================
+
+interface EventPreviewProps {
+  event: PublicEventByCode;
+  isAuthenticated: boolean;
+  isJoining: boolean;
+  onJoinAsUser: () => void;
+  onJoinAsGuest: () => void;
+}
+
+function EventPreview({ event, isAuthenticated, isJoining, onJoinAsUser, onJoinAsGuest }: EventPreviewProps) {
+  const formattedDate = formatEventDate(event.startDateTime);
+  const organiserName = [event.organiser.firstName, event.organiser.lastName].filter(Boolean).join(' ');
+
+  return (
+    <ScrollContainer hasSafeArea padding="lg">
+      {/* Event Info Card */}
+      <View className="bg-primary-50 dark:bg-primary-900/30 rounded-xl p-5 mb-6">
+        <Typography variant="caption" color="muted" className="mb-1">
+          Vous etes invite a rejoindre
+        </Typography>
+        <H1 className="mb-4">{event.title}</H1>
+
+        <View className="flex-row items-center mb-3">
+          <Typography className="mr-2">📅</Typography>
+          <Typography>{formattedDate}</Typography>
+        </View>
+
+        {event.locationName && (
+          <View className="flex-row items-center mb-3">
+            <Typography className="mr-2">📍</Typography>
+            <View className="flex-1">
+              <Typography>{event.locationName}</Typography>
+              {event.locationAddress && (
+                <Typography variant="bodySmall" color="muted">{event.locationAddress}</Typography>
+              )}
+            </View>
+          </View>
+        )}
+
+        <View className="flex-row items-center">
+          <Typography className="mr-2">👤</Typography>
+          <Typography color="muted">Organise par {organiserName}</Typography>
+        </View>
+      </View>
+
+      {/* Action Buttons */}
+      {isAuthenticated ? (
+        <Button
+          variant="primary"
+          size="lg"
+          isFullWidth
+          isLoading={isJoining}
+          onPress={onJoinAsUser}
+        >
+          Participer
+        </Button>
+      ) : (
+        <>
+          <Button
+            variant="primary"
+            size="lg"
+            isFullWidth
+            onPress={onJoinAsGuest}
+          >
+            Continuer en tant qu'invite
+          </Button>
+          <Typography variant="caption" color="muted" className="text-center mt-4">
+            Vous pourrez creer un compte plus tard pour retrouver vos sorties
+          </Typography>
+        </>
+      )}
+    </ScrollContainer>
+  );
+}
+
+// ============================================================================
+// Guest Form Component
+// ============================================================================
+
+interface GuestFormProps {
+  event: PublicEventByCode;
+  isJoining: boolean;
+  onSubmit: (data: GuestJoinInput) => void;
+  onBack: () => void;
+}
+
+function GuestForm({ event, isJoining, onSubmit, onBack }: GuestFormProps) {
+  const {
+    control,
+    handleSubmit,
+    formState: { errors, isValid },
+  } = useForm<GuestJoinInput>({
+    resolver: zodResolver(GuestJoinInputSchema),
+    defaultValues: {
+      firstName: '',
+      lastName: '',
+      email: '',
+    },
+    mode: 'onChange',
+  });
+
+  return (
+    <KeyboardAvoidingView
+      behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+      className="flex-1"
+    >
+      <ScrollContainer hasSafeArea padding="lg">
+        <H2 className="mb-2">Vos informations</H2>
+        <Typography color="muted" className="mb-6">
+          Entrez votre prenom pour rejoindre "{event.title}"
+        </Typography>
+
+        <Controller
+          control={control}
+          name="firstName"
+          render={({ field: { onChange, onBlur, value } }) => (
+            <Input
+              label="Prenom *"
+              placeholder="Ex: Jean"
+              value={value}
+              onChangeText={onChange}
+              onBlur={onBlur}
+              error={errors.firstName?.message}
+              containerClassName="mb-4"
+              autoCapitalize="words"
+              autoFocus
+              returnKeyType="next"
+            />
+          )}
+        />
+
+        <Controller
+          control={control}
+          name="lastName"
+          render={({ field: { onChange, onBlur, value } }) => (
+            <Input
+              label="Nom (optionnel)"
+              placeholder="Ex: Dupont"
+              value={value ?? ''}
+              onChangeText={onChange}
+              onBlur={onBlur}
+              error={errors.lastName?.message}
+              containerClassName="mb-4"
+              autoCapitalize="words"
+              returnKeyType="next"
+            />
+          )}
+        />
+
+        <Controller
+          control={control}
+          name="email"
+          render={({ field: { onChange, onBlur, value } }) => (
+            <Input
+              label="Email (optionnel)"
+              placeholder="Ex: jean@example.com"
+              value={value ?? ''}
+              onChangeText={onChange}
+              onBlur={onBlur}
+              error={errors.email?.message}
+              containerClassName="mb-6"
+              keyboardType="email-address"
+              autoCapitalize="none"
+              returnKeyType="done"
+            />
+          )}
+        />
+
+        <Button
+          variant="primary"
+          size="lg"
+          isFullWidth
+          isLoading={isJoining}
+          isDisabled={!isValid}
+          onPress={handleSubmit(onSubmit)}
+        >
+          Rejoindre la sortie
+        </Button>
+
+        <Button
+          variant="ghost"
+          size="lg"
+          isFullWidth
+          onPress={onBack}
+          className="mt-3"
+        >
+          Retour
+        </Button>
+      </ScrollContainer>
+    </KeyboardAvoidingView>
+  );
+}
+
+// ============================================================================
+// Main Join Screen
+// ============================================================================
+
+export default function JoinScreen() {
+  const { code } = useLocalSearchParams<{ code: string }>();
+  const router = useRouter();
+  const { isAuthenticated, signInAsGuest } = useAuth();
+  const [state, dispatch] = useReducer(joinReducer, initialState);
+
+  // API hooks
+  const {
+    data: event,
+    isLoading: isLoadingEvent,
+    error: eventError,
+    refetch: refetchEvent,
+  } = usePublicEventByCode(code ?? '');
+
+  const joinParticipate = useJoinParticipate();
+  const guestJoin = useGuestJoin();
+
+  // Update step based on loading state
+  useEffect(() => {
+    if (isLoadingEvent) {
+      dispatch({ type: 'SET_STEP', payload: 'loading' });
+    } else if (eventError) {
+      dispatch({ type: 'SET_ERROR', payload: eventError.message || 'Evenement introuvable' });
+    } else if (event && state.step === 'loading') {
+      dispatch({ type: 'SET_STEP', payload: 'preview' });
+    }
+  }, [isLoadingEvent, eventError, event, state.step]);
+
+  // Handle join as authenticated user
+  const handleJoinAsUser = useCallback(async () => {
+    if (!code) return;
+
+    dispatch({ type: 'SET_STEP', payload: 'joining' });
+
+    try {
+      await joinParticipate.mutateAsync(code);
+      dispatch({ type: 'SET_STEP', payload: 'success' });
+    } catch (error: unknown) {
+      const message = error instanceof Error ? error.message : 'Impossible de rejoindre la sortie';
+      dispatch({ type: 'SET_ERROR', payload: message });
+    }
+  }, [code, joinParticipate]);
+
+  // Handle navigation to guest form
+  const handleShowGuestForm = useCallback(() => {
+    dispatch({ type: 'SET_STEP', payload: 'guest_form' });
+  }, []);
+
+  // Handle guest join submission
+  const handleGuestSubmit = useCallback(async (data: GuestJoinInput) => {
+    if (!event) return;
+
+    dispatch({ type: 'SET_STEP', payload: 'joining' });
+
+    try {
+      const result = await guestJoin.mutateAsync({
+        eventId: event.join.eventId,
+        input: data,
+      });
+
+      // Store guest session (simulate - in real app, backend would return a token)
+      // For now, we just mark the user as a guest in local auth state
+      await signInAsGuest(`guest_${result.userId}`, result.userId);
+
+      dispatch({ type: 'SET_STEP', payload: 'success' });
+    } catch (error: unknown) {
+      const message = error instanceof Error ? error.message : 'Impossible de rejoindre la sortie';
+      dispatch({ type: 'SET_ERROR', payload: message });
+    }
+  }, [event, guestJoin, signInAsGuest]);
+
+  // Handle back to preview
+  const handleBackToPreview = useCallback(() => {
+    dispatch({ type: 'SET_STEP', payload: 'preview' });
+  }, []);
+
+  // Handle retry
+  const handleRetry = useCallback(() => {
+    dispatch({ type: 'RESET' });
+    refetchEvent();
+  }, [refetchEvent]);
+
+  // Handle back navigation
+  const handleBack = useCallback(() => {
+    router.back();
+  }, [router]);
+
+  // Handle continue to event
+  const handleContinue = useCallback(() => {
+    if (event) {
+      router.replace(`/event/${event.id}`);
+    } else {
+      router.replace('/(tabs)');
+    }
+  }, [router, event]);
+
+  // Render based on step
+  const renderContent = () => {
+    switch (state.step) {
+      case 'loading':
+        return <LoadingState />;
+
+      case 'error':
+        return (
+          <ErrorState
+            message={state.errorMessage || 'Une erreur est survenue'}
+            onRetry={handleRetry}
+            onBack={handleBack}
+          />
+        );
+
+      case 'success':
+        return (
+          <SuccessState
+            eventTitle={event?.title || 'la sortie'}
+            onContinue={handleContinue}
+          />
+        );
+
+      case 'guest_form':
+        if (!event) return <LoadingState />;
+        return (
+          <GuestForm
+            event={event}
+            isJoining={guestJoin.isPending}
+            onSubmit={handleGuestSubmit}
+            onBack={handleBackToPreview}
+          />
+        );
+
+      case 'joining':
+        return (
+          <Container isCenter hasSafeArea>
+            <ActivityIndicator size="large" color="#16a34a" />
+            <Typography className="mt-4" color="muted">
+              Inscription en cours...
+            </Typography>
+          </Container>
+        );
+
+      case 'preview':
+      default:
+        if (!event) return <LoadingState />;
+        return (
+          <EventPreview
+            event={event}
+            isAuthenticated={isAuthenticated}
+            isJoining={joinParticipate.isPending}
+            onJoinAsUser={handleJoinAsUser}
+            onJoinAsGuest={handleShowGuestForm}
+          />
+        );
+    }
+  };
+
+  return (
+    <>
+      <Stack.Screen
+        options={{
+          title: event?.title || 'Rejoindre',
+          headerBackTitle: 'Retour',
+        }}
+      />
+      {renderContent()}
+    </>
+  );
+}
+
+// ============================================================================
+// Helpers
+// ============================================================================
+
+function formatEventDate(dateString: string): string {
+  const date = new Date(dateString);
+  const now = new Date();
+  const isToday = date.toDateString() === now.toDateString();
+  const isTomorrow = date.toDateString() === new Date(now.getTime() + 86400000).toDateString();
+
+  const timeOptions: Intl.DateTimeFormatOptions = {
+    hour: '2-digit',
+    minute: '2-digit',
+  };
+
+  const time = date.toLocaleTimeString('fr-FR', timeOptions);
+
+  if (isToday) {
+    return `Aujourd'hui a ${time}`;
+  }
+
+  if (isTomorrow) {
+    return `Demain a ${time}`;
+  }
+
+  const dateOptions: Intl.DateTimeFormatOptions = {
+    weekday: 'long',
+    day: 'numeric',
+    month: 'long',
+  };
+
+  const formattedDate = date.toLocaleDateString('fr-FR', dateOptions);
+  return `${formattedDate} a ${time}`;
 }

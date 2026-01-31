@@ -24,6 +24,11 @@ export const APP_SCHEME: string = extra.appScheme ?? 'the-run';
 export const WEB_DOMAIN: string = extra.webDomain ?? 'the.run';
 
 /**
+ * Full web URL for sharing (universal links).
+ */
+export const WEB_URL: string = extra.webUrl ?? `https://${WEB_DOMAIN}`;
+
+/**
  * Check if running in development mode.
  */
 export const IS_DEV: boolean = __DEV__ ?? false;
