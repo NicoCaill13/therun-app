@@ -3,8 +3,10 @@ import { View, ActivityIndicator, KeyboardAvoidingView, Platform } from 'react-n
 import { useLocalSearchParams, useRouter, Stack } from 'expo-router';
 import { useForm, Controller } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
-import { Container, ScrollContainer, Typography, H1, H2, H3, Button, Input } from '@/components/ui';
+import { Container, ScrollContainer, Typography, H1, H2, Button, Input } from '@/components/ui';
+import { LoadingState, ErrorState, SuccessState } from '@/components/states';
 import { useAuth } from '@/lib/auth';
+import { formatEventDate } from '@/lib/utils';
 import {
   usePublicEventByCode,
   useJoinParticipate,
@@ -49,79 +51,29 @@ function joinReducer(state: JoinState, action: JoinAction): JoinState {
 }
 
 // ============================================================================
-// Loading State Component
+// Join Loading State (specialized)
 // ============================================================================
 
-function LoadingState() {
+function JoinLoadingState() {
+  return (
+    <LoadingState
+      message="Chargement de l'evenement..."
+      hasSafeArea
+    />
+  );
+}
+
+// ============================================================================
+// Joining State (specialized)
+// ============================================================================
+
+function JoiningState() {
   return (
     <Container isCenter hasSafeArea>
-      <ActivityIndicator size="large" color="#16a34a" accessibilityLabel="Chargement" />
+      <ActivityIndicator size="large" color="#16a34a" />
       <Typography className="mt-4" color="muted">
-        Chargement de l'evenement...
+        Inscription en cours...
       </Typography>
-    </Container>
-  );
-}
-
-// ============================================================================
-// Error State Component
-// ============================================================================
-
-interface ErrorStateProps {
-  message: string;
-  onRetry: () => void;
-  onBack: () => void;
-}
-
-function ErrorState({ message, onRetry, onBack }: ErrorStateProps) {
-  return (
-    <Container isCenter hasSafeArea padding="lg">
-      <View className="items-center max-w-xs">
-        <View className="w-20 h-20 rounded-full bg-red-100 dark:bg-red-900/30 items-center justify-center mb-4">
-          <Typography className="text-4xl">!</Typography>
-        </View>
-        <H3 className="text-center mb-2">Oups !</H3>
-        <Typography color="muted" className="text-center mb-6">
-          {message}
-        </Typography>
-        <Button variant="primary" size="lg" isFullWidth onPress={onRetry} className="mb-3">
-          Reessayer
-        </Button>
-        <Button variant="ghost" size="lg" isFullWidth onPress={onBack}>
-          Retour
-        </Button>
-      </View>
-    </Container>
-  );
-}
-
-// ============================================================================
-// Success State Component
-// ============================================================================
-
-interface SuccessStateProps {
-  eventTitle: string;
-  onContinue: () => void;
-}
-
-function SuccessState({ eventTitle, onContinue }: SuccessStateProps) {
-  return (
-    <Container isCenter hasSafeArea padding="lg">
-      <View className="items-center max-w-xs">
-        <View className="w-20 h-20 rounded-full bg-green-100 dark:bg-green-900/30 items-center justify-center mb-4">
-          <Typography className="text-4xl">✓</Typography>
-        </View>
-        <H3 className="text-center mb-2">Bienvenue !</H3>
-        <Typography color="muted" className="text-center mb-2">
-          Vous avez rejoint
-        </Typography>
-        <Typography className="text-center font-semibold mb-6">
-          "{eventTitle}"
-        </Typography>
-        <Button variant="primary" size="lg" isFullWidth onPress={onContinue}>
-          Voir l'evenement
-        </Button>
-      </View>
     </Container>
   );
 }
@@ -426,7 +378,7 @@ export default function JoinScreen() {
   const renderContent = () => {
     switch (state.step) {
       case 'loading':
-        return <LoadingState />;
+        return <JoinLoadingState />;
 
       case 'error':
         return (
@@ -434,19 +386,24 @@ export default function JoinScreen() {
             message={state.errorMessage || 'Une erreur est survenue'}
             onRetry={handleRetry}
             onBack={handleBack}
+            hasSafeArea
           />
         );
 
       case 'success':
         return (
           <SuccessState
-            eventTitle={event?.title || 'la sortie'}
-            onContinue={handleContinue}
+            title="Bienvenue !"
+            message="Vous avez rejoint"
+            subtitle={event?.title || 'la sortie'}
+            actionLabel="Voir l'evenement"
+            onAction={handleContinue}
+            hasSafeArea
           />
         );
 
       case 'guest_form':
-        if (!event) return <LoadingState />;
+        if (!event) return <JoinLoadingState />;
         return (
           <GuestForm
             event={event}
@@ -457,18 +414,11 @@ export default function JoinScreen() {
         );
 
       case 'joining':
-        return (
-          <Container isCenter hasSafeArea>
-            <ActivityIndicator size="large" color="#16a34a" />
-            <Typography className="mt-4" color="muted">
-              Inscription en cours...
-            </Typography>
-          </Container>
-        );
+        return <JoiningState />;
 
       case 'preview':
       default:
-        if (!event) return <LoadingState />;
+        if (!event) return <JoinLoadingState />;
         return (
           <EventPreview
             event={event}
@@ -494,37 +444,3 @@ export default function JoinScreen() {
   );
 }
 
-// ============================================================================
-// Helpers
-// ============================================================================
-
-function formatEventDate(dateString: string): string {
-  const date = new Date(dateString);
-  const now = new Date();
-  const isToday = date.toDateString() === now.toDateString();
-  const isTomorrow = date.toDateString() === new Date(now.getTime() + 86400000).toDateString();
-
-  const timeOptions: Intl.DateTimeFormatOptions = {
-    hour: '2-digit',
-    minute: '2-digit',
-  };
-
-  const time = date.toLocaleTimeString('fr-FR', timeOptions);
-
-  if (isToday) {
-    return `Aujourd'hui a ${time}`;
-  }
-
-  if (isTomorrow) {
-    return `Demain a ${time}`;
-  }
-
-  const dateOptions: Intl.DateTimeFormatOptions = {
-    weekday: 'long',
-    day: 'numeric',
-    month: 'long',
-  };
-
-  const formattedDate = date.toLocaleDateString('fr-FR', dateOptions);
-  return `${formattedDate} a ${time}`;
-}

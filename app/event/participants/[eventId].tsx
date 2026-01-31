@@ -7,7 +7,9 @@ import {
   Pressable,
 } from 'react-native';
 import { useLocalSearchParams, Stack } from 'expo-router';
-import { Container, Typography, H3, Button } from '@/components/ui';
+import { Container, Typography, H3 } from '@/components/ui';
+import { LoadingState, ErrorState, EmptyState } from '@/components/states';
+import { getParticipantStatusIcon } from '@/components/event';
 import {
   useParticipantsList,
   useParticipantsSummary,
@@ -59,7 +61,7 @@ interface ParticipantItemProps {
 
 function ParticipantItem({ participant }: ParticipantItemProps) {
   const roleLabel = getRoleLabel(participant.roleInEvent);
-  const statusIcon = getStatusIcon(participant.status);
+  const statusIcon = getStatusSymbol(participant.status);
 
   return (
     <View className="flex-row items-center py-3 px-4 border-b border-secondary-100 dark:border-secondary-800">
@@ -106,7 +108,7 @@ function ParticipantItem({ participant }: ParticipantItemProps) {
   );
 }
 
-function getStatusIcon(status: ParticipantStatus): string {
+function getStatusSymbol(status: ParticipantStatus): string {
   switch (status) {
     case 'GOING':
       return '✓';
@@ -131,51 +133,6 @@ function getRoleLabel(role: string): string {
   }
 }
 
-// ============================================================================
-// Loading State
-// ============================================================================
-
-function LoadingState() {
-  return (
-    <Container isCenter padding="lg">
-      <ActivityIndicator size="large" color="#16a34a" />
-      <Typography color="muted" className="mt-4">Chargement des participants...</Typography>
-    </Container>
-  );
-}
-
-// ============================================================================
-// Empty State
-// ============================================================================
-
-function EmptyState() {
-  return (
-    <Container isCenter padding="lg">
-      <Typography className="text-4xl mb-4">👥</Typography>
-      <Typography color="muted" className="text-center">
-        Aucun participant pour le moment
-      </Typography>
-    </Container>
-  );
-}
-
-// ============================================================================
-// Error State
-// ============================================================================
-
-interface ErrorStateProps {
-  message: string;
-  onRetry: () => void;
-}
-
-function ErrorState({ message, onRetry }: ErrorStateProps) {
-  return (
-    <Container isCenter padding="lg">
-      <Typography color="error" className="text-center mb-4">{message}</Typography>
-      <Button variant="outline" onPress={onRetry}>Reessayer</Button>
-    </Container>
-  );
-}
 
 // ============================================================================
 // Main Screen
@@ -236,7 +193,7 @@ export default function ParticipantsListScreen() {
     return (
       <>
         <Stack.Screen options={{ title: 'Participants' }} />
-        <LoadingState />
+        <LoadingState message="Chargement des participants..." />
       </>
     );
   }
@@ -248,6 +205,7 @@ export default function ParticipantsListScreen() {
         <ErrorState
           message={error.message || 'Impossible de charger les participants'}
           onRetry={refetch}
+          variant="compact"
         />
       </>
     );
@@ -308,7 +266,11 @@ export default function ParticipantsListScreen() {
 
         {/* Participants List */}
         {data?.items.length === 0 ? (
-          <EmptyState />
+          <EmptyState
+            icon="👥"
+            title="Aucun participant"
+            description="Aucun participant pour le moment"
+          />
         ) : (
           <FlatList
             data={data?.items ?? []}

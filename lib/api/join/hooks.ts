@@ -1,7 +1,8 @@
 import { useCallback } from 'react';
-import { useMutation, useQuery, useQueryClient, type UseQueryOptions } from '@tanstack/react-query';
+import { useQueryClient } from '@tanstack/react-query';
 import { apiClient } from '../client';
-import { normalizeApiError, type NormalizedError } from '../normalizeApiError';
+import { useApiQuery, useApiMutation } from '@/lib/hooks';
+import type { NormalizedApiError } from '../normalizeApiError';
 import {
   JoinEventSummarySchema,
   JoinParticipateResponseSchema,
@@ -25,6 +26,18 @@ export const joinKeys = {
 };
 
 // ============================================================================
+// Query Options Interface
+// ============================================================================
+
+interface UseQueryOptions {
+  /**
+   * Whether the query is enabled.
+   * @default true
+   */
+  enabled?: boolean;
+}
+
+// ============================================================================
 // useJoinResolve - GET /join/:eventCode
 // ============================================================================
 
@@ -39,17 +52,19 @@ async function fetchJoinResolve(eventCode: string): Promise<JoinEventSummary> {
 
 /**
  * Hook to resolve an event by code.
+ *
+ * @param eventCode - The event code to resolve
+ * @param options - Query options
+ * @returns Query result with JoinEventSummary data
  */
-export function useJoinResolve(
-  eventCode: string,
-  options?: Omit<UseQueryOptions<JoinEventSummary, NormalizedError>, 'queryKey' | 'queryFn'>
-) {
-  return useQuery<JoinEventSummary, NormalizedError>({
-    queryKey: joinKeys.resolve(eventCode),
-    queryFn: () => fetchJoinResolve(eventCode),
-    enabled: Boolean(eventCode) && options?.enabled !== false,
-    ...options,
-  });
+export function useJoinResolve(eventCode: string, options?: UseQueryOptions) {
+  return useApiQuery<JoinEventSummary>(
+    joinKeys.resolve(eventCode),
+    () => fetchJoinResolve(eventCode),
+    {
+      enabled: Boolean(eventCode) && (options?.enabled ?? true),
+    }
+  );
 }
 
 // ============================================================================
@@ -67,17 +82,19 @@ async function fetchPublicEventByCode(eventCode: string): Promise<PublicEventByC
 
 /**
  * Hook to get public event details by code.
+ *
+ * @param eventCode - The event code to look up
+ * @param options - Query options
+ * @returns Query result with PublicEventByCode data
  */
-export function usePublicEventByCode(
-  eventCode: string,
-  options?: Omit<UseQueryOptions<PublicEventByCode, NormalizedError>, 'queryKey' | 'queryFn'>
-) {
-  return useQuery<PublicEventByCode, NormalizedError>({
-    queryKey: joinKeys.publicByCode(eventCode),
-    queryFn: () => fetchPublicEventByCode(eventCode),
-    enabled: Boolean(eventCode) && options?.enabled !== false,
-    ...options,
-  });
+export function usePublicEventByCode(eventCode: string, options?: UseQueryOptions) {
+  return useApiQuery<PublicEventByCode>(
+    joinKeys.publicByCode(eventCode),
+    () => fetchPublicEventByCode(eventCode),
+    {
+      enabled: Boolean(eventCode) && (options?.enabled ?? true),
+    }
+  );
 }
 
 // ============================================================================
@@ -94,21 +111,21 @@ async function joinParticipate(eventCode: string): Promise<JoinParticipateRespon
 
 /**
  * Hook for authenticated user to join an event.
+ *
+ * @returns Mutation for joining an event
  */
 export function useJoinParticipate() {
   const queryClient = useQueryClient();
 
-  return useMutation<JoinParticipateResponse, NormalizedError, string>({
-    mutationFn: joinParticipate,
+  return useApiMutation<JoinParticipateResponse, string>(joinParticipate, {
     onSuccess: (data) => {
       // Invalidate relevant queries
       queryClient.invalidateQueries({ queryKey: ['events', data.eventId] });
       queryClient.invalidateQueries({ queryKey: ['events', 'mine'] });
+      queryClient.invalidateQueries({ queryKey: ['me', 'events'] });
     },
-    onError: (error) => {
-      // Error is already normalized by apiClient interceptor
-      console.error('[useJoinParticipate] Error:', error);
-    },
+    // Disable auto upsell for join flow (handled differently)
+    autoShowUpsell: false,
   });
 }
 
@@ -131,19 +148,19 @@ async function guestJoin({ eventId, input }: GuestJoinParams): Promise<GuestJoin
 
 /**
  * Hook for guest to join an event (no auth required).
+ *
+ * @returns Mutation for guest joining
  */
 export function useGuestJoin() {
   const queryClient = useQueryClient();
 
-  return useMutation<GuestJoinResponse, NormalizedError, GuestJoinParams>({
-    mutationFn: guestJoin,
+  return useApiMutation<GuestJoinResponse, GuestJoinParams>(guestJoin, {
     onSuccess: (data) => {
       // Invalidate relevant queries
       queryClient.invalidateQueries({ queryKey: ['events', data.eventId] });
     },
-    onError: (error) => {
-      console.error('[useGuestJoin] Error:', error);
-    },
+    // Disable auto upsell for guest join
+    autoShowUpsell: false,
   });
 }
 
@@ -151,33 +168,34 @@ export function useGuestJoin() {
 // useJoinFlow - Combined hook for the complete join flow
 // ============================================================================
 
-interface JoinFlowState {
-  step: 'loading' | 'preview' | 'guest_form' | 'joining' | 'success' | 'error';
-  event: PublicEventByCode | null;
-  error: NormalizedError | null;
-}
-
 /**
  * Combined hook that orchestrates the complete join flow.
  * Handles both authenticated and guest users.
+ *
+ * @param eventCode - The event code to join
+ * @param isAuthenticated - Whether the current user is authenticated
+ * @returns Object with all join flow state and actions
  */
 export function useJoinFlow(eventCode: string, isAuthenticated: boolean) {
   const publicEventQuery = usePublicEventByCode(eventCode, { enabled: Boolean(eventCode) });
-  const joinParticipate = useJoinParticipate();
-  const guestJoin = useGuestJoin();
+  const joinParticipateMutation = useJoinParticipate();
+  const guestJoinMutation = useGuestJoin();
 
   const joinAsUser = useCallback(async () => {
     if (!eventCode) return null;
-    return joinParticipate.mutateAsync(eventCode);
-  }, [eventCode, joinParticipate]);
+    return joinParticipateMutation.mutateAsync(eventCode);
+  }, [eventCode, joinParticipateMutation]);
 
-  const joinAsGuest = useCallback(async (input: GuestJoinInput) => {
-    if (!publicEventQuery.data?.join.eventId) return null;
-    return guestJoin.mutateAsync({
-      eventId: publicEventQuery.data.join.eventId,
-      input,
-    });
-  }, [publicEventQuery.data, guestJoin]);
+  const joinAsGuest = useCallback(
+    async (input: GuestJoinInput) => {
+      if (!publicEventQuery.data?.join.eventId) return null;
+      return guestJoinMutation.mutateAsync({
+        eventId: publicEventQuery.data.join.eventId,
+        input,
+      });
+    },
+    [publicEventQuery.data, guestJoinMutation]
+  );
 
   return {
     // Event data
@@ -189,8 +207,8 @@ export function useJoinFlow(eventCode: string, isAuthenticated: boolean) {
     // Join mutations
     joinAsUser,
     joinAsGuest,
-    isJoining: joinParticipate.isPending || guestJoin.isPending,
-    joinError: joinParticipate.error ?? guestJoin.error ?? null,
-    joinResult: joinParticipate.data ?? guestJoin.data ?? null,
+    isJoining: joinParticipateMutation.isPending || guestJoinMutation.isPending,
+    joinError: joinParticipateMutation.error ?? guestJoinMutation.error ?? null,
+    joinResult: joinParticipateMutation.data ?? guestJoinMutation.data ?? null,
   };
 }
