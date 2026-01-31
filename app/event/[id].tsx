@@ -273,6 +273,67 @@ function ParticipationActions({
 
 
 // ============================================================================
+// Organiser Actions (Edit, Broadcast, Duplicate)
+// ============================================================================
+
+interface OrganiserActionsProps {
+  eventId: string;
+  eventStatus: EventStatus;
+  isOrganiser: boolean;
+}
+
+function OrganiserActions({ eventId, eventStatus, isOrganiser }: OrganiserActionsProps) {
+  const router = useRouter();
+
+  if (!isOrganiser) {
+    return null;
+  }
+
+  const isActive = eventStatus === 'SCHEDULED' || eventStatus === 'ONGOING';
+  const isCompleted = eventStatus === 'COMPLETED';
+
+  return (
+    <View className="mb-6">
+      <Typography variant="label" className="mb-3">Actions organisateur</Typography>
+      <View className="flex-row flex-wrap gap-2">
+        {/* Edit - only for active events */}
+        {isActive && (
+          <Button
+            variant="outline"
+            size="sm"
+            onPress={() => router.push(`/event/edit/${eventId}`)}
+          >
+            Modifier
+          </Button>
+        )}
+
+        {/* Broadcast - only for active events */}
+        {isActive && (
+          <Button
+            variant="outline"
+            size="sm"
+            onPress={() => router.push(`/event/broadcast/${eventId}`)}
+          >
+            Envoyer un message
+          </Button>
+        )}
+
+        {/* Duplicate - only for completed events */}
+        {isCompleted && (
+          <Button
+            variant="outline"
+            size="sm"
+            onPress={() => router.push(`/event/duplicate/${eventId}`)}
+          >
+            Dupliquer
+          </Button>
+        )}
+      </View>
+    </View>
+  );
+}
+
+// ============================================================================
 // Complete Event Button (Phase 4.1)
 // ============================================================================
 
@@ -455,6 +516,13 @@ export default function EventDetailScreen() {
         {isOrganiser && (event.status === 'SCHEDULED' || event.status === 'ONGOING') && (
           <ShareCodeSection eventCode={event.eventCode} eventTitle={event.title} />
         )}
+
+        {/* Organiser Actions (Edit, Broadcast, Duplicate) */}
+        <OrganiserActions
+          eventId={event.id}
+          eventStatus={event.status}
+          isOrganiser={isOrganiser}
+        />
 
         {/* Complete Event Button (Phase 4.1 - organiser only) */}
         <CompleteEventButton

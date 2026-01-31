@@ -1,6 +1,7 @@
 import { renderHook, waitFor } from '@testing-library/react-native';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { ReactNode } from 'react';
+import { UpsellModalProvider } from '@/components/providers/UpsellModalProvider';
 import { apiClient } from '../../client';
 import {
   useJoinResolve,
@@ -20,7 +21,7 @@ jest.mock('../../client', () => ({
 
 const mockedApiClient = apiClient as jest.Mocked<typeof apiClient>;
 
-// Query client wrapper
+// Query client wrapper with UpsellModalProvider
 function createWrapper() {
   const queryClient = new QueryClient({
     defaultOptions: {
@@ -37,7 +38,9 @@ function createWrapper() {
   return function Wrapper({ children }: { children: ReactNode }) {
     return (
       <QueryClientProvider client={queryClient}>
-        {children}
+        <UpsellModalProvider>
+          {children}
+        </UpsellModalProvider>
       </QueryClientProvider>
     );
   };
@@ -193,7 +196,13 @@ describe('useJoinParticipate', () => {
       { wrapper: createWrapper() }
     );
 
-    await expect(result.current.mutateAsync('ABC123')).rejects.toThrow();
+    try {
+      await result.current.mutateAsync('ABC123');
+    } catch {
+      // Expected to fail
+    }
+
+    await waitFor(() => expect(result.current.isError).toBe(true));
   });
 });
 
@@ -269,11 +278,15 @@ describe('useGuestJoin', () => {
       { wrapper: createWrapper() }
     );
 
-    await expect(
-      result.current.mutateAsync({
+    try {
+      await result.current.mutateAsync({
         eventId: 'evt_123',
         input: { firstName: 'John' },
-      })
-    ).rejects.toThrow();
+      });
+    } catch {
+      // Expected to fail
+    }
+
+    await waitFor(() => expect(result.current.isError).toBe(true));
   });
 });

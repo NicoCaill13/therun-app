@@ -156,3 +156,53 @@ export interface MeEventsQueryParams {
   page?: number;
   pageSize?: number;
 }
+
+// ============================================================================
+// Update Event
+// ============================================================================
+
+export const UpdateEventInputSchema = z.object({
+  startDateTime: z.string().datetime().optional(),
+  locationName: z.string().max(120).optional(),
+  locationAddress: z.string().max(200).optional(),
+  locationLat: z.number().min(-90).max(90).optional(),
+  locationLng: z.number().min(-180).max(180).optional(),
+  status: EventStatusSchema.optional(),
+});
+
+export type UpdateEventInput = z.infer<typeof UpdateEventInputSchema>;
+
+// ============================================================================
+// Duplicate Event
+// ============================================================================
+
+export const DuplicateEventInputSchema = z.object({
+  startDateTime: z.string().datetime({ message: 'Date et heure invalides' }),
+  title: z.string().min(1).optional(),
+  description: z.string().optional(),
+  locationName: z.string().optional(),
+  locationAddress: z.string().optional(),
+  locationLat: z.number().min(-90).max(90).optional(),
+  locationLng: z.number().min(-180).max(180).optional(),
+  copyAllGroups: z.boolean().optional(),
+  groupIds: z.array(z.string().uuid()).optional(),
+});
+
+export type DuplicateEventInput = z.infer<typeof DuplicateEventInputSchema>;
+
+// ============================================================================
+// Broadcast Event
+// ============================================================================
+
+export const BroadcastEventInputSchema = z.object({
+  title: z.string().max(120).optional(),
+  body: z.string().min(1).max(1000),
+});
+
+export type BroadcastEventInput = z.infer<typeof BroadcastEventInputSchema>;
+
+export const BroadcastEventResponseSchema = z.object({
+  sentCount: z.number().int().min(0),
+});
+
+export type BroadcastEventResponse = z.infer<typeof BroadcastEventResponseSchema>;
