@@ -24,6 +24,16 @@ jest.mock('react-native/Libraries/Share/Share', () => ({
   share: mockShare,
 }));
 
+// Mock new Phase 3 components to avoid dependency issues
+jest.mock('@/components/event', () => ({
+  PaceGroupSelector: () => null,
+}));
+
+jest.mock('@/components/map', () => ({
+  EventMapPlaceholder: () => null,
+  RouteInfoCard: () => null,
+}));
+
 jest.mock('@/lib/auth', () => ({
   useAuth: jest.fn(() => ({
     user: { id: 'user-1', displayName: 'John Doe' },
@@ -32,13 +42,23 @@ jest.mock('@/lib/auth', () => ({
 
 jest.mock('@/lib/api', () => ({
   useEventDetails: jest.fn(),
+  useUpsertParticipation: jest.fn(() => ({
+    mutate: jest.fn(),
+    isPending: false,
+  })),
+  useEventRoutes: jest.fn(() => ({
+    data: undefined,
+    isLoading: false,
+    error: null,
+  })),
 }));
 
 import { useAuth } from '@/lib/auth';
-import { useEventDetails } from '@/lib/api';
+import { useEventDetails, useEventRoutes } from '@/lib/api';
 
 const mockedUseAuth = useAuth as jest.MockedFunction<typeof useAuth>;
 const mockedUseEventDetails = useEventDetails as jest.MockedFunction<typeof useEventDetails>;
+const mockedUseEventRoutes = useEventRoutes as jest.MockedFunction<typeof useEventRoutes>;
 
 // Test wrapper
 function createWrapper() {
@@ -112,6 +132,12 @@ describe('EventDetailScreen', () => {
       error: null,
       refetch: mockRefetch,
       isRefetching: false,
+    } as any);
+
+    mockedUseEventRoutes.mockReturnValue({
+      data: undefined,
+      isLoading: false,
+      error: null,
     } as any);
   });
 
