@@ -1,9 +1,18 @@
 import { useCallback, useState } from 'react';
-import { View, ActivityIndicator, Share, Pressable, RefreshControl, useColorScheme } from 'react-native';
+import { View, ActivityIndicator, Share, Pressable, RefreshControl, useColorScheme, Alert } from 'react-native';
 import { useLocalSearchParams, useRouter, Stack } from 'expo-router';
 import QRCode from 'react-native-qrcode-svg';
-import { ScrollContainer, Container, Typography, H1, H2, H3, Button } from '@/components/ui';
-import { useEventDetails, type EventParticipant, type EventStatus } from '@/lib/api';
+import { ScrollContainer, Container, Typography, H1, H3, Button } from '@/components/ui';
+import { PaceGroupSelector } from '@/components/event';
+import { EventMapPlaceholder, RouteInfoCard } from '@/components/map';
+import {
+  useEventDetails,
+  useUpsertParticipation,
+  useEventRoutes,
+  type EventParticipant,
+  type EventStatus,
+  type ParticipantStatus,
+} from '@/lib/api';
 import { useAuth } from '@/lib/auth';
 import { config } from '@/lib/config';
 
@@ -233,6 +242,142 @@ function ShareCodeSection({ eventCode, eventTitle }: ShareCodeSectionProps) {
 }
 
 // ============================================================================
+// Participation Actions Component
+// ============================================================================
+
+interface ParticipationActionsProps {
+  eventId: string;
+  currentStatus: ParticipantStatus | null;
+  isOrganiser: boolean;
+  eventStatus: EventStatus;
+}
+
+function ParticipationActions({
+  eventId,
+  currentStatus,
+  isOrganiser,
+  eventStatus,
+}: ParticipationActionsProps) {
+  const { mutate: upsertParticipation, isPending } = useUpsertParticipation();
+
+  const handleParticipate = useCallback((status: 'GOING' | 'MAYBE' | 'DECLINED') => {
+    upsertParticipation(
+      { eventId, input: { status } },
+      {
+        onError: (error) => {
+          Alert.alert('Erreur', error.message || 'Impossible de mettre a jour votre participation');
+        },
+      }
+    );
+  }, [eventId, upsertParticipation]);
+
+  // Don't show actions for organiser or completed/cancelled events
+  if (isOrganiser || eventStatus === 'COMPLETED' || eventStatus === 'CANCELLED') {
+    return null;
+  }
+
+  const isGoing = currentStatus === 'GOING';
+  const isMaybe = currentStatus === 'MAYBE';
+
+  return (
+    <View className="mt-4 space-y-3">
+      {/* Main CTA */}
+      {!isGoing && (
+        <Button
+          variant="primary"
+          size="lg"
+          isFullWidth
+          isLoading={isPending}
+          onPress={() => handleParticipate('GOING')}
+        >
+          Participer
+        </Button>
+      )}
+
+      {/* Already going - show leave option */}
+      {isGoing && (
+        <View className="flex-row gap-3">
+          <View className="flex-1">
+            <Button
+              variant="outline"
+              size="lg"
+              isFullWidth
+              isLoading={isPending}
+              onPress={() => handleParticipate('MAYBE')}
+            >
+              Peut-etre
+            </Button>
+          </View>
+          <View className="flex-1">
+            <Button
+              variant="outline"
+              size="lg"
+              isFullWidth
+              isLoading={isPending}
+              onPress={() => handleParticipate('DECLINED')}
+            >
+              Ne plus participer
+            </Button>
+          </View>
+        </View>
+      )}
+
+      {/* Maybe - show confirm or decline */}
+      {isMaybe && (
+        <View className="flex-row gap-3">
+          <View className="flex-1">
+            <Button
+              variant="primary"
+              size="lg"
+              isFullWidth
+              isLoading={isPending}
+              onPress={() => handleParticipate('GOING')}
+            >
+              Confirmer
+            </Button>
+          </View>
+          <View className="flex-1">
+            <Button
+              variant="outline"
+              size="lg"
+              isFullWidth
+              isLoading={isPending}
+              onPress={() => handleParticipate('DECLINED')}
+            >
+              Decliner
+            </Button>
+          </View>
+        </View>
+      )}
+
+      {/* Participation status indicator */}
+      {currentStatus && (
+        <View className="items-center py-2">
+          <Typography variant="bodySmall" color="muted">
+            {getParticipationStatusText(currentStatus)}
+          </Typography>
+        </View>
+      )}
+    </View>
+  );
+}
+
+function getParticipationStatusText(status: ParticipantStatus): string {
+  switch (status) {
+    case 'GOING':
+      return 'Vous participez a cet evenement';
+    case 'MAYBE':
+      return 'Vous avez indique "peut-etre"';
+    case 'DECLINED':
+      return 'Vous avez decline cet evenement';
+    case 'INVITED':
+      return 'Vous etes invite';
+    default:
+      return '';
+  }
+}
+
+// ============================================================================
 // Main Event Detail Screen
 // ============================================================================
 
@@ -249,8 +394,16 @@ export default function EventDetailScreen() {
     isRefetching,
   } = useEventDetails(id ?? '');
 
+  // Fetch event routes
+  const { data: routes } = useEventRoutes(id ?? '', {
+    enabled: !!id && !!data,
+  });
+
   // Check if current user is the organiser
   const isOrganiser = user?.id === data?.organiser.id;
+
+  // Get current user's participation status
+  const currentUserStatus = data?.currentUserParticipation?.status ?? null;
 
   // Format date
   const formattedDate = data?.event.startDateTime
@@ -342,6 +495,23 @@ export default function EventDetailScreen() {
           />
         </View>
 
+        {/* Map / Location */}
+        {(event.locationName || event.locationLat) && (
+          <EventMapPlaceholder
+            locationName={event.locationName}
+            locationAddress={event.locationAddress}
+            latitude={event.locationLat}
+            longitude={event.locationLng}
+            showRoute={routes && routes.length > 0}
+            routeName={routes?.[0]?.name}
+          />
+        )}
+
+        {/* Routes / GPX Tracks */}
+        {routes && routes.length > 0 && (
+          <RouteInfoCard routes={routes} />
+        )}
+
         {/* Description */}
         {event.description && (
           <View className="mb-6">
@@ -357,29 +527,38 @@ export default function EventDetailScreen() {
             {goingParticipants.slice(0, 5).map((participant) => (
               <ParticipantItem key={participant.id} participant={participant} />
             ))}
-            {goingParticipants.length > 5 && (
-              <Pressable className="py-3">
-                <Typography color="primary" className="text-center">
-                  Voir tous les participants ({goingParticipants.length})
-                </Typography>
-              </Pressable>
-            )}
+            <Pressable
+              className="py-3"
+              onPress={() => router.push(`/event/participants/${event.id}`)}
+            >
+              <Typography color="primary" className="text-center">
+                {goingParticipants.length > 5
+                  ? `Voir tous les participants (${goingParticipants.length})`
+                  : 'Voir la liste complete'}
+              </Typography>
+            </Pressable>
           </View>
         )}
 
-        {/* Actions (placeholder for future phases) */}
-        {event.status === 'SCHEDULED' && !isOrganiser && (
-          <View className="mt-4">
-            <Button
-              variant="primary"
-              size="lg"
-              isFullWidth
-              onPress={() => {
-                // Will be implemented in Phase 3
-              }}
-            >
-              Participer
-            </Button>
+        {/* Participation Actions (Optimistic UI) */}
+        {event.status === 'SCHEDULED' && (
+          <ParticipationActions
+            eventId={event.id}
+            currentStatus={currentUserStatus}
+            isOrganiser={isOrganiser}
+            eventStatus={event.status}
+          />
+        )}
+
+        {/* Pace Group Selection (for participants) */}
+        {(currentUserStatus === 'GOING' || currentUserStatus === 'MAYBE') && (
+          <View className="mt-6">
+            <H3 className="mb-3">Vos preferences</H3>
+            <PaceGroupSelector
+              eventId={event.id}
+              currentGroupId={data.currentUserParticipation?.selectedPaceGroupId ?? null}
+              disabled={event.status !== 'SCHEDULED'}
+            />
           </View>
         )}
       </ScrollContainer>
