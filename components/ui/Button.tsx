@@ -9,6 +9,7 @@ import { Typography } from './Typography';
 const VARIANT_CLASSES = {
   primary: 'bg-primary-600 active:bg-primary-700',
   secondary: 'bg-secondary-600 active:bg-secondary-700',
+  charcoal: 'bg-charcoal active:opacity-90',
   outline: 'bg-transparent border-2 border-primary-600 active:bg-primary-50',
   ghost: 'bg-transparent active:bg-secondary-100',
   danger: 'bg-red-600 active:bg-red-700',
@@ -17,6 +18,7 @@ const VARIANT_CLASSES = {
 const TEXT_COLOR_CLASSES = {
   primary: 'text-white',
   secondary: 'text-white',
+  charcoal: 'text-white',
   outline: 'text-primary-600',
   ghost: 'text-secondary-700 dark:text-secondary-300',
   danger: 'text-white',
@@ -25,6 +27,7 @@ const TEXT_COLOR_CLASSES = {
 const DISABLED_CLASSES = {
   primary: 'bg-primary-300',
   secondary: 'bg-secondary-300',
+  charcoal: 'bg-secondary-600 opacity-60',
   outline: 'border-secondary-300',
   ghost: 'bg-transparent',
   danger: 'bg-red-300',
@@ -45,6 +48,7 @@ const TEXT_SIZE_CLASSES = {
 const LOADER_COLORS = {
   primary: '#ffffff',
   secondary: '#ffffff',
+  charcoal: '#ffffff',
   outline: '#16a34a',
   ghost: '#16a34a',
   danger: '#ffffff',

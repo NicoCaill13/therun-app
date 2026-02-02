@@ -15,6 +15,11 @@ jest.mock('expo-router', () => ({
     replace: jest.fn(),
     back: jest.fn(),
   }),
+  useNavigation: () => ({
+    setOptions: jest.fn(),
+    navigate: jest.fn(),
+    goBack: jest.fn(),
+  }),
 }));
 
 jest.mock('@/lib/auth', () => ({
@@ -151,9 +156,10 @@ describe('DashboardScreen', () => {
 
       render(<DashboardScreen />, { wrapper: createWrapper() });
 
-      expect(screen.getByText('Aucune sortie a venir')).toBeTruthy();
-      expect(screen.getByText(/Vous n'avez pas de sortie planifiee/)).toBeTruthy();
-      expect(screen.getByText('Creer une sortie')).toBeTruthy();
+      expect(screen.getByText('THE RUN')).toBeTruthy();
+      expect(screen.getByText('Create your next run')).toBeTruthy();
+      expect(screen.getByText('Create an event')).toBeTruthy();
+      expect(screen.getByText('Join with a code')).toBeTruthy();
     });
 
     it('should show empty state when not authenticated', () => {
@@ -182,7 +188,8 @@ describe('DashboardScreen', () => {
 
       render(<DashboardScreen />, { wrapper: createWrapper() });
 
-      expect(screen.getByText('Aucune sortie a venir')).toBeTruthy();
+      expect(screen.getByText('THE RUN')).toBeTruthy();
+      expect(screen.getByText('Create your next run')).toBeTruthy();
     });
 
     it('should navigate to create screen when CTA is pressed', () => {
@@ -199,7 +206,7 @@ describe('DashboardScreen', () => {
 
       render(<DashboardScreen />, { wrapper: createWrapper() });
 
-      const ctaButton = screen.getByText('Creer une sortie');
+      const ctaButton = screen.getByLabelText('Create an event');
       fireEvent.press(ctaButton);
 
       expect(mockPush).toHaveBeenCalledWith('/event/create');
@@ -381,8 +388,17 @@ describe('DashboardScreen', () => {
     });
 
     it('should show different empty state for past events', () => {
-      mockedUseMyEventsInfinite.mockReturnValue({
-        data: createInfiniteData([]),
+      const futureEvent = {
+        id: 'event-1',
+        title: 'Run a venir',
+        startDateTime: new Date(Date.now() + 86400000).toISOString(),
+        status: 'SCHEDULED' as const,
+        locationName: null,
+        locationAddress: null,
+        goingCount: 1,
+      };
+      mockedUseMyEventsInfinite.mockImplementation((scope: string) => ({
+        data: scope === 'future' ? createInfiniteData([futureEvent]) : createInfiniteData([]),
         isLoading: false,
         error: null,
         refetch: mockRefetch,
@@ -390,16 +406,15 @@ describe('DashboardScreen', () => {
         fetchNextPage: mockFetchNextPage,
         hasNextPage: false,
         isFetchingNextPage: false,
-      } as any);
+      }));
 
       render(<DashboardScreen />, { wrapper: createWrapper() });
 
-      // Switch to past tab
+      expect(screen.getByText('Mes sorties')).toBeTruthy();
       const pastTab = screen.getByText('Passees');
       fireEvent.press(pastTab);
 
-      // After switching, the empty state should show "Aucun historique"
-      // Note: The component re-renders with the new scope
+      expect(screen.getByText('Aucun historique')).toBeTruthy();
     });
   });
 

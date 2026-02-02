@@ -33,6 +33,10 @@ module.exports = {
           800: '#1e293b',
           900: '#0f172a',
         },
+        charcoal: '#0B1220',
+        brandOrange: '#FF5A1F',
+        backgroundLight: '#f6f7f8',
+        backgroundDark: '#141b1e',
       },
       fontFamily: {
         sans: ['SpaceMono', 'system-ui', 'sans-serif'],

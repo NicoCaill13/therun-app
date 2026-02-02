@@ -1,6 +1,6 @@
 import { useCallback, useState, useEffect } from 'react';
 import { View, StyleSheet, Alert, Platform } from 'react-native';
-import { useRouter, Stack } from 'expo-router';
+import { useRouter, useLocalSearchParams, Stack } from 'expo-router';
 import { CameraView, useCameraPermissions, BarcodeScanningResult } from 'expo-camera';
 import { Container, Typography, H1, H3, Button, Input } from '@/components/ui';
 
@@ -266,16 +266,26 @@ type ScanMode = 'scan' | 'manual';
 
 export default function ScanScreen() {
   const router = useRouter();
+  const params = useLocalSearchParams<{ mode?: string }>();
   const [permission, requestPermission] = useCameraPermissions();
-  const [mode, setMode] = useState<ScanMode>('scan');
+  const [mode, setMode] = useState<ScanMode>(
+    params.mode === 'manual' ? 'manual' : 'scan'
+  );
   const [isRequestingPermission, setIsRequestingPermission] = useState(false);
 
-  // Determine initial mode based on permission
+  // Sync initial mode from deep link / navigation params (e.g. "Join with a code")
   useEffect(() => {
-    if (permission && !permission.granted) {
+    if (params.mode === 'manual') {
       setMode('manual');
     }
-  }, [permission]);
+  }, [params.mode]);
+
+  // Determine initial mode based on permission when no param
+  useEffect(() => {
+    if (!params.mode && permission && !permission.granted) {
+      setMode('manual');
+    }
+  }, [permission, params.mode]);
 
   const handleCodeSubmit = useCallback((code: string) => {
     router.push(`/join/${code}`);

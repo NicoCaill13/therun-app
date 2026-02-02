@@ -1,8 +1,8 @@
-import { useCallback, useState } from 'react';
+import { useCallback, useState, useLayoutEffect } from 'react';
 import { View, FlatList, Pressable, RefreshControl, ActivityIndicator } from 'react-native';
-import { useRouter } from 'expo-router';
-import { Container, Typography, H1, Button } from '@/components/ui';
-import { LoadingState, ErrorState, EmptyState } from '@/components/states';
+import { useRouter, useNavigation } from 'expo-router';
+import { Container, Typography, H1 } from '@/components/ui';
+import { LoadingState, ErrorState, EmptyState, HomeHubEmptyState } from '@/components/states';
 import { EventStatusBadge } from '@/components/event';
 import { useMyEventsInfinite, flattenInfiniteEvents, type MeEventItem, type EventScope } from '@/lib/api';
 import { formatEventDate } from '@/lib/utils';
@@ -172,6 +172,7 @@ function LoadMoreFooter({ isFetchingNextPage, hasNextPage }: LoadMoreFooterProps
 
 export default function DashboardScreen() {
   const router = useRouter();
+  const navigation = useNavigation();
   const { isAuthenticated, isLoading: isAuthLoading } = useAuth();
   const [activeScope, setActiveScope] = useState<EventScope>('future');
 
@@ -215,14 +216,28 @@ export default function DashboardScreen() {
 
   const keyExtractor = useCallback((item: MeEventItem) => item.id, []);
 
+  const showHomeHubEmpty =
+    !isAuthenticated ||
+    (events.length === 0 && activeScope === 'future' && !isLoading && !error);
+
+  useLayoutEffect(() => {
+    navigation.setOptions({ headerShown: !showHomeHubEmpty });
+  }, [navigation, showHomeHubEmpty]);
+
   // Show loading while auth is being determined
   if (isAuthLoading) {
     return <LoadingState />;
   }
 
-  // Show empty state with CTA if not authenticated
-  if (!isAuthenticated) {
-    return <EventsEmptyState scope="future" />;
+  // Show Home Hub empty state (design) when not authenticated or no future events (after load)
+  if (showHomeHubEmpty) {
+    return (
+      <HomeHubEmptyState
+        onCreateEvent={() => router.push('/event/create')}
+        onJoinWithCode={() => router.push({ pathname: '/scan', params: { mode: 'manual' } })}
+        onSettings={() => router.push('/(tabs)/two')}
+      />
+    );
   }
 
   // Show loading state only for initial load
