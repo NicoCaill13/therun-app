@@ -4,3 +4,4 @@ export { EmptyState } from './EmptyState';
 export { SuccessState } from './SuccessState';
 export { HomeHubEmptyState } from './HomeHubEmptyState';
 export type { HomeHubEmptyStateProps } from './HomeHubEmptyState';
+export { HomeHubLoadingState } from './HomeHubLoadingState';

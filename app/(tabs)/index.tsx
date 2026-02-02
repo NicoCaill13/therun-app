@@ -2,7 +2,7 @@ import { useCallback, useState, useLayoutEffect } from 'react';
 import { View, FlatList, Pressable, RefreshControl, ActivityIndicator } from 'react-native';
 import { useRouter, useNavigation } from 'expo-router';
 import { Container, Typography, H1 } from '@/components/ui';
-import { LoadingState, ErrorState, EmptyState, HomeHubEmptyState } from '@/components/states';
+import { LoadingState, ErrorState, EmptyState, HomeHubEmptyState, HomeHubLoadingState } from '@/components/states';
 import { EventStatusBadge } from '@/components/event';
 import { useMyEventsInfinite, flattenInfiniteEvents, type MeEventItem, type EventScope } from '@/lib/api';
 import { formatEventDate } from '@/lib/utils';
@@ -240,9 +240,9 @@ export default function DashboardScreen() {
     );
   }
 
-  // Show loading state only for initial load
+  // Show Home Hub loading skeleton for initial load (design)
   if (isLoading && !data) {
-    return <LoadingState />;
+    return <HomeHubLoadingState />;
   }
 
   // Show error state

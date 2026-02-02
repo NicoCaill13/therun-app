@@ -137,7 +137,7 @@ describe('DashboardScreen', () => {
 
       render(<DashboardScreen />, { wrapper: createWrapper() });
 
-      expect(screen.getByText('Chargement...')).toBeTruthy();
+      expect(screen.getByText('THE RUN')).toBeTruthy();
     });
   });
 

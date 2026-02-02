@@ -1,9 +1,12 @@
 import { useCallback, useMemo } from 'react';
-import { View, Pressable, Platform, KeyboardAvoidingView } from 'react-native';
+import { View, Pressable, Platform, KeyboardAvoidingView, ScrollView } from 'react-native';
 import { useRouter, Stack } from 'expo-router';
 import { useForm, Controller } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
-import { ScrollContainer, Typography, H1, Button, Input } from '@/components/ui';
+import MaterialIcons from '@expo/vector-icons/MaterialIcons';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { useColorScheme } from '@/components/useColorScheme';
+import { ScrollContainer, Typography, Button, Input } from '@/components/ui';
 import { useCreateEvent, CreateEventInput, CreateEventInputSchema } from '@/lib/api';
 
 // ============================================================================
@@ -80,9 +83,11 @@ function DateTimeInput({ label, value, onChange, error }: DateTimeInputProps) {
 
   return (
     <View className="mb-4">
-      <Typography variant="label" className="mb-1.5">{label}</Typography>
+      <Typography variant="label" className="mb-1.5 uppercase text-charcoal/60 dark:text-white/60 tracking-tight">
+        {label}
+      </Typography>
 
-      <View className="flex-row gap-2">
+      <View className="flex-row gap-2 items-center">
         <View className="flex-1">
           <Input
             placeholder="AAAA-MM-JJ"
@@ -90,9 +95,9 @@ function DateTimeInput({ label, value, onChange, error }: DateTimeInputProps) {
             onChangeText={handleDateChange}
             keyboardType="numbers-and-punctuation"
             hint={displayDate}
+            className="h-14"
           />
         </View>
-
         <View className="w-24">
           <Input
             placeholder="HH:MM"
@@ -100,7 +105,11 @@ function DateTimeInput({ label, value, onChange, error }: DateTimeInputProps) {
             onChangeText={handleTimeChange}
             keyboardType="numbers-and-punctuation"
             hint={displayTime}
+            className="h-14"
           />
+        </View>
+        <View className="pb-2">
+          <MaterialIcons name="calendar-today" size={24} color="#64748b" />
         </View>
       </View>
 
@@ -153,34 +162,51 @@ export default function CreateEventScreen() {
     }
   }, [createEvent, router]);
 
+  const insets = useSafeAreaInsets();
+  const colorScheme = useColorScheme();
+  const headerIconColor = colorScheme === 'dark' ? '#fff' : '#0a181e';
+
   return (
     <>
-      <Stack.Screen
-        options={{
-          title: 'Nouvelle sortie',
-          headerBackTitle: 'Retour',
-        }}
-      />
+      <Stack.Screen options={{ headerShown: false }} />
 
       <KeyboardAvoidingView
         behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
-        className="flex-1"
+        className="flex-1 bg-backgroundLight dark:bg-backgroundDark"
       >
+        {/* Header (design: sticky, back + title + spacer) */}
+        <View
+          className="flex-row items-center justify-between border-b border-borderGrey/50 bg-backgroundLight dark:bg-backgroundDark px-4 py-4"
+          style={{ paddingTop: insets.top + 12 }}
+        >
+          <Pressable
+            onPress={() => router.back()}
+            className="p-2 rounded-full"
+            accessibilityRole="button"
+            accessibilityLabel="Retour"
+          >
+            <MaterialIcons name="arrow-back-ios" size={24} color={headerIconColor} />
+          </Pressable>
+          <Typography className="text-lg font-bold tracking-tight text-charcoal dark:text-white">
+            Create Event
+          </Typography>
+          <View className="w-10" />
+        </View>
+
         <ScrollContainer
           hasSafeArea
           safeAreaEdges={['bottom']}
           padding="lg"
+          contentClassName="pb-36"
         >
-          <H1 className="mb-6">Creer une sortie</H1>
-
           {/* Title */}
           <Controller
             control={control}
             name="title"
             render={({ field: { onChange, onBlur, value } }) => (
               <Input
-                label="Titre *"
-                placeholder="Ex: Run du jeudi soir"
+                label="Event Title"
+                placeholder="e.g. Morning Trail Run"
                 value={value}
                 onChangeText={onChange}
                 onBlur={onBlur}
@@ -188,6 +214,7 @@ export default function CreateEventScreen() {
                 containerClassName="mb-4"
                 autoCapitalize="sentences"
                 returnKeyType="next"
+                className="h-14"
               />
             )}
           />
@@ -198,7 +225,7 @@ export default function CreateEventScreen() {
             name="startDateTime"
             render={({ field: { onChange, value } }) => (
               <DateTimeInput
-                label="Date et heure *"
+                label="Date & Time"
                 value={value}
                 onChange={onChange}
                 error={errors.startDateTime?.message}
@@ -212,27 +239,36 @@ export default function CreateEventScreen() {
             name="locationName"
             render={({ field: { onChange, onBlur, value } }) => (
               <Input
-                label="Lieu de rendez-vous"
-                placeholder="Ex: Parc Borely"
+                label="Location"
+                placeholder="Search for a location"
                 value={value ?? ''}
                 onChangeText={onChange}
                 onBlur={onBlur}
                 error={errors.locationName?.message}
-                containerClassName="mb-4"
+                containerClassName="mb-2"
                 autoCapitalize="words"
                 returnKeyType="next"
+                className="h-14 pr-12"
               />
             )}
           />
 
-          {/* Location Address */}
+          {/* Map preview placeholder (design) */}
+          <View className="w-full h-32 rounded-xl bg-secondary-200 dark:bg-secondary-800 border border-borderGrey mb-4 overflow-hidden items-center justify-center">
+            <View className="bg-charcoal flex-row items-center gap-1 px-3 py-1 rounded-full">
+              <MaterialIcons name="location-on" size={14} color="#fff" />
+              <Typography className="text-white text-xs font-bold">View Map</Typography>
+            </View>
+          </View>
+
+          {/* Location Address - optional, collapsed in design; keep for data */}
           <Controller
             control={control}
             name="locationAddress"
             render={({ field: { onChange, onBlur, value } }) => (
               <Input
-                label="Adresse"
-                placeholder="Ex: Avenue du Prado, 13008 Marseille"
+                label="Address"
+                placeholder="Full address"
                 value={value ?? ''}
                 onChangeText={onChange}
                 onBlur={onBlur}
@@ -240,6 +276,7 @@ export default function CreateEventScreen() {
                 containerClassName="mb-4"
                 autoCapitalize="words"
                 returnKeyType="next"
+                className="h-14"
               />
             )}
           />
@@ -251,21 +288,20 @@ export default function CreateEventScreen() {
             render={({ field: { onChange, onBlur, value } }) => (
               <Input
                 label="Description"
-                placeholder="Ex: Sortie decontractee, tous niveaux bienvenus"
+                placeholder="Tell runners what to expect, pace group info, etc."
                 value={value ?? ''}
                 onChangeText={onChange}
                 onBlur={onBlur}
                 error={errors.description?.message}
-                containerClassName="mb-6"
+                containerClassName="mb-4"
                 multiline
-                numberOfLines={3}
-                className="min-h-[80px]"
+                numberOfLines={4}
+                className="min-h-[100px] p-4 rounded-xl border border-borderGrey"
                 textAlignVertical="top"
               />
             )}
           />
 
-          {/* Error message */}
           {createEvent.error && (
             <View className="bg-red-50 dark:bg-red-900/30 p-4 rounded-xl mb-4">
               <Typography color="error">
@@ -273,30 +309,36 @@ export default function CreateEventScreen() {
               </Typography>
             </View>
           )}
+        </ScrollContainer>
 
-          {/* Submit Button */}
+        {/* Sticky bottom (design) */}
+        <View
+          className="absolute left-0 right-0 bottom-0 bg-white/80 dark:bg-backgroundDark/80 border-t border-borderGrey/50 px-4 pt-4"
+          style={{ paddingBottom: insets.bottom + 24 }}
+        >
           <Button
-            variant="primary"
+            variant="charcoal"
             size="lg"
             isFullWidth
             isLoading={createEvent.isPending}
             isDisabled={!isValid}
             onPress={handleSubmit(onSubmit)}
-            accessibilityLabel="Creer la sortie"
+            className="h-14"
+            accessibilityLabel="Create event"
           >
-            Creer la sortie
+            Create event
           </Button>
-
-          {/* Cancel link */}
           <Pressable
             onPress={() => router.back()}
-            className="mt-4 py-2"
+            className="h-12 items-center justify-center mt-1"
             accessibilityRole="button"
-            accessibilityLabel="Annuler"
+            accessibilityLabel="Cancel"
           >
-            <Typography color="muted" className="text-center">Annuler</Typography>
+            <Typography className="text-charcoal/60 dark:text-white/60 font-semibold text-base">
+              Cancel
+            </Typography>
           </Pressable>
-        </ScrollContainer>
+        </View>
       </KeyboardAvoidingView>
     </>
   );

@@ -46,8 +46,8 @@ export const Input = forwardRef<TextInput, InputProps>(function Input(
   const combinedClasses = useMemo(() => {
     const baseClasses = 'rounded-xl border bg-white dark:bg-secondary-800';
     const borderClasses = hasError
-      ? 'border-red-500'
-      : 'border-secondary-300 dark:border-secondary-600 focus:border-primary-500';
+      ? 'border-errorRed'
+      : 'border-borderGrey dark:border-secondary-600 focus:border-brandOrange';
     const disabledClasses = isDisabled ? 'bg-secondary-100 dark:bg-secondary-700 opacity-60' : '';
     const textClasses = 'text-secondary-900 dark:text-secondary-100';
 
