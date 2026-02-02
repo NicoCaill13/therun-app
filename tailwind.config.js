@@ -35,8 +35,12 @@ module.exports = {
         },
         charcoal: '#0B1220',
         brandOrange: '#FF5A1F',
+        brandOrangeBg: '#FFE6DE',
         backgroundLight: '#f6f7f8',
         backgroundDark: '#141b1e',
+        skeleton: '#e6eaf0',
+        borderGrey: '#E6EAF0',
+        errorRed: '#E5484D',
       },
       fontFamily: {
         sans: ['SpaceMono', 'system-ui', 'sans-serif'],
