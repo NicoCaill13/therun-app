@@ -81,9 +81,11 @@ function DateTimeInput({ label, value, onChange, error }: DateTimeInputProps) {
     });
   }, [date]);
 
+  const labelDesignClass = 'text-sm font-semibold uppercase tracking-tight text-charcoal/60 dark:text-white/60';
+
   return (
     <View className="mb-4">
-      <Typography variant="label" className="mb-1.5 uppercase text-charcoal/60 dark:text-white/60 tracking-tight">
+      <Typography variant="label" className={`mb-1.5 ${labelDesignClass}`}>
         {label}
       </Typography>
 
@@ -199,7 +201,7 @@ export default function CreateEventScreen() {
           padding="lg"
           contentClassName="pb-36"
         >
-          {/* Title */}
+          {/* Title - design: label uppercase, error border + icon */}
           <Controller
             control={control}
             name="title"
@@ -212,14 +214,16 @@ export default function CreateEventScreen() {
                 onBlur={onBlur}
                 error={errors.title?.message}
                 containerClassName="mb-4"
+                labelClassName="text-sm font-semibold uppercase tracking-tight text-charcoal/60 dark:text-white/60"
+                showErrorIcon={Boolean(errors.title?.message)}
                 autoCapitalize="sentences"
                 returnKeyType="next"
-                className="h-14"
+                className="h-14 rounded-xl px-4"
               />
             )}
           />
 
-          {/* Date & Time */}
+          {/* Date & Time - design labels */}
           <Controller
             control={control}
             name="startDateTime"
@@ -233,7 +237,7 @@ export default function CreateEventScreen() {
             )}
           />
 
-          {/* Location Name */}
+          {/* Location Name - design */}
           <Controller
             control={control}
             name="locationName"
@@ -246,6 +250,7 @@ export default function CreateEventScreen() {
                 onBlur={onBlur}
                 error={errors.locationName?.message}
                 containerClassName="mb-2"
+                labelClassName="text-sm font-semibold uppercase tracking-tight text-charcoal/60 dark:text-white/60"
                 autoCapitalize="words"
                 returnKeyType="next"
                 className="h-14 pr-12"
@@ -281,7 +286,7 @@ export default function CreateEventScreen() {
             )}
           />
 
-          {/* Description */}
+          {/* Description - design */}
           <Controller
             control={control}
             name="description"
@@ -294,6 +299,7 @@ export default function CreateEventScreen() {
                 onBlur={onBlur}
                 error={errors.description?.message}
                 containerClassName="mb-4"
+                labelClassName="text-sm font-semibold uppercase tracking-tight text-charcoal/60 dark:text-white/60"
                 multiline
                 numberOfLines={4}
                 className="min-h-[100px] p-4 rounded-xl border border-borderGrey"

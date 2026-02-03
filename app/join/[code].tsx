@@ -69,7 +69,7 @@ function JoinLoadingState() {
 
 function JoiningState() {
   return (
-    <Container isCenter hasSafeArea>
+    <Container isCenter hasSafeArea className="bg-backgroundLight dark:bg-backgroundDark">
       <ActivityIndicator size="large" color="#16a34a" />
       <Typography className="mt-4" color="muted">
         Inscription en cours...
@@ -95,9 +95,9 @@ function EventPreview({ event, isAuthenticated, isJoining, onJoinAsUser, onJoinA
   const organiserName = [event.organiser.firstName, event.organiser.lastName].filter(Boolean).join(' ');
 
   return (
-    <ScrollContainer hasSafeArea padding="lg">
+    <ScrollContainer hasSafeArea padding="lg" className="bg-backgroundLight dark:bg-backgroundDark">
       {/* Event Info Card */}
-      <View className="bg-primary-50 dark:bg-primary-900/30 rounded-xl p-5 mb-6">
+      <View className="bg-white dark:bg-charcoal/10 border border-borderGrey dark:border-secondary-800 rounded-xl p-5 mb-6">
         <Typography variant="caption" color="muted" className="mb-1">
           Vous etes invite a rejoindre
         </Typography>

@@ -116,7 +116,7 @@ export default function NotificationsScreen() {
           title: `Notifications${unreadCount > 0 ? ` (${unreadCount})` : ''}`,
         }}
       />
-      <Container padding="none">
+      <Container padding="none" className="bg-backgroundLight dark:bg-backgroundDark flex-1">
         <FlatList
           data={notifications}
           renderItem={renderItem}

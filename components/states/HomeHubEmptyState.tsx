@@ -5,7 +5,7 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useColorScheme } from '@/components/useColorScheme';
 
 // ============================================================================
-// Home Hub Header (design: TopAppBar)
+// Home Hub Header (design: TopAppBar - Stitch home_hub_empty_state)
 // ============================================================================
 
 function HomeHubHeader({ onSettings }: { onSettings: () => void }) {
@@ -15,19 +15,19 @@ function HomeHubHeader({ onSettings }: { onSettings: () => void }) {
   return (
     <View className="flex-row items-center bg-backgroundLight dark:bg-backgroundDark px-4 pb-2 justify-between">
       <View className="w-12 shrink-0">
-        <View className="bg-charcoal flex items-center justify-center rounded-full w-10 h-10">
+        <View className="bg-primary flex items-center justify-center rounded-full w-10 h-10">
           <MaterialIcons name="directions-run" size={20} color="#fff" />
         </View>
       </View>
       <Typography
-        className="text-charcoal dark:text-white text-xl font-extrabold leading-tight tracking-tight flex-1 text-center uppercase italic"
+        className="text-charcoal dark:text-white text-xl font-extrabold leading-tight tracking-[-0.03em] flex-1 text-center uppercase italic"
         accessibilityRole="header"
       >
         THE RUN
       </Typography>
       <Pressable
         onPress={onSettings}
-        className="w-12 h-10 items-center justify-end rounded-full bg-secondary-100 dark:bg-secondary-800"
+        className="w-12 h-10 items-center justify-center rounded-full bg-secondary-100 dark:bg-secondary-800"
         accessibilityRole="button"
         accessibilityLabel="Settings"
       >
@@ -38,12 +38,12 @@ function HomeHubHeader({ onSettings }: { onSettings: () => void }) {
 }
 
 // ============================================================================
-// Hero Graphic Placeholder (design: 4:3 map placeholder + progress bar)
+// Hero Graphic Placeholder (design: 4:3 gradient map placeholder + progress bar + shadow)
 // ============================================================================
 
 function HeroPlaceholder() {
   return (
-    <View className="w-full aspect-[4/3] rounded-xl overflow-hidden bg-secondary-100 dark:bg-secondary-800 border border-secondary-200 dark:border-secondary-700 items-center justify-center">
+    <View className="w-full aspect-[4/3] rounded-xl overflow-hidden bg-secondary-100 dark:bg-secondary-800 border border-secondary-200 dark:border-secondary-700 shadow-sm items-center justify-center">
       <MaterialIcons name="map" size={80} color="#9ca3af" />
       <View className="absolute bottom-4 left-4 right-4 h-1 bg-white/30 rounded-full overflow-hidden">
         <View className="w-1/3 h-full bg-brandOrange rounded-full" />
@@ -53,7 +53,7 @@ function HeroPlaceholder() {
 }
 
 // ============================================================================
-// How It Works Section (design: 3 steps, vertical timeline)
+// How It Works Section (design: 3 steps, grid-cols-[32px_1fr] - Stitch)
 // ============================================================================
 
 const HOW_IT_WORKS_STEPS: Array<{
@@ -68,33 +68,33 @@ const HOW_IT_WORKS_STEPS: Array<{
 
 function HowItWorks() {
   return (
-    <View className="bg-white dark:bg-secondary-900 rounded-xl p-6 border border-secondary-100 dark:border-secondary-800">
+    <View className="bg-white dark:bg-secondary-900 rounded-xl p-6 border border-secondary-100 dark:border-secondary-800 shadow-sm">
       <Typography
         variant="label"
-        className="text-charcoal dark:text-white uppercase tracking-widest mb-6"
+        className="text-charcoal dark:text-white text-sm font-bold uppercase tracking-widest mb-6"
       >
         How it works
       </Typography>
       <View className="flex-row gap-4">
-        <View className="items-center">
+        <View className="items-center w-8">
           {HOW_IT_WORKS_STEPS.map((step, index) => (
             <View key={step.title} className="items-center">
-              <View className="bg-brandOrange/10 rounded-full p-1.5">
+              <View className="bg-brandOrange/10 rounded-full p-1">
                 <MaterialIcons name={step.icon} size={20} color="#FF5A1F" />
               </View>
               {index < HOW_IT_WORKS_STEPS.length - 1 && (
-                <View className="w-px bg-secondary-100 dark:bg-secondary-800 h-10 my-1" />
+                <View className="w-px bg-secondary-100 dark:bg-secondary-800 h-10 my-1 flex-1 min-h-[40px]" />
               )}
             </View>
           ))}
         </View>
-        <View className="flex-1 gap-0">
+        <View className="flex-1">
           {HOW_IT_WORKS_STEPS.map((step, index) => (
             <View key={step.title} className={index < HOW_IT_WORKS_STEPS.length - 1 ? 'pb-6' : ''}>
               <Typography className="text-charcoal dark:text-white text-base font-bold leading-none mb-1">
                 {step.title}
               </Typography>
-              <Typography color="muted" variant="bodySmall">
+              <Typography color="muted" variant="bodySmall" className="text-secondary-500 dark:text-secondary-400">
                 {step.description}
               </Typography>
             </View>
@@ -144,7 +144,7 @@ export function HomeHubEmptyState({
               </Typography>
               <Typography
                 color="muted"
-                className="text-base text-center max-w-[280px]"
+                className="text-base text-center max-w-[280px] leading-relaxed"
               >
                 Start a group run and invite others in seconds.
               </Typography>
@@ -153,7 +153,7 @@ export function HomeHubEmptyState({
             <View className="w-full gap-4">
               <Pressable
                 onPress={onCreateEvent}
-                className="w-full h-16 rounded-xl bg-charcoal items-center justify-center flex-row active:opacity-90"
+                className="w-full h-16 rounded-xl bg-charcoal items-center justify-center flex-row shadow-lg active:opacity-95"
                 accessibilityRole="button"
                 accessibilityLabel="Create an event"
               >
@@ -179,6 +179,11 @@ export function HomeHubEmptyState({
           <HowItWorks />
         </View>
       </ScrollView>
+
+      {/* iOS Bottom Indicator (design) */}
+      <View className="justify-center pb-2 pt-4 items-center">
+        <View className="w-32 h-1.5 bg-secondary-300 dark:bg-secondary-700 rounded-full" />
+      </View>
     </View>
   );
 }

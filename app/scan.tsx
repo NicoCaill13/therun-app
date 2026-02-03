@@ -1,7 +1,10 @@
-import { useCallback, useState, useEffect } from 'react';
-import { View, StyleSheet, Alert, Platform } from 'react-native';
+import { useCallback, useState, useEffect, useRef } from 'react';
+import { View, StyleSheet, Alert, Platform, TextInput, Pressable } from 'react-native';
 import { useRouter, useLocalSearchParams, Stack } from 'expo-router';
 import { CameraView, useCameraPermissions, BarcodeScanningResult } from 'expo-camera';
+import MaterialIcons from '@expo/vector-icons/MaterialIcons';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { useColorScheme } from '@/components/useColorScheme';
 import { Container, Typography, H1, H3, Button, Input } from '@/components/ui';
 
 // ============================================================================
@@ -88,80 +91,141 @@ function PermissionDenied({ onOpenSettings, onUseCode }: PermissionDeniedProps) 
 }
 
 // ============================================================================
-// Manual Code Entry
+// Manual Code Entry (design: join_by_code_input - 6-char mono boxes, TopAppBar)
 // ============================================================================
+
+const CODE_LENGTH = 6;
 
 interface ManualCodeEntryProps {
   onSubmit: (code: string) => void;
   onSwitchToScan: () => void;
+  onBack: () => void;
   hasPermission: boolean;
 }
 
-function ManualCodeEntry({ onSubmit, onSwitchToScan, hasPermission }: ManualCodeEntryProps) {
-  const [code, setCode] = useState('');
+function ManualCodeEntry({ onSubmit, onSwitchToScan, onBack, hasPermission }: ManualCodeEntryProps) {
+  const [chars, setChars] = useState<string[]>(Array(CODE_LENGTH).fill(''));
   const [error, setError] = useState<string | null>(null);
+  const inputRefs = useRef<(TextInput | null)[]>([]);
+  const insets = useSafeAreaInsets();
+  const colorScheme = useColorScheme();
+  const iconColor = colorScheme === 'dark' ? '#fff' : '#0a181e';
+
+  const code = chars.join('').toUpperCase();
+
+  const handleCharChange = useCallback((index: number, value: string) => {
+    const cleaned = value.replace(/[^A-Za-z0-9]/g, '').toUpperCase().slice(-1);
+    setChars((prev) => {
+      const next = [...prev];
+      next[index] = cleaned;
+      return next;
+    });
+    setError(null);
+    if (cleaned && index < CODE_LENGTH - 1) {
+      inputRefs.current[index + 1]?.focus();
+    }
+  }, []);
+
+  const handleKeyPress = useCallback(
+    (index: number, key: string) => {
+      if (key === 'Backspace' && !chars[index] && index > 0) {
+        inputRefs.current[index - 1]?.focus();
+      }
+    },
+    [chars]
+  );
 
   const handleSubmit = useCallback(() => {
-    const trimmed = code.trim().toUpperCase();
-
+    const trimmed = code.trim();
     if (trimmed.length < 4) {
-      setError('Le code doit contenir au moins 4 caracteres');
+      setError('Invalid code. Please check and try again');
       return;
     }
-
     setError(null);
     onSubmit(trimmed);
   }, [code, onSubmit]);
 
-  const handleCodeChange = useCallback((text: string) => {
-    // Allow only alphanumeric characters, uppercase
-    const cleaned = text.replace(/[^A-Za-z0-9]/g, '').toUpperCase();
-    setCode(cleaned);
-    setError(null);
-  }, []);
-
   return (
-    <Container hasSafeArea padding="lg">
-      <H1 className="mb-2">Rejoindre une sortie</H1>
-      <Typography color="muted" className="mb-8">
-        Entrez le code de l'evenement pour le rejoindre
-      </Typography>
+    <View className="flex-1 bg-backgroundLight dark:bg-backgroundDark" style={{ paddingTop: insets.top }}>
+      {/* TopAppBar - design join_by_code_input */}
+      <View className="flex-row items-center px-4 py-4 justify-between bg-white dark:bg-backgroundDark">
+        <Pressable onPress={onBack} className="w-10 h-10 items-center justify-center" accessibilityLabel="Back">
+          <MaterialIcons name="arrow-back-ios" size={24} color={iconColor} />
+        </Pressable>
+        <Typography className="text-charcoal dark:text-white text-lg font-bold leading-tight tracking-[-0.015em] flex-1 text-center pr-10">
+          Join with Code
+        </Typography>
+      </View>
 
-      <Input
-        label="Code de l'evenement"
-        placeholder="Ex: ABC123"
-        value={code}
-        onChangeText={handleCodeChange}
-        error={error ?? undefined}
-        autoCapitalize="characters"
-        autoCorrect={false}
-        maxLength={12}
-        containerClassName="mb-6"
-        className="text-center text-2xl font-mono tracking-widest"
-      />
+      <View className="flex-1 px-6 bg-white dark:bg-backgroundDark">
+        <H1 className="text-charcoal dark:text-white tracking-tight text-[32px] font-bold leading-tight pt-8 pb-2">
+          Enter Club Code
+        </H1>
+        <Typography className="text-charcoal/70 dark:text-white/60 text-base leading-relaxed pb-8">
+          Enter the 6-character code provided by your organizer to join the session.
+        </Typography>
 
-      <Button
-        variant="primary"
-        size="lg"
-        isFullWidth
-        onPress={handleSubmit}
-        isDisabled={code.length < 4}
-      >
-        Rejoindre
-      </Button>
+        {/* 6-char mono inputs - design */}
+        <View className="flex-row justify-between py-4 gap-1">
+          {Array.from({ length: CODE_LENGTH }, (_, i) => (
+            <TextInput
+              key={i}
+              ref={(el) => {
+                inputRefs.current[i] = el;
+              }}
+              value={chars[i]}
+              onChangeText={(v) => handleCharChange(i, v)}
+              onKeyPress={({ nativeEvent }) => handleKeyPress(i, nativeEvent.key)}
+              maxLength={1}
+              autoCapitalize="characters"
+              autoCorrect={false}
+              className={`flex-1 h-14 text-center border-b-2 bg-transparent text-charcoal dark:text-white text-xl font-medium ${
+                error ? 'border-errorRed' : 'border-charcoal dark:border-white focus:border-brandOrange'
+              }`}
+              placeholder=""
+              placeholderTextColor="#94a3b8"
+              accessibilityLabel={`Character ${i + 1}`}
+              selectTextOnFocus
+            />
+          ))}
+        </View>
 
-      {hasPermission && (
-        <Button
-          variant="ghost"
-          size="lg"
-          isFullWidth
-          onPress={onSwitchToScan}
-          className="mt-4"
-        >
-          Scanner un QR code
-        </Button>
-      )}
-    </Container>
+        {error && (
+          <View className="pt-4 flex-row items-center justify-center gap-2">
+            <MaterialIcons name="error" size={18} color="#E5484D" />
+            <Typography className="text-errorRed text-sm font-medium">{error}</Typography>
+          </View>
+        )}
+
+        <View className="flex-grow" />
+
+        <View className="pb-10 pt-4">
+          <Pressable
+            onPress={handleSubmit}
+            disabled={code.length < 4}
+            className={`w-full py-4 rounded-xl ${code.length >= 4 ? 'bg-charcoal dark:bg-white' : 'bg-secondary-200 dark:bg-secondary-700'} ${code.length >= 4 ? 'dark:border-0' : ''}`}
+            accessibilityRole="button"
+            accessibilityLabel="Continue"
+          >
+            <Typography
+              className={`text-base font-semibold text-center ${code.length >= 4 ? 'text-white dark:text-charcoal' : 'text-secondary-500'}`}
+            >
+              Continue
+            </Typography>
+          </Pressable>
+          <Pressable className="mt-6 items-center" accessibilityRole="button" accessibilityLabel="Where do I find the code?">
+            <Typography className="text-charcoal/50 dark:text-white/40 text-sm font-medium">
+              Where do I find the code?
+            </Typography>
+          </Pressable>
+        </View>
+      </View>
+
+      {/* iOS Home Indicator - design */}
+      <View className="justify-center pb-2 items-center bg-white dark:bg-backgroundDark">
+        <View className="w-32 h-1 bg-secondary-200 dark:bg-white/20 rounded-full" />
+      </View>
+    </View>
   );
 }
 
@@ -351,6 +415,7 @@ export default function ScanScreen() {
         <ManualCodeEntry
           onSubmit={handleCodeSubmit}
           onSwitchToScan={switchToScan}
+          onBack={() => router.back()}
           hasPermission={permission.granted}
         />
       </>

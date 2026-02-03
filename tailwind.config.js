@@ -33,6 +33,7 @@ module.exports = {
           800: '#1e293b',
           900: '#0f172a',
         },
+        primary: '#0a181e',
         charcoal: '#0B1220',
         brandOrange: '#FF5A1F',
         brandOrangeBg: '#FFE6DE',

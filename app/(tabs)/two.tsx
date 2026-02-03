@@ -37,7 +37,7 @@ export default function ProfileScreen() {
   // Handle unauthenticated state
   if (!isAuthenticated || !data) {
     return (
-      <ScrollContainer padding="lg" hasSafeArea>
+      <ScrollContainer padding="lg" hasSafeArea className="bg-backgroundLight dark:bg-backgroundDark">
         <View className="items-center py-8">
           <View className="w-24 h-24 rounded-full bg-secondary-200 dark:bg-secondary-700 items-center justify-center mb-4">
             <FontAwesome name="user" size={40} color="#9ca3af" />
@@ -58,7 +58,7 @@ export default function ProfileScreen() {
   const displayName = user.displayName || `${user.firstName || ''} ${user.lastName || ''}`.trim() || 'Utilisateur';
 
   return (
-    <ScrollContainer padding="lg" hasSafeArea safeAreaEdges={['bottom']}>
+    <ScrollContainer padding="lg" hasSafeArea safeAreaEdges={['bottom']} className="bg-backgroundLight dark:bg-backgroundDark">
       {/* Profile Header */}
       <View className="items-center py-6">
         <View className="w-24 h-24 rounded-full bg-primary-100 dark:bg-primary-900 items-center justify-center mb-4">

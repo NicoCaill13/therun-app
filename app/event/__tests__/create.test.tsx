@@ -66,19 +66,19 @@ describe('CreateEventScreen', () => {
     it('should render all form fields', () => {
       render(<CreateEventScreen />, { wrapper: createWrapper() });
 
-      expect(screen.getByText('Creer une sortie')).toBeTruthy();
-      expect(screen.getByText('Titre *')).toBeTruthy();
-      expect(screen.getByText('Date et heure *')).toBeTruthy();
-      expect(screen.getByText('Lieu de rendez-vous')).toBeTruthy();
-      expect(screen.getByText('Adresse')).toBeTruthy();
+      expect(screen.getByText('Create Event')).toBeTruthy();
+      expect(screen.getByText('Event Title')).toBeTruthy();
+      expect(screen.getByText('Date & Time')).toBeTruthy();
+      expect(screen.getByText('Location')).toBeTruthy();
+      expect(screen.getByText('Address')).toBeTruthy();
       expect(screen.getByText('Description')).toBeTruthy();
     });
 
     it('should render submit and cancel buttons', () => {
       render(<CreateEventScreen />, { wrapper: createWrapper() });
 
-      expect(screen.getByText('Creer la sortie')).toBeTruthy();
-      expect(screen.getByText('Annuler')).toBeTruthy();
+      expect(screen.getByText('Create event')).toBeTruthy();
+      expect(screen.getByText('Cancel')).toBeTruthy();
     });
 
     it('should have default date set to tomorrow at 19:00', () => {
@@ -93,7 +93,7 @@ describe('CreateEventScreen', () => {
     it('should disable submit button when title is empty', () => {
       render(<CreateEventScreen />, { wrapper: createWrapper() });
 
-      const submitButton = screen.getByText('Creer la sortie');
+      const submitButton = screen.getByText('Create event');
       // Button should be disabled (we check by seeing if mutation is not called)
       fireEvent.press(submitButton);
 
@@ -103,12 +103,12 @@ describe('CreateEventScreen', () => {
     it('should enable submit when valid data is entered', async () => {
       render(<CreateEventScreen />, { wrapper: createWrapper() });
 
-      const titleInput = screen.getByPlaceholderText('Ex: Run du jeudi soir');
+      const titleInput = screen.getByPlaceholderText('e.g. Morning Trail Run');
       await act(async () => {
         fireEvent.changeText(titleInput, 'Test Run');
       });
 
-      const submitButton = screen.getByRole('button', { name: 'Creer la sortie' });
+      const submitButton = screen.getByRole('button', { name: 'Create event' });
       await act(async () => {
         fireEvent.press(submitButton);
       });
@@ -124,10 +124,10 @@ describe('CreateEventScreen', () => {
     it('should call createEvent mutation with form data', async () => {
       render(<CreateEventScreen />, { wrapper: createWrapper() });
 
-      const titleInput = screen.getByPlaceholderText('Ex: Run du jeudi soir');
-      const locationInput = screen.getByPlaceholderText('Ex: Parc Borely');
+      const titleInput = screen.getByPlaceholderText('e.g. Morning Trail Run');
+      const locationInput = screen.getByPlaceholderText('Search for a location');
       const descriptionInput = screen.getByPlaceholderText(
-        'Ex: Sortie decontractee, tous niveaux bienvenus'
+        'Tell runners what to expect, pace group info, etc.'
       );
 
       await act(async () => {
@@ -136,7 +136,7 @@ describe('CreateEventScreen', () => {
         fireEvent.changeText(descriptionInput, 'Super sortie');
       });
 
-      const submitButton = screen.getByRole('button', { name: 'Creer la sortie' });
+      const submitButton = screen.getByRole('button', { name: 'Create event' });
       await act(async () => {
         fireEvent.press(submitButton);
       });
@@ -164,12 +164,12 @@ describe('CreateEventScreen', () => {
 
       render(<CreateEventScreen />, { wrapper: createWrapper() });
 
-      const titleInput = screen.getByPlaceholderText('Ex: Run du jeudi soir');
+      const titleInput = screen.getByPlaceholderText('e.g. Morning Trail Run');
       await act(async () => {
         fireEvent.changeText(titleInput, 'Run du samedi');
       });
 
-      const submitButton = screen.getByRole('button', { name: 'Creer la sortie' });
+      const submitButton = screen.getByRole('button', { name: 'Create event' });
       await act(async () => {
         fireEvent.press(submitButton);
       });
@@ -185,12 +185,12 @@ describe('CreateEventScreen', () => {
 
       render(<CreateEventScreen />, { wrapper: createWrapper() });
 
-      const titleInput = screen.getByPlaceholderText('Ex: Run du jeudi soir');
+      const titleInput = screen.getByPlaceholderText('e.g. Morning Trail Run');
       await act(async () => {
         fireEvent.changeText(titleInput, 'Run du samedi');
       });
 
-      const submitButton = screen.getByRole('button', { name: 'Creer la sortie' });
+      const submitButton = screen.getByRole('button', { name: 'Create event' });
       await act(async () => {
         fireEvent.press(submitButton);
       });
@@ -207,7 +207,7 @@ describe('CreateEventScreen', () => {
     it('should go back when cancel is pressed', () => {
       render(<CreateEventScreen />, { wrapper: createWrapper() });
 
-      const cancelButton = screen.getByText('Annuler');
+      const cancelButton = screen.getByText('Cancel');
       fireEvent.press(cancelButton);
 
       expect(mockBack).toHaveBeenCalled();
@@ -237,16 +237,16 @@ describe('CreateEventScreen', () => {
     it('should have accessible labels on form fields', () => {
       render(<CreateEventScreen />, { wrapper: createWrapper() });
 
-      expect(screen.getByLabelText('Titre *')).toBeTruthy();
-      expect(screen.getByLabelText('Lieu de rendez-vous')).toBeTruthy();
-      expect(screen.getByLabelText('Adresse')).toBeTruthy();
+      expect(screen.getByLabelText('Event Title')).toBeTruthy();
+      expect(screen.getByLabelText('Location')).toBeTruthy();
+      expect(screen.getByLabelText('Address')).toBeTruthy();
       expect(screen.getByLabelText('Description')).toBeTruthy();
     });
 
     it('should have accessible label on submit button', () => {
       render(<CreateEventScreen />, { wrapper: createWrapper() });
 
-      expect(screen.getByLabelText('Creer la sortie')).toBeTruthy();
+      expect(screen.getByLabelText('Create event')).toBeTruthy();
     });
   });
 });

@@ -245,21 +245,19 @@ describe('EventDetailScreen', () => {
     it('should display organiser name', () => {
       render(<EventDetailScreen />, { wrapper: createWrapper() });
 
-      expect(screen.getByText(/Organise par John Doe/)).toBeTruthy();
+      expect(screen.getByText('John Doe')).toBeTruthy();
     });
 
     it('should display event date', () => {
       render(<EventDetailScreen />, { wrapper: createWrapper() });
 
-      expect(screen.getByText('Date et heure')).toBeTruthy();
+      expect(screen.getByText(/lundi 15 décembre 2025/)).toBeTruthy();
     });
 
     it('should display location when available', () => {
       render(<EventDetailScreen />, { wrapper: createWrapper() });
 
-      expect(screen.getByText('Lieu')).toBeTruthy();
       expect(screen.getByText('Parc Borely')).toBeTruthy();
-      expect(screen.getByText('Avenue du Prado, 13008 Marseille')).toBeTruthy();
     });
 
     it('should display description when available', () => {
@@ -358,7 +356,7 @@ describe('EventDetailScreen', () => {
     it('should display participant count', () => {
       render(<EventDetailScreen />, { wrapper: createWrapper() });
 
-      expect(screen.getByText('2 participants')).toBeTruthy();
+      expect(screen.getByText(/View 2 participants/)).toBeTruthy();
     });
 
     it('should display participant list', () => {
@@ -385,7 +383,7 @@ describe('EventDetailScreen', () => {
 
       render(<EventDetailScreen />, { wrapper: createWrapper() });
 
-      expect(screen.getByText('1 participant')).toBeTruthy();
+      expect(screen.getByText(/View 1 participant/)).toBeTruthy();
     });
   });
 
@@ -393,9 +391,9 @@ describe('EventDetailScreen', () => {
     it('should display share code for organiser', () => {
       render(<EventDetailScreen />, { wrapper: createWrapper() });
 
-      expect(screen.getByText('Code de partage')).toBeTruthy();
+      expect(screen.getByText('Invite Code')).toBeTruthy();
       expect(screen.getByText('ABC123')).toBeTruthy();
-      expect(screen.getByText('Partager')).toBeTruthy();
+      expect(screen.getByText('Copy')).toBeTruthy();
     });
 
     it('should not display share code for non-organiser', () => {
@@ -405,7 +403,7 @@ describe('EventDetailScreen', () => {
 
       render(<EventDetailScreen />, { wrapper: createWrapper() });
 
-      expect(screen.queryByText('Code de partage')).toBeNull();
+      expect(screen.queryByText('Invite Code')).toBeNull();
     });
 
     it('should not display share code for completed events', () => {
@@ -424,7 +422,7 @@ describe('EventDetailScreen', () => {
 
       render(<EventDetailScreen />, { wrapper: createWrapper() });
 
-      expect(screen.queryByText('Code de partage')).toBeNull();
+      expect(screen.queryByText('Invite Code')).toBeNull();
     });
   });
 

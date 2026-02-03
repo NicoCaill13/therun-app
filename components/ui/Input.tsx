@@ -1,5 +1,6 @@
 import { TextInput, TextInputProps, View } from 'react-native';
 import { forwardRef, useMemo } from 'react';
+import MaterialIcons from '@expo/vector-icons/MaterialIcons';
 import { Typography } from './Typography';
 
 // ============================================================================
@@ -36,6 +37,8 @@ export const Input = forwardRef<TextInput, InputProps>(function Input(
     isDisabled = false,
     className = '',
     containerClassName = '',
+    labelClassName = '',
+    showErrorIcon = false,
     accessibilityLabel,
     ...props
   },
@@ -46,36 +49,44 @@ export const Input = forwardRef<TextInput, InputProps>(function Input(
   const combinedClasses = useMemo(() => {
     const baseClasses = 'rounded-xl border bg-white dark:bg-secondary-800';
     const borderClasses = hasError
-      ? 'border-errorRed'
-      : 'border-borderGrey dark:border-secondary-600 focus:border-brandOrange';
+      ? 'border-2 border-errorRed'
+      : 'border-borderGrey dark:border-secondary-600';
     const disabledClasses = isDisabled ? 'bg-secondary-100 dark:bg-secondary-700 opacity-60' : '';
     const textClasses = 'text-secondary-900 dark:text-secondary-100';
 
     return `${baseClasses} ${borderClasses} ${disabledClasses} ${textClasses} ${SIZE_CLASSES[size]} ${className}`.trim();
   }, [hasError, isDisabled, size, className]);
 
-  // Use label as accessibility label if not provided
+  const labelClasses = labelClassName || undefined;
+
   const computedAccessibilityLabel = accessibilityLabel ?? label;
 
   return (
     <View className={containerClassName}>
       {label && (
-        <Typography variant="label" className="mb-1.5">
+        <Typography variant="label" className={`mb-1.5 ${labelClasses || ''}`.trim()}>
           {label}
         </Typography>
       )}
-      <TextInput
-        ref={ref}
-        className={combinedClasses}
-        editable={!isDisabled}
-        placeholderTextColor="#94a3b8"
-        accessibilityLabel={computedAccessibilityLabel}
-        accessibilityState={{
-          disabled: isDisabled,
-        }}
-        accessibilityHint={hint}
-        {...props}
-      />
+      <View className="relative">
+        <TextInput
+          ref={ref}
+          className={combinedClasses}
+          editable={!isDisabled}
+          placeholderTextColor="#94a3b8"
+          accessibilityLabel={computedAccessibilityLabel}
+          accessibilityState={{
+            disabled: isDisabled,
+          }}
+          accessibilityHint={hint}
+          {...props}
+        />
+        {showErrorIcon && hasError && (
+          <View className="absolute right-4 top-0 bottom-0 justify-center" pointerEvents="none">
+            <MaterialIcons name="error" size={24} color="#E5484D" />
+          </View>
+        )}
+      </View>
       {error && (
         <Typography
           variant="caption"
@@ -109,4 +120,6 @@ interface InputProps extends TextInputProps {
   isDisabled?: boolean;
   className?: string;
   containerClassName?: string;
+  labelClassName?: string;
+  showErrorIcon?: boolean;
 }

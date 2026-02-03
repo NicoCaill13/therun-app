@@ -2,6 +2,8 @@ import { useCallback, useState } from 'react';
 import { View, Share, Pressable, RefreshControl, useColorScheme, Alert } from 'react-native';
 import { useLocalSearchParams, useRouter, Stack } from 'expo-router';
 import QRCode from 'react-native-qrcode-svg';
+import MaterialIcons from '@expo/vector-icons/MaterialIcons';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { ScrollContainer, Typography, H1, H3, Button } from '@/components/ui';
 import { LoadingState, ErrorState } from '@/components/states';
 import { PaceGroupSelector, EventStatusBadge, getParticipantStatusIcon, getParticipationStatusText } from '@/components/event';
@@ -82,10 +84,7 @@ interface ShareCodeSectionProps {
 }
 
 function ShareCodeSection({ eventCode, eventTitle }: ShareCodeSectionProps) {
-  const colorScheme = useColorScheme();
   const [showQR, setShowQR] = useState(false);
-
-  // Build the join URL (universal link)
   const joinUrl = `${config.webUrl}/join/${eventCode}`;
 
   const handleShare = useCallback(async () => {
@@ -104,48 +103,32 @@ function ShareCodeSection({ eventCode, eventTitle }: ShareCodeSectionProps) {
   }, []);
 
   return (
-    <View className="bg-primary-50 dark:bg-primary-900/30 rounded-xl p-4 mb-6">
-      <Typography variant="label" className="mb-3">Code de partage</Typography>
-
-      {/* Code display */}
-      <View className="flex-row items-center justify-between mb-4">
-        <View className="bg-white dark:bg-secondary-800 px-4 py-2 rounded-lg">
-          <Typography variant="h3" className="font-mono tracking-widest">
-            {eventCode}
+    <View className="bg-white dark:bg-charcoal/10 border border-secondary-200 dark:border-secondary-800 rounded-xl p-4 mb-6">
+      <Typography variant="caption" color="muted" className="mb-1 uppercase tracking-widest">
+        Invite Code
+      </Typography>
+      <View className="flex-row items-center justify-between">
+        <Typography variant="h3" className="font-mono tracking-widest text-charcoal dark:text-white">
+          {eventCode}
+        </Typography>
+        <Pressable
+          onPress={handleShare}
+          className="flex-row items-center gap-2 bg-secondary-100 dark:bg-secondary-800 px-4 py-2 rounded-lg"
+        >
+          <MaterialIcons name="content-copy" size={18} color="#64748b" />
+          <Typography variant="label" className="text-secondary-600 dark:text-secondary-300">
+            Copy
           </Typography>
-        </View>
-
-        <View className="flex-row gap-2">
-          <Button variant="outline" size="sm" onPress={toggleQR}>
-            {showQR ? 'Masquer QR' : 'QR Code'}
-          </Button>
-          <Button variant="primary" size="sm" onPress={handleShare}>
-            Partager
-          </Button>
-        </View>
+        </Pressable>
       </View>
-
-      {/* QR Code display */}
       {showQR && (
-        <View className="items-center bg-white rounded-xl p-4 mb-4">
-          <QRCode
-            value={joinUrl}
-            size={200}
-            color="#000000"
-            backgroundColor="#FFFFFF"
-            logo={undefined}
-            logoSize={40}
-            logoBackgroundColor="transparent"
-          />
-          <Typography variant="caption" color="muted" className="mt-3 text-center">
-            Scannez ce QR code pour rejoindre
+        <View className="items-center mt-4 pt-4 border-t border-secondary-200 dark:border-secondary-700">
+          <QRCode value={joinUrl} size={160} color="#000000" backgroundColor="#FFFFFF" />
+          <Typography variant="caption" color="muted" className="mt-2 text-center">
+            Code de partage – Scannez pour rejoindre
           </Typography>
         </View>
       )}
-
-      <Typography variant="caption" color="muted">
-        Les participants peuvent rejoindre avec ce code ou scanner le QR code
-      </Typography>
     </View>
   );
 }
@@ -452,176 +435,234 @@ export default function EventDetailScreen() {
 
   const { event, organiser, participants } = data;
   const goingParticipants = participants.filter((p) => p.status === 'GOING');
+  const insets = useSafeAreaInsets();
+  const colorScheme = useColorScheme();
+  const iconColor = colorScheme === 'dark' ? '#fff' : '#0a181e';
+  const joinUrl = `${config.webUrl}/join/${event.eventCode}`;
+  const showShareBar = isOrganiser && (event.status === 'SCHEDULED' || event.status === 'ONGOING');
+
+  const handleShareLink = useCallback(async () => {
+    try {
+      await Share.share({
+        message: `Rejoins-moi pour "${event.title}" ! ${joinUrl}`,
+        url: joinUrl,
+      });
+    } catch {
+      // User cancelled
+    }
+  }, [event.title, joinUrl]);
 
   return (
     <>
-      <Stack.Screen
-        options={{
-          title: event.title,
-          headerBackTitle: 'Retour',
-        }}
-      />
+      <Stack.Screen options={{ headerShown: false }} />
 
-      <ScrollContainer
-        hasSafeArea
-        safeAreaEdges={['bottom']}
-        padding="lg"
-        refreshControl={
-          <RefreshControl
-            refreshing={isRefetching}
-            onRefresh={refetch}
-            tintColor="#16a34a"
-          />
-        }
-      >
-        {/* Header */}
-        <View className="flex-row items-start justify-between mb-4">
-          <H1 className="flex-1 mr-4">{event.title}</H1>
-          <EventStatusBadge status={event.status} />
-        </View>
-
-        {/* Organiser */}
-        <Typography color="muted" className="mb-4">
-          Organise par {organiser.displayName || organiser.email || 'Anonyme'}
-        </Typography>
-
-        {/* Read-only mode indicator (Phase 4.1) */}
-        {event.status === 'COMPLETED' && (
-          <View className="bg-secondary-100 dark:bg-secondary-800 rounded-lg p-3 mb-6 flex-row items-center">
-            <Typography className="mr-2">🔒</Typography>
-            <View className="flex-1">
-              <Typography variant="bodySmall" color="muted">
-                Cette sortie est terminee - Mode lecture seule
-              </Typography>
-              {event.completedAt && (
-                <Typography variant="caption" color="muted">
-                  Cloturee le {formatCompletedDate(event.completedAt)}
-                </Typography>
-              )}
-            </View>
-          </View>
-        )}
-
-        {/* Cancelled indicator */}
-        {event.status === 'CANCELLED' && (
-          <View className="bg-red-100 dark:bg-red-900/30 rounded-lg p-3 mb-6 flex-row items-center">
-            <Typography className="mr-2">❌</Typography>
-            <Typography variant="bodySmall" className="text-red-700 dark:text-red-400">
-              Cette sortie a ete annulee
+      <View className="flex-1 bg-backgroundLight dark:bg-backgroundDark" style={{ paddingBottom: showShareBar ? insets.bottom + 80 : 0 }}>
+        {/* TopAppBar (design) */}
+        <View
+          className="flex-row items-center justify-between bg-backgroundLight/80 dark:bg-backgroundDark/80 px-4 py-4 border-b border-secondary-100 dark:border-secondary-800"
+          style={{ paddingTop: insets.top + 8 }}
+        >
+          <View className="flex-row items-center gap-2">
+            <Pressable onPress={() => router.back()} className="p-1 rounded-full" accessibilityLabel="Retour">
+              <MaterialIcons name="arrow-back-ios" size={22} color={iconColor} />
+            </Pressable>
+            <Typography className="text-lg font-bold tracking-tight text-charcoal dark:text-white">
+              Event Details
             </Typography>
           </View>
-        )}
+          <View className="flex-row gap-1">
+            <Pressable onPress={handleShareLink} className="p-2 rounded-full" accessibilityLabel="Partager">
+              <MaterialIcons name="share" size={24} color={iconColor} />
+            </Pressable>
+            <Pressable className="p-2 rounded-full" accessibilityLabel="Plus">
+              <MaterialIcons name="more-horiz" size={24} color={iconColor} />
+            </Pressable>
+          </View>
+        </View>
 
-        {/* Share Code (only for organiser when event is active) */}
-        {isOrganiser && (event.status === 'SCHEDULED' || event.status === 'ONGOING') && (
-          <ShareCodeSection eventCode={event.eventCode} eventTitle={event.title} />
-        )}
+        <ScrollContainer
+          hasSafeArea={false}
+          safeAreaEdges={[]}
+          padding="none"
+          contentClassName="px-4 pb-6"
+          refreshControl={
+            <RefreshControl refreshing={isRefetching} onRefresh={refetch} tintColor="#16a34a" />
+          }
+        >
+          {/* Hero placeholder + chip + title + date/location (design) */}
+          <View className="pt-4 pb-2">
+            <View className="aspect-square max-h-64 w-full rounded-xl bg-secondary-200 dark:bg-secondary-800 overflow-hidden mb-4 items-center justify-center">
+              <MaterialIcons name="directions-run" size={64} color="#94a3b8" />
+            </View>
+            <View className="flex-row items-center justify-between mb-2">
+              <View className="h-7 rounded-full bg-brandOrangeBg px-3 items-center justify-center">
+                <Typography className="text-brandOrange text-xs font-bold uppercase tracking-wider">
+                  {event.status === 'SCHEDULED' ? 'Planifie' : event.status === 'ONGOING' ? 'En cours' : event.status === 'COMPLETED' ? 'Termine' : 'Annule'}
+                </Typography>
+              </View>
+              <Typography variant="caption" color="muted" className="text-xs">
+                {organiser.displayName || organiser.email || 'Anonyme'}
+              </Typography>
+            </View>
+            <H1 className="text-3xl font-bold leading-tight tracking-tight text-charcoal dark:text-white mb-2">
+              {event.title}
+            </H1>
+            <View className="flex-row items-center gap-2 mb-1">
+              <MaterialIcons name="calendar-today" size={18} color="#64748b" />
+              <Typography variant="bodySmall" color="muted">{formattedDate}</Typography>
+            </View>
+            {(event.locationName || event.locationAddress) && (
+              <View className="flex-row items-center gap-2">
+                <MaterialIcons name="location-on" size={18} color="#64748b" />
+                <Typography variant="bodySmall" color="muted">
+                  {event.locationName || event.locationAddress}
+                </Typography>
+              </View>
+            )}
+          </View>
 
-        {/* Organiser Actions (Edit, Broadcast, Duplicate) */}
-        <OrganiserActions
-          eventId={event.id}
-          eventStatus={event.status}
-          isOrganiser={isOrganiser}
-        />
+          {/* Map section (design) */}
+          {(event.locationName || event.locationLat) && (
+            <View className="mb-4 relative">
+              <EventMapPlaceholder
+                locationName={event.locationName}
+                locationAddress={event.locationAddress}
+                latitude={event.locationLat}
+                longitude={event.locationLng}
+                showRoute={routes && routes.length > 0}
+                routeName={routes?.[0]?.name}
+              />
+              {routes?.[0]?.name && (
+                <View className="absolute top-3 left-3 bg-charcoal/80 px-3 py-1 rounded-full">
+                  <Typography className="text-white text-xs font-semibold">{routes[0].name}</Typography>
+                </View>
+              )}
+            </View>
+          )}
 
-        {/* Complete Event Button (Phase 4.1 - organiser only) */}
-        <CompleteEventButton
-          eventId={event.id}
-          eventStatus={event.status}
-          isOrganiser={isOrganiser}
-        />
+          {/* Description (design) */}
+          {event.description && (
+            <View className="mb-4">
+              <Typography variant="label" className="text-secondary-400 dark:text-secondary-500 uppercase tracking-widest mb-2">
+                Description
+              </Typography>
+              <Typography className="text-secondary-700 dark:text-secondary-300 leading-relaxed">
+                {event.description}
+              </Typography>
+            </View>
+          )}
 
-        {/* Event Info */}
-        <View className="mb-6">
-          <InfoSection
-            icon="📅"
-            title="Date et heure"
-            value={formattedDate}
-          />
+          {/* Invite Code card (design) - organiser only when active */}
+          {showShareBar && (
+            <ShareCodeSection eventCode={event.eventCode} eventTitle={event.title} />
+          )}
 
-          {event.locationName && (
-            <InfoSection
-              icon="📍"
-              title="Lieu"
-              value={event.locationName}
-              subtitle={event.locationAddress ?? undefined}
+          {/* Participants link card (design) */}
+          {goingParticipants.length > 0 && (
+            <Pressable
+              onPress={() => router.push(`/event/participants/${event.id}`)}
+              className="flex-row items-center justify-between p-4 bg-white dark:bg-charcoal/10 rounded-xl border border-secondary-100 dark:border-secondary-800 mb-4"
+            >
+              <View className="flex-row items-center gap-3">
+                <View className="flex-row -space-x-2">
+                  {goingParticipants.slice(0, 3).map((p) => (
+                    <View
+                      key={p.id}
+                      className="w-8 h-8 rounded-full border-2 border-white dark:border-secondary-900 bg-secondary-200 dark:bg-secondary-700 items-center justify-center"
+                    >
+                      <Typography variant="caption">{(p.displayName || p.email || '?').charAt(0).toUpperCase()}</Typography>
+                    </View>
+                  ))}
+                  {goingParticipants.length > 3 && (
+                    <View className="w-8 h-8 rounded-full border-2 border-white dark:border-secondary-900 bg-secondary-200 items-center justify-center">
+                      <Typography variant="caption" className="text-xs font-bold">+{goingParticipants.length - 3}</Typography>
+                    </View>
+                  )}
+                </View>
+                <Typography variant="label" className="text-charcoal dark:text-secondary-200">
+                  View {goingParticipants.length} participant{goingParticipants.length > 1 ? 's' : ''}
+                </Typography>
+              </View>
+              <MaterialIcons name="chevron-right" size={24} color="#94a3b8" />
+            </Pressable>
+          )}
+
+          {/* Read-only / Cancelled */}
+          {event.status === 'COMPLETED' && (
+            <View className="bg-secondary-100 dark:bg-secondary-800 rounded-lg p-3 mb-6 flex-row items-center">
+              <Typography className="mr-2">🔒</Typography>
+              <View className="flex-1">
+                <Typography variant="bodySmall" color="muted">Cette sortie est terminee – Mode lecture seule</Typography>
+                {event.completedAt && (
+                  <Typography variant="caption" color="muted">Cloturee le {formatCompletedDate(event.completedAt)}</Typography>
+                )}
+              </View>
+            </View>
+          )}
+          {event.status === 'CANCELLED' && (
+            <View className="bg-red-100 dark:bg-red-900/30 rounded-lg p-3 mb-6 flex-row items-center">
+              <Typography className="mr-2">❌</Typography>
+              <Typography variant="bodySmall" className="text-red-700 dark:text-red-400">Cette sortie a ete annulee</Typography>
+            </View>
+          )}
+
+          <OrganiserActions eventId={event.id} eventStatus={event.status} isOrganiser={isOrganiser} />
+          <CompleteEventButton eventId={event.id} eventStatus={event.status} isOrganiser={isOrganiser} />
+
+          {/* Participants list (first 5) + link */}
+          {goingParticipants.length > 0 && (
+            <View className="mb-6">
+              <H3 className="mb-3">Participants ({goingParticipants.length})</H3>
+              {goingParticipants.slice(0, 5).map((p) => (
+                <ParticipantItem key={p.id} participant={p} />
+              ))}
+            </View>
+          )}
+
+          {event.status === 'SCHEDULED' && (
+            <ParticipationActions
+              eventId={event.id}
+              currentStatus={currentUserStatus}
+              isOrganiser={isOrganiser}
+              eventStatus={event.status}
             />
           )}
 
-          <InfoSection
-            icon="👥"
-            title="Participants"
-            value={`${goingParticipants.length} participant${goingParticipants.length > 1 ? 's' : ''}`}
-          />
-        </View>
+          {(currentUserStatus === 'GOING' || currentUserStatus === 'MAYBE') && (
+            <View className="mt-6">
+              <H3 className="mb-3">Vos preferences</H3>
+              <PaceGroupSelector
+                eventId={event.id}
+                currentGroupId={data.currentUserParticipation?.selectedPaceGroupId ?? null}
+                disabled={event.status !== 'SCHEDULED'}
+              />
+            </View>
+          )}
+        </ScrollContainer>
 
-        {/* Map / Location */}
-        {(event.locationName || event.locationLat) && (
-          <EventMapPlaceholder
-            locationName={event.locationName}
-            locationAddress={event.locationAddress}
-            latitude={event.locationLat}
-            longitude={event.locationLng}
-            showRoute={routes && routes.length > 0}
-            routeName={routes?.[0]?.name}
-          />
-        )}
-
-        {/* Routes / GPX Tracks */}
-        {routes && routes.length > 0 && (
-          <RouteInfoCard routes={routes} />
-        )}
-
-        {/* Description */}
-        {event.description && (
-          <View className="mb-6">
-            <H3 className="mb-2">Description</H3>
-            <Typography color="muted">{event.description}</Typography>
-          </View>
-        )}
-
-        {/* Participants List */}
-        {goingParticipants.length > 0 && (
-          <View className="mb-6">
-            <H3 className="mb-3">Participants ({goingParticipants.length})</H3>
-            {goingParticipants.slice(0, 5).map((participant) => (
-              <ParticipantItem key={participant.id} participant={participant} />
-            ))}
+        {/* Bottom bar: Show QR, Copy Link (design) - organiser only when active */}
+        {showShareBar && (
+          <View
+            className="absolute left-0 right-0 bottom-0 bg-white/95 dark:bg-backgroundDark/95 border-t border-secondary-100 dark:border-secondary-800 p-4 flex-row gap-3"
+            style={{ paddingBottom: insets.bottom + 16 }}
+          >
             <Pressable
-              className="py-3"
-              onPress={() => router.push(`/event/participants/${event.id}`)}
+              onPress={() => router.push(`/event/share/${event.id}`)}
+              className="flex-1 h-14 rounded-xl bg-charcoal dark:bg-white items-center justify-center flex-row gap-2"
             >
-              <Typography color="primary" className="text-center">
-                {goingParticipants.length > 5
-                  ? `Voir tous les participants (${goingParticipants.length})`
-                  : 'Voir la liste complete'}
-              </Typography>
+              <MaterialIcons name="qr-code-2" size={22} color={colorScheme === 'dark' ? '#0B1220' : '#fff'} />
+              <Typography className="text-white dark:text-charcoal font-bold">Show QR</Typography>
+            </Pressable>
+            <Pressable
+              onPress={handleShareLink}
+              className="flex-1 h-14 rounded-xl border-2 border-charcoal dark:border-white items-center justify-center flex-row gap-2"
+            >
+              <MaterialIcons name="link" size={22} color={iconColor} />
+              <Typography className="text-charcoal dark:text-white font-bold">Copy Link</Typography>
             </Pressable>
           </View>
         )}
-
-        {/* Participation Actions (Optimistic UI) */}
-        {event.status === 'SCHEDULED' && (
-          <ParticipationActions
-            eventId={event.id}
-            currentStatus={currentUserStatus}
-            isOrganiser={isOrganiser}
-            eventStatus={event.status}
-          />
-        )}
-
-        {/* Pace Group Selection (for participants) */}
-        {(currentUserStatus === 'GOING' || currentUserStatus === 'MAYBE') && (
-          <View className="mt-6">
-            <H3 className="mb-3">Vos preferences</H3>
-            <PaceGroupSelector
-              eventId={event.id}
-              currentGroupId={data.currentUserParticipation?.selectedPaceGroupId ?? null}
-              disabled={event.status !== 'SCHEDULED'}
-            />
-          </View>
-        )}
-      </ScrollContainer>
+      </View>
     </>
   );
 }
