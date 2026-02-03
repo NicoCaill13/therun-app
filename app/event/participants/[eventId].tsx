@@ -8,6 +8,7 @@ import {
   useColorScheme,
   TextInput,
 } from 'react-native';
+import { FlashList } from '@shopify/flash-list';
 import { useLocalSearchParams, useRouter, Stack } from 'expo-router';
 import MaterialIcons from '@expo/vector-icons/MaterialIcons';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
@@ -320,11 +321,12 @@ export default function ParticipantsListScreen() {
             description="Aucun participant pour le moment"
           />
         ) : (
-          <FlatList
+          <FlashList
             className="flex-1 bg-backgroundLight dark:bg-backgroundDark"
             data={searchQuery.trim() ? filteredItems : (data?.items ?? [])}
             keyExtractor={keyExtractor}
             renderItem={renderItem}
+            estimatedItemSize={64}
             contentContainerStyle={{ paddingBottom: 100 }}
             refreshControl={
               <RefreshControl
