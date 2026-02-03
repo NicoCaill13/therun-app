@@ -137,7 +137,7 @@ export default function InvitationsScreen() {
           title: `Invitations (${invitations.length})`,
         }}
       />
-      <Container padding="none">
+      <Container padding="none" className="bg-backgroundLight dark:bg-backgroundDark flex-1">
         <FlatList
           data={invitations}
           renderItem={renderItem}
@@ -188,7 +188,7 @@ function InvitationCard({
 
   return (
     <Pressable
-      className="bg-white dark:bg-secondary-800 rounded-xl shadow-sm border border-secondary-100 dark:border-secondary-700 overflow-hidden active:opacity-90"
+      className="bg-white dark:bg-charcoal/10 rounded-xl border border-borderGrey dark:border-secondary-700 overflow-hidden active:opacity-90"
       onPress={onViewEvent}
       disabled={isLoading}
     >

@@ -69,7 +69,7 @@ export default function RootLayout() {
 function AuthLoadingScreen() {
   return (
     <View
-      className="flex-1 items-center justify-center bg-white dark:bg-secondary-900"
+      className="flex-1 items-center justify-center bg-backgroundLight dark:bg-backgroundDark"
       accessibilityRole="progressbar"
       accessibilityLabel="Chargement de l'application"
     >

@@ -9,6 +9,8 @@
   - Structure files: exported component, subcomponents, helpers, static content, types.
   - Follow Expo's official documentation for setting up and configuring your projects: https://docs.expo.dev/
   - DRY and SOLID
+  - Web will be host on runningparty.run
+  - API will be host on api.runningparty.run
 
 
   Naming Conventions

@@ -235,7 +235,7 @@ export default function EditEventScreen() {
         behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
         className="flex-1"
       >
-        <ScrollContainer hasSafeArea safeAreaEdges={['bottom']} padding="lg">
+        <ScrollContainer hasSafeArea safeAreaEdges={['bottom']} padding="lg" className="bg-backgroundLight dark:bg-backgroundDark">
           <H1 className="mb-2">Modifier l'evenement</H1>
           <Typography color="muted" className="mb-6">
             {event.title}
