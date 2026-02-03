@@ -25,15 +25,11 @@ Reference: `spec.md` (Roadmap V3.1). This doc lists what is **missing or incompl
 
 ---
 
-### 2. Phase 3.2.b – Tracé GPX / polyline on map (spec: “Parsing et affichage du tracé sur la carte”)
+### 2. Phase 3.2.b – Tracé GPX / polyline on map (spec: “Parsing et affichage du tracé sur la carte”) — DONE
 
 **Spec:** “**3.2.b Tracé GPX (Polyline)** : Parsing et affichage du tracé sur la carte.”
 
-**Current:** Polyline is **parsed** (decode in `lib/api/routes/types.ts`, used in `RoutePreview`). **Display** is a placeholder (dots + text, no real map). `EventMapPlaceholder` opens external map; no in-app map with polyline.
-
-**Action (optional for MVP):** Either:
-- Treat as post-MVP: keep current placeholder and document “real map + polyline when react-native-maps is added”, or
-- Add `react-native-maps`, render a `MapView` with `Polyline` using decoded coordinates (e.g. in event detail when a route exists).
+**Done:** `react-native-maps` added. `EventMapView` component (`components/map/EventMapView.tsx`) renders `MapView` with `Polyline` (decoded from route `encodedPolyline`) and `Marker` (event location) when a route with polyline exists and platform is native; otherwise falls back to `EventMapPlaceholder` (external map). Event detail screen uses `EventMapView` with first route; route name badge remains over the map.
 
 ---
 

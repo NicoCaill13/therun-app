@@ -68,6 +68,7 @@ jest.mock('@/components/states', () => {
 
 jest.mock('@/components/map', () => ({
   EventMapPlaceholder: () => null,
+  EventMapView: () => null,
   RouteInfoCard: () => null,
 }));
 

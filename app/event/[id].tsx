@@ -7,7 +7,7 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { ScrollContainer, Typography, H1, H3, Button } from '@/components/ui';
 import { LoadingState, ErrorState } from '@/components/states';
 import { PaceGroupSelector, EventStatusBadge, getParticipantStatusIcon, getParticipationStatusText } from '@/components/event';
-import { EventMapPlaceholder, RouteInfoCard } from '@/components/map';
+import { EventMapView, RouteInfoCard } from '@/components/map';
 import {
   useEventDetails,
   useUpsertParticipation,
@@ -521,19 +521,19 @@ export default function EventDetailScreen() {
             )}
           </View>
 
-          {/* Map section (design) */}
+          {/* Map section (design) - MapView + Polyline when route available (spec 3.2.b) */}
           {(event.locationName || event.locationLat) && (
             <View className="mb-4 relative">
-              <EventMapPlaceholder
+              <EventMapView
                 locationName={event.locationName}
                 locationAddress={event.locationAddress}
                 latitude={event.locationLat}
                 longitude={event.locationLng}
-                showRoute={routes && routes.length > 0}
-                routeName={routes?.[0]?.name}
+                route={routes?.[0] ?? null}
+                routeName={routes?.[0]?.name ?? null}
               />
               {routes?.[0]?.name && (
-                <View className="absolute top-3 left-3 bg-charcoal/80 px-3 py-1 rounded-full">
+                <View className="absolute top-3 left-3 z-10 bg-charcoal/80 px-3 py-1 rounded-full">
                   <Typography className="text-white text-xs font-semibold">{routes[0].name}</Typography>
                 </View>
               )}
