@@ -248,7 +248,7 @@ function QRScanner({ onScanned, onSwitchToManual }: QRScannerProps) {
 
     // Extract event code from URL or use raw data
     // Expected formats:
-    // - https://the.run/join/ABC123
+    // - https://runningparty.run/join/ABC123
     // - the-run://join/ABC123
     // - ABC123 (raw code)
     const urlMatch = data.match(/\/join\/([A-Za-z0-9]+)/);

@@ -3,13 +3,14 @@ import Constants from 'expo-constants';
 /**
  * Environment configuration.
  * Values are loaded from app.config.js extra or fallback to defaults.
+ * Production hosts per .cursorrules: API = api.runningparty.run, Web = runningparty.run
  */
 
 const extra = Constants.expoConfig?.extra ?? {};
 
 /**
  * API base URL for backend requests.
- * In development, defaults to localhost.
+ * In development, defaults to localhost. Production: https://api.runningparty.run
  */
 export const API_BASE_URL: string = extra.apiBaseUrl ?? 'http://localhost:3000';
 
@@ -19,7 +20,7 @@ export const API_BASE_URL: string = extra.apiBaseUrl ?? 'http://localhost:3000';
 export const APP_SCHEME: string = extra.appScheme ?? 'the-run';
 
 /**
- * Web domain for universal links.
+ * Web domain for universal links. Production: runningparty.run
  */
 export const WEB_DOMAIN: string = extra.webDomain ?? 'the.run';
 

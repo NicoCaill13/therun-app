@@ -5,7 +5,7 @@ import { APP_SCHEME, WEB_DOMAIN } from '@/lib/config/env';
 /**
  * Deep linking configuration.
  * Based on spec.md Phase 0.1 requirements:
- * - Universal Links: https://the.run/join/[code]
+ * - Universal Links: https://<WEB_DOMAIN>/join/[code] (e.g. runningparty.run)
  * - App Scheme: the-run://
  * - Mapping: /join/[code] (Web) <-> the-run://join/[code] (Native)
  */
@@ -66,7 +66,7 @@ export const linkingOptions: LinkingOptions<ReactNavigation.RootParamList> = {
  * Parse a deep link URL and extract parameters.
  *
  * @example
- * parseDeepLink('https://the.run/join/ABC123')
+ * parseDeepLink('https://runningparty.run/join/ABC123')
  * // Returns: { path: 'join', params: { code: 'ABC123' } }
  */
 export function parseDeepLink(url: string): { path: string; params: Record<string, string> } | null {
