@@ -338,9 +338,8 @@ export default function JoinScreen() {
         input: data,
       });
 
-      // Store guest session (simulate - in real app, backend would return a token)
-      // For now, we just mark the user as a guest in local auth state
-      await signInAsGuest(`guest_${result.userId}`, result.userId);
+      // Store guest session with real JWT returned by the backend (24h guest token)
+      await signInAsGuest(result.accessToken, result.userId);
 
       dispatch({ type: 'SET_STEP', payload: 'success' });
     } catch (error: unknown) {

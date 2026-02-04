@@ -216,6 +216,7 @@ describe('useGuestJoin', () => {
     participantId: 'part_456',
     userId: 'usr_guest_789',
     isGuest: true,
+    accessToken: 'guest-jwt-token',
   };
 
   it('should join event as guest', async () => {

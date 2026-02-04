@@ -210,6 +210,7 @@ describe('GuestJoinResponseSchema', () => {
     participantId: 'part_456',
     userId: 'usr_789',
     isGuest: true,
+    accessToken: 'jwt-token',
   };
 
   it('should parse valid data', () => {
@@ -219,6 +220,7 @@ describe('GuestJoinResponseSchema', () => {
     expect(result.participantId).toBe('part_456');
     expect(result.userId).toBe('usr_789');
     expect(result.isGuest).toBe(true);
+    expect(result.accessToken).toBe('jwt-token');
   });
 
   it('should accept isGuest as false', () => {

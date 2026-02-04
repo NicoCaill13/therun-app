@@ -108,6 +108,7 @@ export const GuestJoinResponseSchema = z.object({
   participantId: z.string(),
   userId: z.string(),
   isGuest: z.boolean(),
+  accessToken: z.string(),
 });
 
 export type GuestJoinResponse = z.infer<typeof GuestJoinResponseSchema>;
