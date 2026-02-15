@@ -1,4 +1,4 @@
-import { View, ViewProps, ScrollView, ScrollViewProps } from 'react-native';
+import { View, ViewProps, ScrollView, ScrollViewProps, Platform } from 'react-native';
 import { ReactNode, useMemo } from 'react';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
@@ -17,15 +17,6 @@ const PADDING_CLASSES = {
 // Container Component
 // ============================================================================
 
-/**
- * Container component for consistent layout.
- * Supports safe area insets and padding variants.
- *
- * @example
- * <Container padding="md" hasSafeArea>
- *   <Typography variant="h1">Page Content</Typography>
- * </Container>
- */
 export function Container({
   padding = 'md',
   hasSafeArea = false,
@@ -40,6 +31,7 @@ export function Container({
 
   const safeAreaStyle = useMemo(() => {
     if (!hasSafeArea) return {};
+    if (Platform.OS === 'web') return {};
 
     return {
       paddingTop: safeAreaEdges.includes('top') ? insets.top : 0,
@@ -50,17 +42,14 @@ export function Container({
   }, [hasSafeArea, safeAreaEdges, insets]);
 
   const combinedClasses = useMemo(() => {
-    const baseClasses = 'flex-1 bg-white dark:bg-secondary-900';
+    const baseClasses = 'flex-1 bg-background-light dark:bg-background-dark';
     const centerClasses = isCenter ? 'items-center justify-center' : '';
-    return `${baseClasses} ${PADDING_CLASSES[padding]} ${centerClasses} ${className}`.trim();
+    const webClasses = Platform.OS === 'web' ? 'max-w-md mx-auto w-full' : '';
+    return `${baseClasses} ${PADDING_CLASSES[padding]} ${centerClasses} ${webClasses} ${className}`.trim();
   }, [padding, isCenter, className]);
 
   return (
-    <View
-      className={combinedClasses}
-      style={[safeAreaStyle, style]}
-      {...props}
-    >
+    <View className={combinedClasses} style={[safeAreaStyle, style]} {...props}>
       {children}
     </View>
   );
@@ -70,15 +59,6 @@ export function Container({
 // ScrollContainer Component
 // ============================================================================
 
-/**
- * Scrollable container component.
- * Useful for long content that may exceed screen height.
- *
- * @example
- * <ScrollContainer padding="md" hasSafeArea>
- *   <Typography variant="h1">Long Form</Typography>
- * </ScrollContainer>
- */
 export function ScrollContainer({
   padding = 'md',
   hasSafeArea = false,
@@ -94,6 +74,7 @@ export function ScrollContainer({
 
   const safeAreaStyle = useMemo(() => {
     if (!hasSafeArea) return {};
+    if (Platform.OS === 'web') return {};
 
     return {
       paddingTop: safeAreaEdges.includes('top') ? insets.top : 0,
@@ -104,13 +85,15 @@ export function ScrollContainer({
   }, [hasSafeArea, safeAreaEdges, insets]);
 
   const combinedClasses = useMemo(() => {
-    const baseClasses = 'flex-1 bg-white dark:bg-secondary-900';
-    return `${baseClasses} ${className}`.trim();
+    const baseClasses = 'flex-1 bg-background-light dark:bg-background-dark';
+    const webClasses = Platform.OS === 'web' ? 'max-w-md mx-auto w-full' : '';
+    return `${baseClasses} ${webClasses} ${className}`.trim();
   }, [className]);
 
-  const contentClasses = useMemo(() => {
-    return `${PADDING_CLASSES[padding]} ${contentClassName}`.trim();
-  }, [padding, contentClassName]);
+  const contentClasses = useMemo(
+    () => `${PADDING_CLASSES[padding]} ${contentClassName}`.trim(),
+    [padding, contentClassName]
+  );
 
   return (
     <ScrollView

@@ -74,9 +74,9 @@
 
   Testing
   - Write unit tests using Jest and React Native Testing Library.
-  - Implement integration tests for critical user flows using Detox.
   - Use Expo's testing tools for running tests in different environments.
   - Consider snapshot testing for components to ensure UI consistency.
+  - E2E API tests (e.g. register): npm run test:e2e:api (API must be running).
 
   Security
   - Sanitize user inputs to prevent XSS attacks.

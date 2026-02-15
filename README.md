@@ -32,6 +32,18 @@ npm test
 npm run test:coverage
 ```
 
+### Tests E2E API (creation de compte)
+
+Test de bout en bout contre l’API reelle (therun) : POST /api/user/register, GET /me avec le token, 400/409.
+
+**Prerequis :** API therun lancee sur `http://localhost:3000`.
+
+```bash
+npm run test:e2e:api
+```
+
+URL de l’API modifiable via `E2E_API_BASE_URL` (ex. `http://192.168.x.x:3000/api`).
+
 ## Dépannage
 
 ### Android : "Failed to resolve the Android SDK path"

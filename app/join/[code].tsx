@@ -1,445 +1,180 @@
-import { useCallback, useReducer, useEffect } from 'react';
-import { View, ActivityIndicator, KeyboardAvoidingView, Platform } from 'react-native';
-import { useLocalSearchParams, useRouter, Stack } from 'expo-router';
-import { useForm, Controller } from 'react-hook-form';
-import { zodResolver } from '@hookform/resolvers/zod';
-import { Container, ScrollContainer, Typography, H1, H2, Button, Input } from '@/components/ui';
-import { LoadingState, ErrorState, SuccessState } from '@/components/states';
+import { View, Platform } from 'react-native';
+import { useLocalSearchParams, useRouter } from 'expo-router';
+import { useState, useCallback, useEffect } from 'react';
+import MaterialIcons from '@expo/vector-icons/MaterialIcons';
+import { useResolveEventCode, useParticipate } from '@/lib/api/join';
 import { useAuth } from '@/lib/auth';
-import { formatEventDate } from '@/lib/utils';
+import { normalizeApiError } from '@/lib/api/normalizeApiError';
 import {
-  usePublicEventByCode,
-  useJoinParticipate,
-  useGuestJoin,
-  GuestJoinInputSchema,
-  type GuestJoinInput,
-  type PublicEventByCode,
-} from '@/lib/api';
+  Header,
+  Typography,
+  CodeInput,
+  Button,
+  Card,
+} from '@/components/ui';
 
 // ============================================================================
-// Types & State
+// Join by Code / Success flow (maquettes: join_by_code_input + join_success_confirmation)
 // ============================================================================
 
-type JoinStep = 'loading' | 'preview' | 'guest_form' | 'joining' | 'success' | 'error';
+export default function JoinByCodeScreen() {
+  const { code: initialCode } = useLocalSearchParams<{ code: string }>();
+  const router = useRouter();
+  const { isAuthenticated } = useAuth();
 
-interface JoinState {
-  step: JoinStep;
-  errorMessage: string | null;
-}
+  const [code, setCode] = useState(initialCode === 'code' ? '' : initialCode ?? '');
+  const [error, setError] = useState('');
+  const [showSuccess, setShowSuccess] = useState(false);
 
-type JoinAction =
-  | { type: 'SET_STEP'; payload: JoinStep }
-  | { type: 'SET_ERROR'; payload: string }
-  | { type: 'RESET' };
+  const resolveQuery = useResolveEventCode(code.length >= 4 ? code : undefined);
+  const participate = useParticipate(code);
 
-const initialState: JoinState = {
-  step: 'loading',
-  errorMessage: null,
-};
+  // Clear error when code changes
+  useEffect(() => {
+    if (error) setError('');
+  }, [code]);
 
-function joinReducer(state: JoinState, action: JoinAction): JoinState {
-  switch (action.type) {
-    case 'SET_STEP':
-      return { ...state, step: action.payload, errorMessage: null };
-    case 'SET_ERROR':
-      return { step: 'error', errorMessage: action.payload };
-    case 'RESET':
-      return initialState;
-    default:
-      return state;
+  const handleContinue = useCallback(async () => {
+    if (code.length < 4) {
+      setError('Please enter the full code');
+      return;
+    }
+
+    if (resolveQuery.isError) {
+      setError('Invalid code. Please check and try again');
+      return;
+    }
+
+    if (!resolveQuery.data) {
+      setError('Checking code...');
+      return;
+    }
+
+    // If authenticated, participate directly
+    if (isAuthenticated) {
+      try {
+        await participate.mutateAsync();
+        setShowSuccess(true);
+      } catch (err) {
+        const normalized = normalizeApiError(err);
+        setError(normalized.message);
+      }
+    } else {
+      // Redirect to guest join on web or prompt login
+      setShowSuccess(true);
+    }
+  }, [code, resolveQuery, isAuthenticated, participate]);
+
+  if (showSuccess && resolveQuery.data) {
+    return <JoinSuccessScreen event={resolveQuery.data} onDone={() => router.replace('/(tabs)')} />;
   }
-}
-
-// ============================================================================
-// Join Loading State (specialized)
-// ============================================================================
-
-function JoinLoadingState() {
-  return (
-    <LoadingState
-      message="Chargement de l'evenement..."
-      hasSafeArea
-    />
-  );
-}
-
-// ============================================================================
-// Joining State (specialized)
-// ============================================================================
-
-function JoiningState() {
-  return (
-    <Container isCenter hasSafeArea className="bg-backgroundLight dark:bg-backgroundDark">
-      <ActivityIndicator size="large" color="#16a34a" />
-      <Typography className="mt-4" color="muted">
-        Inscription en cours...
-      </Typography>
-    </Container>
-  );
-}
-
-// ============================================================================
-// Event Preview Component
-// ============================================================================
-
-interface EventPreviewProps {
-  event: PublicEventByCode;
-  isAuthenticated: boolean;
-  isJoining: boolean;
-  onJoinAsUser: () => void;
-  onJoinAsGuest: () => void;
-}
-
-function EventPreview({ event, isAuthenticated, isJoining, onJoinAsUser, onJoinAsGuest }: EventPreviewProps) {
-  const formattedDate = formatEventDate(event.startDateTime);
-  const organiserName = [event.organiser.firstName, event.organiser.lastName].filter(Boolean).join(' ');
 
   return (
-    <ScrollContainer hasSafeArea padding="lg" className="bg-backgroundLight dark:bg-backgroundDark">
-      {/* Event Info Card */}
-      <View className="bg-white dark:bg-charcoal/10 border border-borderGrey dark:border-secondary-800 rounded-xl p-5 mb-6">
-        <Typography variant="caption" color="muted" className="mb-1">
-          Vous etes invite a rejoindre
-        </Typography>
-        <H1 className="mb-4">{event.title}</H1>
+    <View className="flex-1 bg-background-light dark:bg-background-dark">
+      <View className={Platform.OS === 'web' ? 'max-w-md mx-auto w-full flex-1' : 'flex-1'}>
+        <Header title="Join with Code" />
 
-        <View className="flex-row items-center mb-3">
-          <Typography className="mr-2">📅</Typography>
-          <Typography>{formattedDate}</Typography>
+        <View className="flex-1 px-4 pt-6">
+          <Typography variant="h1" className="mb-2">
+            Enter Club Code
+          </Typography>
+          <Typography variant="body" color="secondary" className="mb-8">
+            Enter the 6-character code provided by your organizer to join the session.
+          </Typography>
+
+          <CodeInput value={code} onChange={setCode} error={error} />
         </View>
 
-        {event.locationName && (
-          <View className="flex-row items-center mb-3">
-            <Typography className="mr-2">📍</Typography>
-            <View className="flex-1">
-              <Typography>{event.locationName}</Typography>
-              {event.locationAddress && (
-                <Typography variant="bodySmall" color="muted">{event.locationAddress}</Typography>
-              )}
-            </View>
-          </View>
-        )}
-
-        <View className="flex-row items-center">
-          <Typography className="mr-2">👤</Typography>
-          <Typography color="muted">Organise par {organiserName}</Typography>
+        <View className="px-4 pb-8">
+          <Button
+            onPress={handleContinue}
+            isLoading={participate.isPending}
+          >
+            Continue
+          </Button>
+          <Typography
+            variant="bodySmall"
+            color="secondary"
+            className="text-center mt-4"
+          >
+            Where do I find the code?
+          </Typography>
         </View>
       </View>
-
-      {/* Action Buttons */}
-      {isAuthenticated ? (
-        <Button
-          variant="primary"
-          size="lg"
-          isFullWidth
-          isLoading={isJoining}
-          onPress={onJoinAsUser}
-        >
-          Participer
-        </Button>
-      ) : (
-        <>
-          <Button
-            variant="primary"
-            size="lg"
-            isFullWidth
-            onPress={onJoinAsGuest}
-          >
-            Continuer en tant qu'invite
-          </Button>
-          <Typography variant="caption" color="muted" className="text-center mt-4">
-            Vous pourrez creer un compte plus tard pour retrouver vos sorties
-          </Typography>
-        </>
-      )}
-    </ScrollContainer>
+    </View>
   );
 }
 
 // ============================================================================
-// Guest Form Component
+// Join Success Confirmation (maquette: join_success_confirmation)
 // ============================================================================
 
-interface GuestFormProps {
-  event: PublicEventByCode;
-  isJoining: boolean;
-  onSubmit: (data: GuestJoinInput) => void;
-  onBack: () => void;
-}
-
-function GuestForm({ event, isJoining, onSubmit, onBack }: GuestFormProps) {
-  const {
-    control,
-    handleSubmit,
-    formState: { errors, isValid },
-  } = useForm<GuestJoinInput>({
-    resolver: zodResolver(GuestJoinInputSchema),
-    defaultValues: {
-      firstName: '',
-      lastName: '',
-      email: '',
-    },
-    mode: 'onChange',
+function JoinSuccessScreen({
+  event,
+  onDone,
+}: {
+  event: { title: string; startDateTime: string; locationName: string | null };
+  onDone: () => void;
+}) {
+  const dateStr = new Date(event.startDateTime).toLocaleDateString('en-US', {
+    weekday: 'long',
+    month: 'short',
+    day: 'numeric',
+    hour: '2-digit',
+    minute: '2-digit',
   });
 
   return (
-    <KeyboardAvoidingView
-      behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
-      className="flex-1"
-    >
-      <ScrollContainer hasSafeArea padding="lg">
-        <H2 className="mb-2">Vos informations</H2>
-        <Typography color="muted" className="mb-6">
-          Entrez votre prenom pour rejoindre "{event.title}"
+    <View className="flex-1 bg-background-light dark:bg-background-dark">
+      <View className={`flex-1 items-center justify-center px-6 ${Platform.OS === 'web' ? 'max-w-md mx-auto w-full' : ''}`}>
+        {/* Checkmark */}
+        <View className="w-24 h-24 rounded-full bg-charcoal items-center justify-center mb-6">
+          <MaterialIcons name="check" size={48} color="#ffffff" />
+        </View>
+
+        <Typography variant="label" color="secondary" className="mb-2">
+          REGISTRATION CONFIRMED
+        </Typography>
+        <Typography variant="h1" className="text-center mb-8">
+          You're in!
         </Typography>
 
-        <Controller
-          control={control}
-          name="firstName"
-          render={({ field: { onChange, onBlur, value } }) => (
-            <Input
-              label="Prenom *"
-              placeholder="Ex: Jean"
-              value={value}
-              onChangeText={onChange}
-              onBlur={onBlur}
-              error={errors.firstName?.message}
-              containerClassName="mb-4"
-              autoCapitalize="words"
-              autoFocus
-              returnKeyType="next"
-            />
-          )}
-        />
+        {/* Event card */}
+        <Card padding="none" className="w-full overflow-hidden mb-6">
+          <View className="h-40 bg-gray-200 dark:bg-gray-700 items-center justify-center">
+            <MaterialIcons name="image" size={48} color="#d1d5db" />
+          </View>
+          <View className="p-4">
+            <Typography variant="label" color="orange" className="mb-1">
+              UPCOMING EVENT
+            </Typography>
+            <Typography variant="h3" className="mb-2">
+              {event.title}
+            </Typography>
+            <View className="flex-row items-center gap-1 mb-1">
+              <MaterialIcons name="calendar-today" size={14} color="#6b7280" />
+              <Typography variant="bodySmall" color="secondary">
+                {dateStr}
+              </Typography>
+            </View>
+            {event.locationName && (
+              <View className="flex-row items-center gap-1">
+                <MaterialIcons name="location-on" size={14} color="#6b7280" />
+                <Typography variant="bodySmall" color="secondary">
+                  {event.locationName}
+                </Typography>
+              </View>
+            )}
+          </View>
+        </Card>
 
-        <Controller
-          control={control}
-          name="lastName"
-          render={({ field: { onChange, onBlur, value } }) => (
-            <Input
-              label="Nom (optionnel)"
-              placeholder="Ex: Dupont"
-              value={value ?? ''}
-              onChangeText={onChange}
-              onBlur={onBlur}
-              error={errors.lastName?.message}
-              containerClassName="mb-4"
-              autoCapitalize="words"
-              returnKeyType="next"
-            />
-          )}
-        />
+        <Typography variant="bodySmall" color="secondary" className="text-center mb-8">
+          A confirmation email has been sent to your inbox. Please check your spam folder if you
+          don't see it.
+        </Typography>
 
-        <Controller
-          control={control}
-          name="email"
-          render={({ field: { onChange, onBlur, value } }) => (
-            <Input
-              label="Email (optionnel)"
-              placeholder="Ex: jean@example.com"
-              value={value ?? ''}
-              onChangeText={onChange}
-              onBlur={onBlur}
-              error={errors.email?.message}
-              containerClassName="mb-6"
-              keyboardType="email-address"
-              autoCapitalize="none"
-              returnKeyType="done"
-            />
-          )}
-        />
-
-        <Button
-          variant="primary"
-          size="lg"
-          isFullWidth
-          isLoading={isJoining}
-          isDisabled={!isValid}
-          onPress={handleSubmit(onSubmit)}
-        >
-          Rejoindre la sortie
-        </Button>
-
-        <Button
-          variant="ghost"
-          size="lg"
-          isFullWidth
-          onPress={onBack}
-          className="mt-3"
-        >
-          Retour
-        </Button>
-      </ScrollContainer>
-    </KeyboardAvoidingView>
+        <Button onPress={onDone}>Open in app</Button>
+      </View>
+    </View>
   );
 }
-
-// ============================================================================
-// Main Join Screen
-// ============================================================================
-
-export default function JoinScreen() {
-  const { code } = useLocalSearchParams<{ code: string }>();
-  const router = useRouter();
-  const { isAuthenticated, signInAsGuest } = useAuth();
-  const [state, dispatch] = useReducer(joinReducer, initialState);
-
-  // API hooks
-  const {
-    data: event,
-    isLoading: isLoadingEvent,
-    error: eventError,
-    refetch: refetchEvent,
-  } = usePublicEventByCode(code ?? '');
-
-  const joinParticipate = useJoinParticipate();
-  const guestJoin = useGuestJoin();
-
-  // Update step based on loading state
-  useEffect(() => {
-    if (isLoadingEvent) {
-      dispatch({ type: 'SET_STEP', payload: 'loading' });
-    } else if (eventError) {
-      dispatch({ type: 'SET_ERROR', payload: eventError.message || 'Evenement introuvable' });
-    } else if (event && state.step === 'loading') {
-      dispatch({ type: 'SET_STEP', payload: 'preview' });
-    }
-  }, [isLoadingEvent, eventError, event, state.step]);
-
-  // Handle join as authenticated user
-  const handleJoinAsUser = useCallback(async () => {
-    if (!code) return;
-
-    dispatch({ type: 'SET_STEP', payload: 'joining' });
-
-    try {
-      await joinParticipate.mutateAsync(code);
-      dispatch({ type: 'SET_STEP', payload: 'success' });
-    } catch (error: unknown) {
-      const message = error instanceof Error ? error.message : 'Impossible de rejoindre la sortie';
-      dispatch({ type: 'SET_ERROR', payload: message });
-    }
-  }, [code, joinParticipate]);
-
-  // Handle navigation to guest form
-  const handleShowGuestForm = useCallback(() => {
-    dispatch({ type: 'SET_STEP', payload: 'guest_form' });
-  }, []);
-
-  // Handle guest join submission
-  const handleGuestSubmit = useCallback(async (data: GuestJoinInput) => {
-    if (!event) return;
-
-    dispatch({ type: 'SET_STEP', payload: 'joining' });
-
-    try {
-      const result = await guestJoin.mutateAsync({
-        eventId: event.join.eventId,
-        input: data,
-      });
-
-      // Store guest session with real JWT returned by the backend (24h guest token)
-      await signInAsGuest(result.accessToken, result.userId);
-
-      dispatch({ type: 'SET_STEP', payload: 'success' });
-    } catch (error: unknown) {
-      const message = error instanceof Error ? error.message : 'Impossible de rejoindre la sortie';
-      dispatch({ type: 'SET_ERROR', payload: message });
-    }
-  }, [event, guestJoin, signInAsGuest]);
-
-  // Handle back to preview
-  const handleBackToPreview = useCallback(() => {
-    dispatch({ type: 'SET_STEP', payload: 'preview' });
-  }, []);
-
-  // Handle retry
-  const handleRetry = useCallback(() => {
-    dispatch({ type: 'RESET' });
-    refetchEvent();
-  }, [refetchEvent]);
-
-  // Handle back navigation
-  const handleBack = useCallback(() => {
-    router.back();
-  }, [router]);
-
-  // Handle continue to event
-  const handleContinue = useCallback(() => {
-    if (event) {
-      router.replace(`/event/${event.id}`);
-    } else {
-      router.replace('/(tabs)');
-    }
-  }, [router, event]);
-
-  // Render based on step
-  const renderContent = () => {
-    switch (state.step) {
-      case 'loading':
-        return <JoinLoadingState />;
-
-      case 'error':
-        return (
-          <ErrorState
-            message={state.errorMessage || 'Une erreur est survenue'}
-            onRetry={handleRetry}
-            onBack={handleBack}
-            hasSafeArea
-          />
-        );
-
-      case 'success':
-        return (
-          <SuccessState
-            title="Bienvenue !"
-            message="Vous avez rejoint"
-            subtitle={event?.title || 'la sortie'}
-            actionLabel="Voir l'evenement"
-            onAction={handleContinue}
-            hasSafeArea
-          />
-        );
-
-      case 'guest_form':
-        if (!event) return <JoinLoadingState />;
-        return (
-          <GuestForm
-            event={event}
-            isJoining={guestJoin.isPending}
-            onSubmit={handleGuestSubmit}
-            onBack={handleBackToPreview}
-          />
-        );
-
-      case 'joining':
-        return <JoiningState />;
-
-      case 'preview':
-      default:
-        if (!event) return <JoinLoadingState />;
-        return (
-          <EventPreview
-            event={event}
-            isAuthenticated={isAuthenticated}
-            isJoining={joinParticipate.isPending}
-            onJoinAsUser={handleJoinAsUser}
-            onJoinAsGuest={handleShowGuestForm}
-          />
-        );
-    }
-  };
-
-  return (
-    <>
-      <Stack.Screen
-        options={{
-          title: event?.title || 'Rejoindre',
-          headerBackTitle: 'Retour',
-        }}
-      />
-      {renderContent()}
-    </>
-  );
-}
-

@@ -1,149 +1,75 @@
 import { z } from 'zod';
 
 // ============================================================================
-// Participant Status & Role Enums
+// GET /api/events/:id/participants - Paginated list
 // ============================================================================
 
-export const ParticipantStatusSchema = z.enum(['INVITED', 'GOING', 'MAYBE', 'DECLINED']);
-export type ParticipantStatus = z.infer<typeof ParticipantStatusSchema>;
-
-export const RoleInEventSchema = z.enum(['ORGANISER', 'ENCADRANT', 'PARTICIPANT']);
-export type RoleInEvent = z.infer<typeof RoleInEventSchema>;
-
-// ============================================================================
-// Event Route Reference (nested in participant)
-// ============================================================================
-
-export const EventRouteRefSchema = z.object({
-  id: z.string().uuid(),
-  name: z.string(),
-});
-
-export type EventRouteRef = z.infer<typeof EventRouteRefSchema>;
-
-// ============================================================================
-// Event Group Reference (nested in participant)
-// ============================================================================
-
-export const EventGroupRefSchema = z.object({
-  id: z.string().uuid(),
-  label: z.string(),
-});
-
-export type EventGroupRef = z.infer<typeof EventGroupRefSchema>;
-
-// ============================================================================
-// Participant List Item
-// ============================================================================
-
-export const ParticipantListItemSchema = z.object({
-  participantId: z.string().uuid(),
-  userId: z.string().uuid().nullable(),
+export const ParticipantItemSchema = z.object({
+  participantId: z.string(),
+  userId: z.string(),
   displayName: z.string(),
-  roleInEvent: RoleInEventSchema,
-  status: ParticipantStatusSchema,
-  eventRoute: EventRouteRefSchema.nullable(),
-  eventGroup: EventGroupRefSchema.nullable(),
+  roleInEvent: z.string(),
+  status: z.string(),
+  eventRoute: z.object({
+    id: z.string(),
+    name: z.string(),
+  }).nullable().optional(),
+  eventGroup: z.object({
+    id: z.string(),
+    label: z.string(),
+  }).nullable().optional(),
 });
 
-export type ParticipantListItem = z.infer<typeof ParticipantListItemSchema>;
-
-// ============================================================================
-// Participants List Response (paginated)
-// ============================================================================
-
-export const ParticipantsListResponseSchema = z.object({
-  items: z.array(ParticipantListItemSchema),
-  page: z.number().int().min(1),
-  pageSize: z.number().int().min(1),
-  totalCount: z.number().int().min(0),
-  totalPages: z.number().int().min(0),
+export const ParticipantsListSchema = z.object({
+  items: z.array(ParticipantItemSchema),
+  page: z.number(),
+  pageSize: z.number(),
+  totalCount: z.number(),
+  totalPages: z.number(),
 });
 
-export type ParticipantsListResponse = z.infer<typeof ParticipantsListResponseSchema>;
+export type ParticipantItem = z.infer<typeof ParticipantItemSchema>;
+export type ParticipantsList = z.infer<typeof ParticipantsListSchema>;
 
 // ============================================================================
-// Participants by Route (for summary)
+// GET /api/events/:id/participants/summary
 // ============================================================================
 
-export const ParticipantsByRouteSchema = z.object({
-  eventRouteId: z.string().uuid(),
-  name: z.string(),
-  goingCount: z.number().int().min(0),
+export const ParticipantsSummarySchema = z.object({
+  goingCount: z.number(),
+  invitedCount: z.number(),
+  maybeCount: z.number(),
+  byRoute: z.array(z.object({
+    eventRouteId: z.string(),
+    name: z.string(),
+    goingCount: z.number(),
+  })),
+  byGroup: z.array(z.object({
+    eventGroupId: z.string(),
+    label: z.string(),
+    goingCount: z.number(),
+  })),
 });
 
-export type ParticipantsByRoute = z.infer<typeof ParticipantsByRouteSchema>;
+export type ParticipantsSummary = z.infer<typeof ParticipantsSummarySchema>;
 
 // ============================================================================
-// Participants by Group (for summary)
+// POST /api/events/:id/participants/me - Upsert participation
 // ============================================================================
 
-export const ParticipantsByGroupSchema = z.object({
-  eventGroupId: z.string().uuid(),
-  label: z.string(),
-  goingCount: z.number().int().min(0),
-});
-
-export type ParticipantsByGroup = z.infer<typeof ParticipantsByGroupSchema>;
-
-// ============================================================================
-// Participants Summary Response
-// ============================================================================
-
-export const ParticipantsSummaryResponseSchema = z.object({
-  goingCount: z.number().int().min(0),
-  invitedCount: z.number().int().min(0),
-  maybeCount: z.number().int().min(0),
-  byRoute: z.array(ParticipantsByRouteSchema),
-  byGroup: z.array(ParticipantsByGroupSchema),
-});
-
-export type ParticipantsSummaryResponse = z.infer<typeof ParticipantsSummaryResponseSchema>;
-
-// ============================================================================
-// Upsert My Participation Input
-// ============================================================================
+export type ParticipationStatus = 'GOING' | 'DECLINED' | 'MAYBE';
 
 export const UpsertParticipationInputSchema = z.object({
-  status: z.enum(['GOING', 'MAYBE', 'DECLINED']),
+  status: z.enum(['GOING', 'DECLINED', 'MAYBE']),
 });
 
-export type UpsertParticipationInput = z.infer<typeof UpsertParticipationInputSchema>;
-
 // ============================================================================
-// Update My Selection Input
+// PATCH /api/events/:id/participants/me - Update selection
 // ============================================================================
 
 export const UpdateSelectionInputSchema = z.object({
-  eventRouteId: z.string().uuid().nullable().optional(),
-  eventGroupId: z.string().uuid().nullable().optional(),
+  eventRouteId: z.string().nullable().optional(),
+  eventGroupId: z.string().nullable().optional(),
 });
 
 export type UpdateSelectionInput = z.infer<typeof UpdateSelectionInputSchema>;
-
-// ============================================================================
-// Participant Response (after mutation)
-// ============================================================================
-
-export const ParticipantResponseSchema = z.object({
-  userId: z.string().uuid().nullable(),
-  displayName: z.string(),
-  eventRouteId: z.string().uuid().nullable(),
-  eventGroupId: z.string().uuid().nullable(),
-  roleInEvent: RoleInEventSchema.optional(),
-  status: ParticipantStatusSchema,
-});
-
-export type ParticipantResponse = z.infer<typeof ParticipantResponseSchema>;
-
-// ============================================================================
-// Query Params
-// ============================================================================
-
-export interface ParticipantsQueryParams {
-  eventId: string;
-  status?: ParticipantStatus;
-  eventGroupId?: string;
-  page?: number;
-  pageSize?: number;
-}

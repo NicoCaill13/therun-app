@@ -1,220 +1,100 @@
-import { createContext, useContext, useReducer, useCallback, useMemo, ReactNode } from 'react';
-import { Modal, View, Pressable } from 'react-native';
-import { Typography, H2, Button } from '@/components/ui';
-import { shouldShowUpsell } from '@/lib/api/normalizeApiError';
-
-// ============================================================================
-// Constants
-// ============================================================================
-
-const FEATURES = [
-  'Sorties illimitées',
-  'Parcours personnalisés',
-  'Statistiques avancées',
-  'Support prioritaire',
-] as const;
-
-// ============================================================================
-// Reducer
-// ============================================================================
-
-interface UpsellState {
-  isVisible: boolean;
-  errorMessage: string | null;
-}
-
-type UpsellAction =
-  | { type: 'SHOW'; payload?: string }
-  | { type: 'HIDE' };
-
-const initialState: UpsellState = {
-  isVisible: false,
-  errorMessage: null,
-};
-
-function upsellReducer(state: UpsellState, action: UpsellAction): UpsellState {
-  switch (action.type) {
-    case 'SHOW':
-      return {
-        isVisible: true,
-        errorMessage: action.payload ?? null,
-      };
-
-    case 'HIDE':
-      return initialState;
-
-    default:
-      return state;
-  }
-}
+import { createContext, useContext, useState, useCallback, ReactNode } from 'react';
+import { View, Pressable, Modal, Platform } from 'react-native';
+import MaterialIcons from '@expo/vector-icons/MaterialIcons';
+import { Typography, Button } from '@/components/ui';
 
 // ============================================================================
 // Context
 // ============================================================================
 
-interface UpsellModalContextValue {
-  showUpsell: (error?: { kind: string; message: string }) => void;
+interface UpsellContextValue {
+  showUpsell: () => void;
   hideUpsell: () => void;
-  isVisible: boolean;
 }
 
-const UpsellModalContext = createContext<UpsellModalContextValue | null>(null);
+const UpsellContext = createContext<UpsellContextValue | null>(null);
 
-interface UpsellModalProviderProps {
-  children: ReactNode;
+export function useUpsellModal(): UpsellContextValue {
+  const ctx = useContext(UpsellContext);
+  if (!ctx) throw new Error('useUpsellModal must be used within UpsellModalProvider');
+  return ctx;
 }
 
-/**
- * UpsellModalProvider component.
- * Provides a global modal for upselling premium plans when plan limits are reached.
- * Uses useReducer for predictable state management (per .cursorrules).
- *
- * @example
- * const { showUpsell } = useUpsellModal();
- *
- * try {
- *   await createEvent(data);
- * } catch (error) {
- *   const normalized = normalizeApiError(error);
- *   if (shouldShowUpsell(normalized)) {
- *     showUpsell(normalized);
- *   }
- * }
- */
-export function UpsellModalProvider({ children }: UpsellModalProviderProps) {
-  const [state, dispatch] = useReducer(upsellReducer, initialState);
+// ============================================================================
+// Provider (maquette: premium_plan_upsell_modal)
+// ============================================================================
 
-  const showUpsell = useCallback((error?: { kind: string; message: string }) => {
-    if (error && shouldShowUpsell(error as never)) {
-      dispatch({ type: 'SHOW', payload: error.message });
-    } else if (error) {
-      dispatch({ type: 'SHOW', payload: error.message });
-    } else {
-      dispatch({ type: 'SHOW' });
-    }
-  }, []);
+export function UpsellModalProvider({ children }: { children: ReactNode }) {
+  const [isVisible, setIsVisible] = useState(false);
 
-  const hideUpsell = useCallback(() => {
-    dispatch({ type: 'HIDE' });
-  }, []);
-
-  const handleUpgrade = useCallback(() => {
-    // TODO: Navigate to upgrade screen or open web browser
-    console.log('Navigate to upgrade');
-    hideUpsell();
-  }, [hideUpsell]);
-
-  const handleBackdropPress = useCallback(() => {
-    hideUpsell();
-  }, [hideUpsell]);
-
-  const stopPropagation = useCallback((e: { stopPropagation: () => void }) => {
-    e.stopPropagation();
-  }, []);
-
-  const value = useMemo<UpsellModalContextValue>(() => ({
-    showUpsell,
-    hideUpsell,
-    isVisible: state.isVisible,
-  }), [showUpsell, hideUpsell, state.isVisible]);
+  const showUpsell = useCallback(() => setIsVisible(true), []);
+  const hideUpsell = useCallback(() => setIsVisible(false), []);
 
   return (
-    <UpsellModalContext.Provider value={value}>
+    <UpsellContext.Provider value={{ showUpsell, hideUpsell }}>
       {children}
       <Modal
-        visible={state.isVisible}
+        visible={isVisible}
         transparent
-        animationType="fade"
+        animationType="slide"
         onRequestClose={hideUpsell}
-        accessibilityViewIsModal
       >
-        <Pressable
-          className="flex-1 bg-black/50 items-center justify-center"
-          onPress={handleBackdropPress}
-          accessibilityRole="button"
-          accessibilityLabel="Fermer la modale"
-        >
-          <Pressable
-            className="bg-white dark:bg-secondary-800 rounded-2xl mx-6 p-6 w-full max-w-sm"
-            onPress={stopPropagation}
-            accessibilityLabel="Passer à Premium"
+        <View className="flex-1 justify-end bg-black/50">
+          <View
+            className={`bg-white dark:bg-gray-900 rounded-t-3xl px-6 pt-8 pb-10 ${
+              Platform.OS === 'web' ? 'max-w-md mx-auto w-full' : ''
+            }`}
           >
+            {/* Drag handle */}
+            <View className="w-10 h-1 bg-gray-300 rounded-full mx-auto mb-6" />
+
             {/* Icon */}
-            <View className="items-center mb-4">
-              <View className="w-16 h-16 rounded-full bg-primary-100 dark:bg-primary-900 items-center justify-center">
-                <Typography className="text-3xl" accessibilityLabel="Éclair">⚡</Typography>
-              </View>
+            <View className="w-16 h-16 rounded-full bg-gray-100 items-center justify-center mx-auto mb-4">
+              <MaterialIcons name="workspace-premium" size={32} color="#0a181e" />
             </View>
 
-            {/* Title */}
-            <H2 className="text-center mb-2">Passez à Premium</H2>
-
-            {/* Message */}
-            <Typography color="muted" className="text-center mb-6">
-              {state.errorMessage ?? 'Vous avez atteint la limite de votre forfait gratuit. Passez à Premium pour débloquer toutes les fonctionnalités.'}
+            <Typography variant="h2" className="text-center mb-6">
+              Unlock unlimited events
             </Typography>
 
-            {/* Features list */}
-            <View className="mb-6" accessible accessibilityLabel="Fonctionnalités Premium">
-              {FEATURES.map((feature) => (
-                <FeatureItem key={feature} text={feature} />
-              ))}
+            {/* Features */}
+            <View className="gap-4 mb-8">
+              <UpsellFeature text="Create unlimited weekly runs" />
+              <UpsellFeature text="Advanced route analytics" />
+              <UpsellFeature text="Custom pacer assignments" />
             </View>
 
-            {/* Actions */}
-            <Button
-              variant="primary"
-              isFullWidth
-              onPress={handleUpgrade}
-              className="mb-3"
-            >
-              Découvrir Premium
-            </Button>
-            <Button
-              variant="ghost"
-              isFullWidth
-              onPress={hideUpsell}
-            >
-              Plus tard
-            </Button>
-          </Pressable>
-        </Pressable>
+            {/* Buttons */}
+            <Button onPress={hideUpsell}>Upgrade to Pro</Button>
+            <Pressable className="mt-4" onPress={hideUpsell}>
+              <Typography
+                variant="body"
+                color="secondary"
+                className="text-center font-sans-medium"
+              >
+                Not now
+              </Typography>
+            </Pressable>
+
+            <Typography variant="caption" color="muted" className="text-center mt-4">
+              LIMIT REACHED - PLAN 403
+            </Typography>
+          </View>
+        </View>
       </Modal>
-    </UpsellModalContext.Provider>
+    </UpsellContext.Provider>
   );
 }
 
-// ============================================================================
-// Subcomponents
-// ============================================================================
-
-interface FeatureItemProps {
-  text: string;
-}
-
-function FeatureItem({ text }: FeatureItemProps) {
+function UpsellFeature({ text }: { text: string }) {
   return (
-    <View className="flex-row items-center mb-2" accessible accessibilityLabel={`Inclus: ${text}`}>
-      <Typography className="text-primary-500 mr-2">✓</Typography>
-      <Typography color="secondary">{text}</Typography>
+    <View className="flex-row items-center gap-3">
+      <View className="w-6 h-6 rounded-full bg-brand-orange items-center justify-center">
+        <MaterialIcons name="check" size={14} color="#ffffff" />
+      </View>
+      <Typography variant="body" className="font-sans-medium">
+        {text}
+      </Typography>
     </View>
   );
-}
-
-// ============================================================================
-// Hook
-// ============================================================================
-
-/**
- * Hook to access upsell modal context.
- * Must be used within UpsellModalProvider.
- */
-export function useUpsellModal(): UpsellModalContextValue {
-  const context = useContext(UpsellModalContext);
-
-  if (!context) {
-    throw new Error('useUpsellModal must be used within an UpsellModalProvider');
-  }
-
-  return context;
 }

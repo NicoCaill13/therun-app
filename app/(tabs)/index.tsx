@@ -1,314 +1,236 @@
-import { useCallback, useState, useLayoutEffect } from 'react';
-import { View, FlatList, Pressable, RefreshControl, ActivityIndicator } from 'react-native';
-import { useRouter, useNavigation } from 'expo-router';
-import { Container, Typography, H1 } from '@/components/ui';
-import { LoadingState, ErrorState, EmptyState, HomeHubEmptyState, HomeHubLoadingState } from '@/components/states';
-import { EventStatusBadge } from '@/components/event';
-import { useMyEventsInfinite, flattenInfiniteEvents, type MeEventItem, type EventScope } from '@/lib/api';
-import { formatEventDate } from '@/lib/utils';
+import { View, Pressable, Platform } from 'react-native';
+import { useRouter } from 'expo-router';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import MaterialIcons from '@expo/vector-icons/MaterialIcons';
 import { useAuth } from '@/lib/auth';
+import { useMeEvents } from '@/lib/api/me';
+import {
+  Typography,
+  H1,
+  Button,
+  Card,
+  Skeleton,
+  SkeletonCard,
+  SkeletonText,
+} from '@/components/ui';
+import type { MeEventItem } from '@/lib/api/me';
 
 // ============================================================================
-// Tab Component (Phase 4.2)
+// Home Screen - Empty State / Loading / Events Feed
 // ============================================================================
 
-interface TabProps {
-  label: string;
-  isActive: boolean;
-  onPress: () => void;
-}
+export default function HomeScreen() {
+  const { isAuthenticated } = useAuth();
+  const insets = useSafeAreaInsets();
+  const router = useRouter();
+  const paddingTop = Platform.OS === 'web' ? 16 : insets.top;
 
-function Tab({ label, isActive, onPress }: TabProps) {
   return (
-    <Pressable
-      onPress={onPress}
-      className={`flex-1 py-3 px-4 rounded-lg ${
-        isActive
-          ? 'bg-primary-500 dark:bg-primary-600'
-          : 'bg-secondary-100 dark:bg-secondary-800'
-      }`}
-      accessibilityRole="tab"
-      accessibilityState={{ selected: isActive }}
-    >
-      <Typography
-        variant="label"
-        className={`text-center ${
-          isActive
-            ? 'text-white'
-            : 'text-secondary-600 dark:text-secondary-400'
-        }`}
+    <View className="flex-1 bg-background-light dark:bg-background-dark">
+      <View
+        className={Platform.OS === 'web' ? 'max-w-md mx-auto w-full flex-1' : 'flex-1'}
       >
-        {label}
-      </Typography>
-    </Pressable>
-  );
-}
-
-interface TabsProps {
-  activeScope: EventScope;
-  onScopeChange: (scope: EventScope) => void;
-}
-
-function Tabs({ activeScope, onScopeChange }: TabsProps) {
-  return (
-    <View className="flex-row gap-2 mb-4">
-      <Tab
-        label="A venir"
-        isActive={activeScope === 'future'}
-        onPress={() => onScopeChange('future')}
-      />
-      <Tab
-        label="Passees"
-        isActive={activeScope === 'past'}
-        onPress={() => onScopeChange('past')}
-      />
-    </View>
-  );
-}
-
-// ============================================================================
-// Events Empty State Component
-// ============================================================================
-
-interface EventsEmptyStateProps {
-  scope: EventScope;
-}
-
-function EventsEmptyState({ scope }: EventsEmptyStateProps) {
-  const router = useRouter();
-  const isFuture = scope === 'future';
-
-  return (
-    <EmptyState
-      icon={isFuture ? '🏃' : '📚'}
-      title={isFuture ? 'Aucune sortie a venir' : 'Aucun historique'}
-      description={
-        isFuture
-          ? 'Vous n\'avez pas de sortie planifiee. Creez votre premiere sortie pour commencer !'
-          : 'Vous n\'avez pas encore participe a une sortie.'
-      }
-      actionLabel={isFuture ? 'Creer une sortie' : undefined}
-      onAction={isFuture ? () => router.push('/event/create') : undefined}
-    />
-  );
-}
-
-// ============================================================================
-// Event Card Component
-// ============================================================================
-
-interface EventCardProps {
-  event: MeEventItem;
-  onPress: () => void;
-}
-
-function EventCard({ event, onPress }: EventCardProps) {
-  const formattedDate = formatEventDate(event.startDateTime);
-
-  return (
-    <Pressable
-      onPress={onPress}
-      className="bg-white dark:bg-secondary-800 rounded-xl p-4 mb-3 border border-secondary-100 dark:border-secondary-700 active:opacity-80"
-      accessibilityRole="button"
-      accessibilityLabel={`Sortie ${event.title}, ${formattedDate}`}
-    >
-      <View className="flex-row items-start justify-between mb-2">
-        <Typography variant="h4" className="flex-1 mr-2" numberOfLines={2}>
-          {event.title}
-        </Typography>
-        <EventStatusBadge status={event.status} size="sm" />
-      </View>
-
-      <View className="flex-row items-center mb-2">
-        <Typography color="muted" className="mr-1">📅</Typography>
-        <Typography color="muted" variant="bodySmall">{formattedDate}</Typography>
-      </View>
-
-      {event.locationName && (
-        <View className="flex-row items-center mb-2">
-          <Typography color="muted" className="mr-1">📍</Typography>
-          <Typography color="muted" variant="bodySmall" numberOfLines={1}>
-            {event.locationName}
+        {/* Header */}
+        <View className="flex-row items-center justify-between px-4 pb-2" style={{ paddingTop: paddingTop + 8 }}>
+          <Pressable
+            className="w-10 h-10 rounded-full bg-charcoal items-center justify-center"
+            accessibilityLabel="Menu"
+          >
+            <MaterialIcons name="directions-run" size={20} color="#ffffff" />
+          </Pressable>
+          <Typography variant="h4" className="font-sans-bold tracking-tight">
+            THE RUN
           </Typography>
+          <Pressable
+            className="w-10 h-10 rounded-full items-center justify-center"
+            accessibilityLabel="Settings"
+            onPress={() => router.push('/(tabs)/profile')}
+          >
+            <MaterialIcons name="settings" size={22} color="#0a181e" />
+          </Pressable>
         </View>
-      )}
 
-      <View className="flex-row items-center">
-        <Typography color="muted" className="mr-1">👥</Typography>
-        <Typography color="muted" variant="bodySmall">
-          {event.goingCount} participant{event.goingCount > 1 ? 's' : ''}
-        </Typography>
+        {isAuthenticated ? <AuthenticatedHome /> : <EmptyStateHome />}
       </View>
-    </Pressable>
-  );
-}
-
-// ============================================================================
-// Load More Footer Component (Phase 4.2)
-// ============================================================================
-
-interface LoadMoreFooterProps {
-  isFetchingNextPage: boolean;
-  hasNextPage: boolean;
-}
-
-function LoadMoreFooter({ isFetchingNextPage, hasNextPage }: LoadMoreFooterProps) {
-  if (!hasNextPage) return null;
-
-  return (
-    <View className="py-4 items-center">
-      {isFetchingNextPage ? (
-        <ActivityIndicator size="small" color="#16a34a" />
-      ) : (
-        <Typography color="muted" variant="bodySmall">Scroll pour charger plus</Typography>
-      )}
     </View>
   );
 }
 
 // ============================================================================
-// Main Dashboard Screen (Phase 4.2 - Home v2 Feed)
+// Authenticated Home - Events Feed or Empty State
 // ============================================================================
 
-export default function DashboardScreen() {
+function AuthenticatedHome() {
+  const { data, isLoading, isError } = useMeEvents('future');
   const router = useRouter();
-  const navigation = useNavigation();
-  const { isAuthenticated, isLoading: isAuthLoading } = useAuth();
-  const [activeScope, setActiveScope] = useState<EventScope>('future');
 
-  const {
-    data,
-    isLoading,
-    error,
-    refetch,
-    isRefetching,
-    fetchNextPage,
-    hasNextPage,
-    isFetchingNextPage,
-  } = useMyEventsInfinite(activeScope, {
-    enabled: isAuthenticated,
-    pageSize: 10,
+  if (isLoading) return <HomeLoadingState />;
+  if (isError || !data) return <EmptyStateHome />;
+  if (data.items.length === 0) return <EmptyStateHome />;
+
+  return (
+    <View className="flex-1 px-4 pt-4">
+      <View className="flex-row items-center justify-between mb-4">
+        <Typography variant="h3">Upcoming</Typography>
+        <Pressable onPress={() => router.push('/event/create')}>
+          <MaterialIcons name="add-circle" size={28} color="#FF5A1F" />
+        </Pressable>
+      </View>
+      {data.items.map((event) => (
+        <EventCard key={event.id} event={event} />
+      ))}
+    </View>
+  );
+}
+
+// ============================================================================
+// Event Card
+// ============================================================================
+
+function EventCard({ event }: { event: MeEventItem }) {
+  const router = useRouter();
+
+  const dateStr = new Date(event.startDateTime).toLocaleDateString('en-US', {
+    weekday: 'short',
+    month: 'short',
+    day: 'numeric',
+    hour: '2-digit',
+    minute: '2-digit',
   });
 
-  // Flatten pages into single array
-  const events = flattenInfiniteEvents(data);
-
-  const handleEventPress = useCallback((eventId: string) => {
-    router.push(`/event/${eventId}`);
-  }, [router]);
-
-  const handleScopeChange = useCallback((scope: EventScope) => {
-    setActiveScope(scope);
-  }, []);
-
-  const handleEndReached = useCallback(() => {
-    if (hasNextPage && !isFetchingNextPage) {
-      fetchNextPage();
-    }
-  }, [hasNextPage, isFetchingNextPage, fetchNextPage]);
-
-  const renderItem = useCallback(({ item }: { item: MeEventItem }) => (
-    <EventCard
-      event={item}
-      onPress={() => handleEventPress(item.id)}
-    />
-  ), [handleEventPress]);
-
-  const keyExtractor = useCallback((item: MeEventItem) => item.id, []);
-
-  const showHomeHubEmpty =
-    !isAuthenticated ||
-    (events.length === 0 && activeScope === 'future' && !isLoading && !error);
-
-  useLayoutEffect(() => {
-    navigation.setOptions({ headerShown: !showHomeHubEmpty });
-  }, [navigation, showHomeHubEmpty]);
-
-  // Show loading while auth is being determined
-  if (isAuthLoading) {
-    return <LoadingState />;
-  }
-
-  // Show Home Hub empty state (design) when not authenticated or no future events (after load)
-  if (showHomeHubEmpty) {
-    return (
-      <HomeHubEmptyState
-        onCreateEvent={() => router.push('/event/create')}
-        onJoinWithCode={() => router.push({ pathname: '/scan', params: { mode: 'manual' } })}
-        onSettings={() => router.push('/(tabs)/two')}
-      />
-    );
-  }
-
-  // Show Home Hub loading skeleton for initial load (design)
-  if (isLoading && !data) {
-    return <HomeHubLoadingState />;
-  }
-
-  // Show error state
-  if (error && !data) {
-    return (
-      <ErrorState
-        message={error.message || 'Une erreur est survenue'}
-        onRetry={refetch}
-        variant="compact"
-      />
-    );
-  }
-
-  // Show empty state if no events
-  if (events.length === 0) {
-    return (
-      <Container padding="lg" className="flex-1">
-        <H1 className="mb-4">Mes sorties</H1>
-        <Tabs activeScope={activeScope} onScopeChange={handleScopeChange} />
-        <EventsEmptyState scope={activeScope} />
-      </Container>
-    );
-  }
-
-  // Show events list with tabs
   return (
-    <Container padding="none" className="flex-1">
-      <FlatList
-        data={events}
-        renderItem={renderItem}
-        keyExtractor={keyExtractor}
-        contentContainerStyle={{ padding: 16, paddingBottom: 80 }}
-        refreshControl={
-          <RefreshControl
-            refreshing={isRefetching && !isFetchingNextPage}
-            onRefresh={refetch}
-            tintColor="#16a34a"
-          />
-        }
-        ListHeaderComponent={
-          <View>
-            <H1 className="mb-4">Mes sorties</H1>
-            <Tabs activeScope={activeScope} onScopeChange={handleScopeChange} />
+    <Pressable
+      className="mb-3"
+      onPress={() => router.push(`/event/${event.id}`)}
+      accessibilityRole="button"
+    >
+      <Card padding="md">
+        <View className="flex-row items-start justify-between">
+          <View className="flex-1">
+            <Typography variant="h4" className="mb-1">
+              {event.title}
+            </Typography>
+            <View className="flex-row items-center gap-1 mb-1">
+              <MaterialIcons name="calendar-today" size={14} color="#6b7280" />
+              <Typography variant="bodySmall" color="secondary">
+                {dateStr}
+              </Typography>
+            </View>
+            {event.locationName && (
+              <View className="flex-row items-center gap-1">
+                <MaterialIcons name="location-on" size={14} color="#6b7280" />
+                <Typography variant="bodySmall" color="secondary">
+                  {event.locationName}
+                </Typography>
+              </View>
+            )}
           </View>
-        }
-        ListFooterComponent={
-          <LoadMoreFooter
-            isFetchingNextPage={isFetchingNextPage}
-            hasNextPage={hasNextPage ?? false}
-          />
-        }
-        onEndReached={handleEndReached}
-        onEndReachedThreshold={0.3}
-        showsVerticalScrollIndicator={false}
-      />
-
-      {/* Floating Action Button */}
-      <Pressable
-        onPress={() => router.push('/event/create')}
-        className="absolute bottom-6 right-6 w-14 h-14 rounded-full bg-primary-500 items-center justify-center shadow-lg active:bg-primary-600"
-        accessibilityRole="button"
-        accessibilityLabel="Creer une nouvelle sortie"
-      >
-        <Typography className="text-white text-2xl font-bold">+</Typography>
-      </Pressable>
-    </Container>
+          <View className="bg-brand-orange-bg rounded-full px-2 py-1">
+            <Typography variant="caption" className="text-brand-orange font-sans-semibold">
+              {event.goingCount} going
+            </Typography>
+          </View>
+        </View>
+      </Card>
+    </Pressable>
   );
 }
 
+// ============================================================================
+// Empty State (maquette: home_hub_empty_state)
+// ============================================================================
+
+function EmptyStateHome() {
+  const router = useRouter();
+
+  return (
+    <View className="flex-1 px-4 pt-6 items-center">
+      {/* Illustration placeholder */}
+      <View className="w-full h-48 bg-gray-100 dark:bg-gray-800 rounded-2xl items-center justify-center mb-2">
+        <MaterialIcons name="map" size={64} color="#d1d5db" />
+        <View className="absolute bottom-3 left-4 w-16 h-1 bg-brand-orange rounded-full" />
+      </View>
+
+      <H1 className="text-center mt-4 mb-2">Create your next run</H1>
+      <Typography variant="body" color="secondary" className="text-center mb-8">
+        Start a group run and invite others in seconds.
+      </Typography>
+
+      <Button
+        onPress={() => router.push('/event/create')}
+        leftIcon={<MaterialIcons name="add-circle" size={20} color="#ffffff" className="mr-2" />}
+      >
+        Create an event
+      </Button>
+
+      <Pressable className="mt-4 mb-8" onPress={() => router.push('/join')}>
+        <Typography variant="body" color="orange" className="underline underline-offset-4 font-sans-medium">
+          Join with a code
+        </Typography>
+      </Pressable>
+
+      {/* How it works section */}
+      <Card padding="lg" className="w-full">
+        <Typography variant="label" color="secondary" className="mb-4">
+          HOW IT WORKS
+        </Typography>
+        <HowItWorksItem
+          icon="edit-note"
+          title="Create"
+          description="Set your route and time."
+        />
+        <HowItWorksItem
+          icon="qr-code-2"
+          title="Share Code"
+          description="Invite your crew via link."
+        />
+        <HowItWorksItem
+          icon="bolt"
+          title="Run"
+          description="Track and compete live."
+        />
+      </Card>
+    </View>
+  );
+}
+
+function HowItWorksItem({
+  icon,
+  title,
+  description,
+}: {
+  icon: keyof typeof MaterialIcons.glyphMap;
+  title: string;
+  description: string;
+}) {
+  return (
+    <View className="flex-row items-center gap-3 mb-4 last:mb-0">
+      <View className="w-10 h-10 rounded-full bg-brand-orange-bg items-center justify-center">
+        <MaterialIcons name={icon} size={20} color="#FF5A1F" />
+      </View>
+      <View>
+        <Typography variant="h4">{title}</Typography>
+        <Typography variant="bodySmall" color="secondary">
+          {description}
+        </Typography>
+      </View>
+    </View>
+  );
+}
+
+// ============================================================================
+// Loading State (maquette: home_hub_loading_state)
+// ============================================================================
+
+function HomeLoadingState() {
+  return (
+    <View className="flex-1 px-4 pt-4 gap-4">
+      <Skeleton width="70%" height={28} borderRadius={6} />
+      <Skeleton width="50%" height={16} borderRadius={4} />
+      <Skeleton width="100%" height={80} borderRadius={12} />
+      <Skeleton width="40%" height={16} borderRadius={4} className="mt-4" />
+      <SkeletonCard />
+      <SkeletonCard />
+    </View>
+  );
+}

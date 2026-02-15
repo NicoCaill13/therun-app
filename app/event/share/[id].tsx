@@ -1,145 +1,87 @@
-import { useCallback } from 'react';
-import { View, Share, Pressable } from 'react-native';
-import { useLocalSearchParams, useRouter, Stack } from 'expo-router';
-import QRCode from 'react-native-qrcode-svg';
+import { View, Platform } from 'react-native';
+import { useLocalSearchParams } from 'expo-router';
 import MaterialIcons from '@expo/vector-icons/MaterialIcons';
-import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { Typography } from '@/components/ui';
-import { LoadingState, ErrorState } from '@/components/states';
-import { useEventDetails } from '@/lib/api';
-import { config } from '@/lib/config';
-import { useColorScheme } from '@/components/useColorScheme';
+import { useEvent } from '@/lib/api/events';
+import { useShare, useClipboard } from '@/lib/hooks/platform';
+import { WEB_URL } from '@/lib/config/env';
+import { Header, Typography, Badge, Button, Skeleton } from '@/components/ui';
+
+// ============================================================================
+// Share Event QR (maquette: share_event_qr)
+// ============================================================================
 
 export default function ShareEventScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
-  const router = useRouter();
-  const insets = useSafeAreaInsets();
-  const colorScheme = useColorScheme();
-  const iconColor = colorScheme === 'dark' ? '#fff' : '#0a181e';
+  const { data, isLoading } = useEvent(id);
+  const share = useShare();
+  const { copy } = useClipboard();
 
-  const { data, isLoading, error, refetch } = useEventDetails(id ?? '');
-
-  if (isLoading || !id) {
+  if (isLoading || !data) {
     return (
-      <>
-        <Stack.Screen options={{ title: 'Share Event' }} />
-        <LoadingState message="Chargement..." />
-      </>
-    );
-  }
-
-  if (error || !data) {
-    return (
-      <>
-        <Stack.Screen options={{ title: 'Share Event' }} />
-        <ErrorState
-          message={error?.message || 'Evenement introuvable'}
-          onRetry={refetch}
-          onBack={() => router.back()}
-        />
-      </>
+      <View className="flex-1 bg-background-light dark:bg-background-dark items-center justify-center">
+        <Skeleton width={200} height={200} borderRadius={12} />
+      </View>
     );
   }
 
   const { event } = data;
-  const joinUrl = `${config.webUrl}/join/${event.eventCode}`;
-
-  const handleShare = useCallback(async () => {
-    try {
-      await Share.share({
-        message: `Rejoins-moi pour "${event.title}" ! ${joinUrl}`,
-        url: joinUrl,
-      });
-    } catch {
-      // User cancelled
-    }
-  }, [event.title, joinUrl]);
-
-  const handleCopyLink = useCallback(async () => {
-    try {
-      await Share.share({
-        message: joinUrl,
-        url: joinUrl,
-      });
-    } catch {
-      // User cancelled
-    }
-  }, [joinUrl]);
+  const shareUrl = `${WEB_URL}/welcome/${event.eventCode}`;
 
   return (
-    <>
-      <Stack.Screen options={{ headerShown: false }} />
+    <View className="flex-1 bg-background-light dark:bg-background-dark">
+      <View className={Platform.OS === 'web' ? 'max-w-md mx-auto w-full flex-1' : 'flex-1'}>
+        <Header title="Share Event" />
 
-      <View
-        className="flex-1 bg-backgroundLight dark:bg-backgroundDark"
-        style={{ paddingTop: insets.top }}
-      >
-        {/* TopAppBar - design share_event_qr */}
-        <View className="flex-row items-center justify-between px-4 pb-2 bg-transparent">
-          <Pressable onPress={() => router.back()} className="w-12 h-12 items-center justify-center" accessibilityLabel="Retour">
-            <MaterialIcons name="chevron-left" size={28} color={iconColor} />
-          </Pressable>
-          <Typography className="text-lg font-bold leading-tight tracking-tight text-charcoal dark:text-white flex-1 text-center">
-            Share Event
-          </Typography>
-          <Pressable className="w-12 h-12 items-center justify-center rounded-xl" accessibilityLabel="More options">
-            <MaterialIcons name="more-horiz" size={24} color={iconColor} />
-          </Pressable>
-        </View>
+        <View className="flex-1 items-center px-4 pt-6">
+          {/* Status badge */}
+          <Badge
+            variant="green"
+            label="LIVE EVENT"
+            icon={<View className="w-2 h-2 rounded-full bg-green-500" />}
+            className="mb-4"
+          />
 
-        <View className="flex-1 px-6 pt-6 items-center">
-          <View className="rounded-full bg-brandOrange/10 px-3 py-1.5 flex-row items-center gap-1.5 mb-3">
-            <View className="w-2 h-2 rounded-full bg-brandOrange" />
-            <Typography className="text-brandOrange text-xs font-bold uppercase tracking-widest">
-              Live Event
-            </Typography>
-          </View>
-          <Typography className="text-2xl font-bold leading-tight text-charcoal dark:text-white text-center mb-1">
+          <Typography variant="h1" className="text-center mb-1">
             Invite the Pack
           </Typography>
-          <Typography color="muted" className="text-sm text-center mb-8">
-            {event.title}
+          <Typography variant="body" color="secondary" className="text-center mb-8">
+            Scan to join {event.title}
           </Typography>
 
-          <View className="w-full max-w-[320px] bg-white dark:bg-secondary-900 border border-borderGrey dark:border-secondary-800 rounded-xl shadow-xl p-8 items-center">
-            <View className="bg-white p-2 rounded-lg">
-              <QRCode value={joinUrl} size={200} color="#000000" backgroundColor="#FFFFFF" />
-            </View>
-            <View className="mt-6 items-center">
-              <Typography variant="caption" color="muted" className="uppercase tracking-widest mb-2">
-                Manual Entry Code
-              </Typography>
-              <Typography className="font-mono text-2xl font-bold tracking-widest text-charcoal dark:text-white bg-backgroundLight dark:bg-black/20 px-4 py-2 rounded-lg">
-                {event.eventCode}
+          {/* QR Code placeholder */}
+          <View className="w-72 h-72 bg-brand-orange-bg rounded-2xl items-center justify-center mb-6">
+            <View className="w-48 h-48 bg-white rounded-xl items-center justify-center shadow-lg">
+              <MaterialIcons name="qr-code-2" size={120} color="#0a181e" />
+              <Typography variant="caption" color="secondary" className="mt-2">
+                {event.title}
               </Typography>
             </View>
           </View>
 
-          <Typography color="muted" className="text-sm font-medium italic text-center mt-8">
-            Participants can join in under 30 seconds
+          {/* Manual code */}
+          <Typography variant="label" color="secondary" className="mb-2">
+            MANUAL ENTRY CODE
           </Typography>
+          <View className="bg-white dark:bg-gray-900 rounded-xl px-6 py-3 border border-gray-100 dark:border-gray-800">
+            <Typography variant="h2" className="font-mono tracking-[0.3em]">
+              {event.eventCode}
+            </Typography>
+          </View>
         </View>
 
-        {/* Footer - design */}
-        <View className="px-6 pb-6 gap-3" style={{ paddingBottom: insets.bottom + 24 }}>
-          <Pressable
-            onPress={handleShare}
-            className="h-14 rounded-xl bg-charcoal dark:bg-white items-center justify-center flex-row gap-2"
+        {/* Bottom buttons */}
+        <View className="px-4 pb-8 gap-3">
+          <Button
+            onPress={() => share(shareUrl, `Join ${event.title} on THE RUN`)}
+            leftIcon={<MaterialIcons name="ios-share" size={18} color="#ffffff" className="mr-2" />}
           >
-            <MaterialIcons name="ios-share" size={22} color={colorScheme === 'dark' ? '#0B1220' : '#fff'} />
-            <Typography className="text-white dark:text-charcoal font-bold">Share Event</Typography>
-          </Pressable>
-          <Pressable
-            onPress={handleCopyLink}
-            className="h-14 rounded-xl bg-secondary-100 dark:bg-secondary-800 border border-transparent dark:border-secondary-700 items-center justify-center flex-row gap-2"
-          >
-            <MaterialIcons name="content-copy" size={20} color={iconColor} />
-            <Typography className="text-charcoal dark:text-white font-bold">Copy link</Typography>
-          </Pressable>
+            Share Event
+          </Button>
+          <Button variant="secondary" onPress={() => copy(shareUrl)}>
+            Copy link
+          </Button>
         </View>
-        {/* iOS Bottom Indicator - design */}
-        <View className="w-32 h-1.5 bg-secondary-300 dark:bg-secondary-700 mx-auto mt-6 rounded-full opacity-50" />
       </View>
-    </>
+    </View>
   );
 }

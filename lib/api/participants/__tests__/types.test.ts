@@ -1,41 +1,13 @@
 import {
-  ParticipantStatusSchema,
-  RoleInEventSchema,
-  ParticipantListItemSchema,
-  ParticipantsListResponseSchema,
-  ParticipantsSummaryResponseSchema,
+  ParticipantItemSchema,
+  ParticipantsListSchema,
+  ParticipantsSummarySchema,
   UpsertParticipationInputSchema,
   UpdateSelectionInputSchema,
-  ParticipantResponseSchema,
 } from '../types';
 
 describe('Participant Types', () => {
-  describe('ParticipantStatusSchema', () => {
-    it('should accept valid statuses', () => {
-      expect(ParticipantStatusSchema.parse('INVITED')).toBe('INVITED');
-      expect(ParticipantStatusSchema.parse('GOING')).toBe('GOING');
-      expect(ParticipantStatusSchema.parse('MAYBE')).toBe('MAYBE');
-      expect(ParticipantStatusSchema.parse('DECLINED')).toBe('DECLINED');
-    });
-
-    it('should reject invalid status', () => {
-      expect(() => ParticipantStatusSchema.parse('INVALID')).toThrow();
-    });
-  });
-
-  describe('RoleInEventSchema', () => {
-    it('should accept valid roles', () => {
-      expect(RoleInEventSchema.parse('ORGANISER')).toBe('ORGANISER');
-      expect(RoleInEventSchema.parse('ENCADRANT')).toBe('ENCADRANT');
-      expect(RoleInEventSchema.parse('PARTICIPANT')).toBe('PARTICIPANT');
-    });
-
-    it('should reject invalid role', () => {
-      expect(() => RoleInEventSchema.parse('ADMIN')).toThrow();
-    });
-  });
-
-  describe('ParticipantListItemSchema', () => {
+  describe('ParticipantItemSchema', () => {
     it('should parse valid participant item', () => {
       const validItem = {
         participantId: '550e8400-e29b-41d4-a716-446655440000',
@@ -47,29 +19,28 @@ describe('Participant Types', () => {
         eventGroup: { id: '550e8400-e29b-41d4-a716-446655440002', label: '5:30/km' },
       };
 
-      const result = ParticipantListItemSchema.parse(validItem);
+      const result = ParticipantItemSchema.parse(validItem);
       expect(result.displayName).toBe('John Doe');
       expect(result.status).toBe('GOING');
       expect(result.eventGroup?.label).toBe('5:30/km');
     });
 
-    it('should allow null userId for guests', () => {
-      const guestItem = {
+    it('should allow optional eventRoute and eventGroup', () => {
+      const minimalItem = {
         participantId: '550e8400-e29b-41d4-a716-446655440000',
-        userId: null,
-        displayName: 'Guest User',
+        userId: '550e8400-e29b-41d4-a716-446655440001',
+        displayName: 'John Doe',
         roleInEvent: 'PARTICIPANT',
         status: 'GOING',
-        eventRoute: null,
-        eventGroup: null,
       };
 
-      const result = ParticipantListItemSchema.parse(guestItem);
-      expect(result.userId).toBeNull();
+      const result = ParticipantItemSchema.parse(minimalItem);
+      expect(result.eventRoute).toBeUndefined();
+      expect(result.eventGroup).toBeUndefined();
     });
   });
 
-  describe('ParticipantsListResponseSchema', () => {
+  describe('ParticipantsListSchema', () => {
     it('should parse valid paginated response', () => {
       const response = {
         items: [
@@ -89,25 +60,27 @@ describe('Participant Types', () => {
         totalPages: 1,
       };
 
-      const result = ParticipantsListResponseSchema.parse(response);
+      const result = ParticipantsListSchema.parse(response);
       expect(result.items).toHaveLength(1);
       expect(result.page).toBe(1);
+      expect(result.items[0].displayName).toBe('John Doe');
     });
 
-    it('should reject invalid pagination values', () => {
-      const invalidResponse = {
+    it('should accept empty items array', () => {
+      const response = {
         items: [],
-        page: 0, // Must be >= 1
+        page: 1,
         pageSize: 20,
         totalCount: 0,
-        totalPages: 0,
+        totalPages: 1,
       };
 
-      expect(() => ParticipantsListResponseSchema.parse(invalidResponse)).toThrow();
+      const result = ParticipantsListSchema.parse(response);
+      expect(result.items).toHaveLength(0);
     });
   });
 
-  describe('ParticipantsSummaryResponseSchema', () => {
+  describe('ParticipantsSummarySchema', () => {
     it('should parse valid summary', () => {
       const summary = {
         goingCount: 10,
@@ -121,7 +94,7 @@ describe('Participant Types', () => {
         ],
       };
 
-      const result = ParticipantsSummaryResponseSchema.parse(summary);
+      const result = ParticipantsSummarySchema.parse(summary);
       expect(result.goingCount).toBe(10);
       expect(result.byRoute).toHaveLength(1);
       expect(result.byGroup).toHaveLength(1);
@@ -136,7 +109,7 @@ describe('Participant Types', () => {
         byGroup: [],
       };
 
-      const result = ParticipantsSummaryResponseSchema.parse(summary);
+      const result = ParticipantsSummarySchema.parse(summary);
       expect(result.byRoute).toHaveLength(0);
       expect(result.byGroup).toHaveLength(0);
     });
@@ -146,10 +119,12 @@ describe('Participant Types', () => {
     it('should accept valid participation statuses', () => {
       expect(UpsertParticipationInputSchema.parse({ status: 'GOING' })).toEqual({ status: 'GOING' });
       expect(UpsertParticipationInputSchema.parse({ status: 'MAYBE' })).toEqual({ status: 'MAYBE' });
-      expect(UpsertParticipationInputSchema.parse({ status: 'DECLINED' })).toEqual({ status: 'DECLINED' });
+      expect(UpsertParticipationInputSchema.parse({ status: 'DECLINED' })).toEqual({
+        status: 'DECLINED',
+      });
     });
 
-    it('should reject INVITED status (cannot be set by user)', () => {
+    it('should reject invalid status', () => {
       expect(() => UpsertParticipationInputSchema.parse({ status: 'INVITED' })).toThrow();
     });
   });
@@ -185,36 +160,6 @@ describe('Participant Types', () => {
       const result = UpdateSelectionInputSchema.parse(input);
       expect(result.eventGroupId).toBe(input.eventGroupId);
       expect(result.eventRouteId).toBeUndefined();
-    });
-  });
-
-  describe('ParticipantResponseSchema', () => {
-    it('should parse valid response', () => {
-      const response = {
-        userId: '550e8400-e29b-41d4-a716-446655440000',
-        displayName: 'John Doe',
-        eventRouteId: null,
-        eventGroupId: '550e8400-e29b-41d4-a716-446655440001',
-        roleInEvent: 'PARTICIPANT',
-        status: 'GOING',
-      };
-
-      const result = ParticipantResponseSchema.parse(response);
-      expect(result.status).toBe('GOING');
-      expect(result.displayName).toBe('John Doe');
-    });
-
-    it('should allow optional roleInEvent', () => {
-      const response = {
-        userId: null,
-        displayName: 'Guest',
-        eventRouteId: null,
-        eventGroupId: null,
-        status: 'GOING',
-      };
-
-      const result = ParticipantResponseSchema.parse(response);
-      expect(result.roleInEvent).toBeUndefined();
     });
   });
 });

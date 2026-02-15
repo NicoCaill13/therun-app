@@ -2,27 +2,28 @@ import { Text, TextProps, AccessibilityRole } from 'react-native';
 import { ReactNode, useMemo } from 'react';
 
 // ============================================================================
-// Constants
+// Constants - Aligned with Stitch maquettes (Inter font, navy/orange palette)
 // ============================================================================
 
 const VARIANT_CLASSES = {
-  h1: 'text-3xl font-bold',
-  h2: 'text-2xl font-bold',
-  h3: 'text-xl font-semibold',
-  h4: 'text-lg font-semibold',
-  body: 'text-base',
-  bodySmall: 'text-sm',
-  caption: 'text-xs',
-  label: 'text-sm font-medium',
+  h1: 'text-3xl font-sans-extrabold tracking-tight',
+  h2: 'text-2xl font-sans-bold tracking-tight',
+  h3: 'text-xl font-sans-semibold',
+  h4: 'text-lg font-sans-semibold',
+  body: 'text-base font-sans',
+  bodySmall: 'text-sm font-sans',
+  caption: 'text-xs font-sans',
+  label: 'text-xs font-sans-semibold uppercase tracking-widest',
 } as const;
 
 const COLOR_CLASSES = {
-  default: 'text-secondary-900 dark:text-secondary-100',
-  primary: 'text-primary-600 dark:text-primary-400',
-  secondary: 'text-secondary-600 dark:text-secondary-400',
-  muted: 'text-secondary-400 dark:text-secondary-500',
-  error: 'text-red-600 dark:text-red-400',
-  success: 'text-green-600 dark:text-green-400',
+  default: 'text-primary dark:text-white',
+  secondary: 'text-gray-500 dark:text-gray-400',
+  muted: 'text-gray-400 dark:text-gray-500',
+  error: 'text-error-red',
+  orange: 'text-brand-orange',
+  white: 'text-white',
+  inherit: '',
 } as const;
 
 const HEADING_VARIANTS = new Set(['h1', 'h2', 'h3', 'h4']);
@@ -31,15 +32,6 @@ const HEADING_VARIANTS = new Set(['h1', 'h2', 'h3', 'h4']);
 // Component
 // ============================================================================
 
-/**
- * Typography component for consistent text styling.
- * Uses NativeWind for cross-platform styling.
- * Automatically sets accessibilityRole="header" for heading variants.
- *
- * @example
- * <Typography variant="h1">Page Title</Typography>
- * <Typography variant="body" color="muted">Description text</Typography>
- */
 export function Typography({
   variant = 'body',
   color = 'default',
@@ -53,7 +45,6 @@ export function Typography({
     return `${baseClasses} ${className}`.trim();
   }, [variant, color, className]);
 
-  // Auto-set header role for heading variants
   const computedAccessibilityRole: AccessibilityRole | undefined =
     accessibilityRole ?? (HEADING_VARIANTS.has(variant) ? 'header' : undefined);
 

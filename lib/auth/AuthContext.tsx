@@ -8,6 +8,7 @@ import {
   hasStoredCredentials,
   type StoredUserData,
 } from './storage';
+import { setOnUnauthorized, clearOnUnauthorized } from './onUnauthorized';
 import { resetQueryClient } from '@/lib/query/queryClient';
 
 /**
@@ -176,6 +177,12 @@ export function AuthProvider({ children }: AuthProviderProps) {
     resetQueryClient();
     dispatch({ type: 'SIGN_OUT' });
   }, []);
+
+  // Register signOut so API client can trigger it on 401 (session expired)
+  useEffect(() => {
+    setOnUnauthorized(signOut);
+    return () => clearOnUnauthorized();
+  }, [signOut]);
 
   /**
    * Update user data (e.g., after profile edit).

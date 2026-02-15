@@ -1,204 +1,69 @@
-import { useQueryClient } from '@tanstack/react-query';
-import { useApiQuery, useApiMutation } from '@/lib/hooks';
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { apiClient } from '@/lib/api/client';
-import { eventKeys } from '@/lib/api/events/hooks';
-import {
-  ParticipantsListResponse,
-  ParticipantsListResponseSchema,
-  ParticipantsSummaryResponse,
-  ParticipantsSummaryResponseSchema,
-  ParticipantResponse,
-  ParticipantResponseSchema,
-  UpsertParticipationInput,
+import { ParticipantsListSchema, ParticipantsSummarySchema } from './types';
+import type {
+  ParticipantsList,
+  ParticipantsSummary,
+  ParticipationStatus,
   UpdateSelectionInput,
-  ParticipantsQueryParams,
-  ParticipantStatus,
 } from './types';
 
-// ============================================================================
-// Query Keys
-// ============================================================================
-
-export const participantKeys = {
-  all: ['participants'] as const,
-  lists: () => [...participantKeys.all, 'list'] as const,
-  list: (eventId: string, params?: Omit<ParticipantsQueryParams, 'eventId'>) =>
-    [...participantKeys.lists(), eventId, params] as const,
-  summaries: () => [...participantKeys.all, 'summary'] as const,
-  summary: (eventId: string) => [...participantKeys.summaries(), eventId] as const,
-};
-
-// ============================================================================
-// useParticipantsList - List event participants (paginated)
-// ============================================================================
-
-interface UseParticipantsListOptions {
-  enabled?: boolean;
-}
-
-/**
- * Hook to fetch event participants (paginated).
- * Uses GET /events/:eventId/participants endpoint.
- */
-export function useParticipantsList(
-  params: ParticipantsQueryParams,
-  options?: UseParticipantsListOptions
+/** GET /api/events/:id/participants - Paginated participant list */
+export function useParticipants(
+  eventId: string | undefined,
+  filters?: { status?: string; page?: number; pageSize?: number }
 ) {
-  const { eventId, ...queryParams } = params;
-
-  return useApiQuery<ParticipantsListResponse>(
-    participantKeys.list(eventId, queryParams),
-    async () => {
-      const response = await apiClient.get(`/events/${eventId}/participants`, {
-        params: {
-          status: queryParams.status,
-          eventGroupId: queryParams.eventGroupId,
-          page: queryParams.page ?? 1,
-          pageSize: queryParams.pageSize ?? 20,
-        },
+  return useQuery<ParticipantsList>({
+    queryKey: ['events', eventId, 'participants', filters],
+    queryFn: async () => {
+      const { data } = await apiClient.get(`/api/events/${eventId}/participants`, {
+        params: filters,
       });
-
-      return ParticipantsListResponseSchema.parse(response.data);
+      return ParticipantsListSchema.parse(data);
     },
-    {
-      enabled: (options?.enabled ?? true) && !!eventId,
-    }
-  );
+    enabled: Boolean(eventId),
+  });
 }
 
-// ============================================================================
-// useParticipantsSummary - Get participants summary (counts by route/group)
-// ============================================================================
-
-interface UseParticipantsSummaryOptions {
-  enabled?: boolean;
-}
-
-/**
- * Hook to fetch participants summary.
- * Uses GET /events/:eventId/participants/summary endpoint.
- */
-export function useParticipantsSummary(
-  eventId: string,
-  options?: UseParticipantsSummaryOptions
-) {
-  return useApiQuery<ParticipantsSummaryResponse>(
-    participantKeys.summary(eventId),
-    async () => {
-      const response = await apiClient.get(`/events/${eventId}/participants/summary`);
-
-      return ParticipantsSummaryResponseSchema.parse(response.data);
+/** GET /api/events/:id/participants/summary */
+export function useParticipantsSummary(eventId: string | undefined) {
+  return useQuery<ParticipantsSummary>({
+    queryKey: ['events', eventId, 'participants', 'summary'],
+    queryFn: async () => {
+      const { data } = await apiClient.get(`/api/events/${eventId}/participants/summary`);
+      return ParticipantsSummarySchema.parse(data);
     },
-    {
-      enabled: (options?.enabled ?? true) && !!eventId,
-    }
-  );
+    enabled: Boolean(eventId),
+  });
 }
 
-// ============================================================================
-// useUpsertParticipation - Join/Leave event (Optimistic UI)
-// ============================================================================
-
-interface UpsertParticipationParams {
-  eventId: string;
-  input: UpsertParticipationInput;
-}
-
-/**
- * Hook to upsert current user's participation (join/leave).
- * Uses POST /events/:eventId/participants/me endpoint.
- *
- * Implements DoD 4 (Optimistic UI):
- * - Updates cache immediately before API call
- * - Rollbacks on error
- */
-export function useUpsertParticipation() {
+/** POST /api/events/:id/participants/me - Join/leave event */
+export function useUpsertMyParticipation(eventId: string) {
   const queryClient = useQueryClient();
 
-  return useApiMutation<ParticipantResponse, UpsertParticipationParams>(
-    async ({ eventId, input }) => {
-      const response = await apiClient.post(`/events/${eventId}/participants/me`, input);
-
-      return ParticipantResponseSchema.parse(response.data);
+  return useMutation({
+    mutationFn: async (status: ParticipationStatus) => {
+      const { data } = await apiClient.post(`/api/events/${eventId}/participants/me`, { status });
+      return data;
     },
-    {
-      onMutate: async ({ eventId, input }) => {
-        // Cancel any outgoing refetches
-        await queryClient.cancelQueries({ queryKey: eventKeys.detail(eventId) });
-        await queryClient.cancelQueries({ queryKey: participantKeys.summary(eventId) });
-
-        // Snapshot the previous values
-        const previousEvent = queryClient.getQueryData(eventKeys.detail(eventId));
-        const previousSummary = queryClient.getQueryData(participantKeys.summary(eventId));
-
-        // Optimistically update the summary counts
-        queryClient.setQueryData<ParticipantsSummaryResponse>(
-          participantKeys.summary(eventId),
-          (old) => {
-            if (!old) return old;
-
-            // Simplified optimistic update: adjust counts based on new status
-            const isJoining = input.status === 'GOING';
-            const isLeaving = input.status === 'DECLINED';
-
-            return {
-              ...old,
-              goingCount: isJoining ? old.goingCount + 1 : isLeaving ? old.goingCount - 1 : old.goingCount,
-              maybeCount: input.status === 'MAYBE' ? old.maybeCount + 1 : old.maybeCount,
-            };
-          }
-        );
-
-        return { previousEvent, previousSummary };
-      },
-      onError: (_error, { eventId }, context) => {
-        // Rollback on error
-        if (context?.previousEvent) {
-          queryClient.setQueryData(eventKeys.detail(eventId), context.previousEvent);
-        }
-        if (context?.previousSummary) {
-          queryClient.setQueryData(participantKeys.summary(eventId), context.previousSummary);
-        }
-      },
-      onSettled: (_data, _error, { eventId }) => {
-        // Invalidate to refetch fresh data
-        queryClient.invalidateQueries({ queryKey: eventKeys.detail(eventId) });
-        queryClient.invalidateQueries({ queryKey: participantKeys.summary(eventId) });
-        queryClient.invalidateQueries({ queryKey: participantKeys.list(eventId) });
-      },
-    }
-  );
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['events', eventId] });
+      queryClient.invalidateQueries({ queryKey: ['events', eventId, 'participants'] });
+    },
+  });
 }
 
-// ============================================================================
-// useUpdateSelection - Update pace group / route selection
-// ============================================================================
-
-interface UpdateSelectionParams {
-  eventId: string;
-  input: UpdateSelectionInput;
-}
-
-/**
- * Hook to update current user's selection (pace group/route).
- * Uses PATCH /events/:eventId/participants/me endpoint.
- */
-export function useUpdateSelection() {
+/** PATCH /api/events/:id/participants/me - Update route/group selection */
+export function useUpdateMySelection(eventId: string) {
   const queryClient = useQueryClient();
 
-  return useApiMutation<ParticipantResponse, UpdateSelectionParams>(
-    async ({ eventId, input }) => {
-      const response = await apiClient.patch(`/events/${eventId}/participants/me`, input);
-
-      return ParticipantResponseSchema.parse(response.data);
+  return useMutation({
+    mutationFn: async (input: UpdateSelectionInput) => {
+      const { data } = await apiClient.patch(`/api/events/${eventId}/participants/me`, input);
+      return data;
     },
-    {
-      onSuccess: (_data, { eventId }) => {
-        // Invalidate relevant queries
-        queryClient.invalidateQueries({ queryKey: eventKeys.detail(eventId) });
-        queryClient.invalidateQueries({ queryKey: participantKeys.summary(eventId) });
-        queryClient.invalidateQueries({ queryKey: participantKeys.list(eventId) });
-      },
-    }
-  );
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['events', eventId] });
+    },
+  });
 }

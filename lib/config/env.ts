@@ -2,39 +2,30 @@ import Constants from 'expo-constants';
 
 /**
  * Environment configuration.
- * Values are loaded from app.config.js extra or fallback to defaults.
- * Production hosts per .cursorrules: API = api.runningparty.run, Web = runningparty.run
+ * Values loaded from app.config.js extra or fallback to defaults.
+ * Production: API = api.runningparty.run, Web = runningparty.run
  */
 
 const extra = Constants.expoConfig?.extra ?? {};
 
-/**
- * API base URL for backend requests.
- * In development, defaults to localhost. Production: https://api.runningparty.run
- */
+/** API base URL. Dev: localhost:3000, Prod: https://api.runningparty.run */
 export const API_BASE_URL: string = extra.apiBaseUrl ?? 'http://localhost:3000';
 
-/**
- * Application scheme for deep linking.
- */
+/** Auth API paths (relative to API_BASE_URL, no leading slash). */
+export const AUTH_REGISTER_PATH = 'user/register';
+
+/** Deep link scheme for native app. */
 export const APP_SCHEME: string = extra.appScheme ?? 'the-run';
 
-/**
- * Web domain for universal links. Production: runningparty.run
- */
-export const WEB_DOMAIN: string = extra.webDomain ?? 'the.run';
+/** Web domain for universal links. */
+export const WEB_DOMAIN: string = extra.webDomain ?? 'runningparty.run';
 
-/**
- * Full web URL for sharing (universal links).
- */
+/** Full web URL for sharing. */
 export const WEB_URL: string = extra.webUrl ?? `https://${WEB_DOMAIN}`;
 
-/**
- * Check if running in development mode.
- */
+/** Check if running in development mode. */
 export const IS_DEV: boolean = __DEV__ ?? false;
 
-/**
- * Environment name (development, staging, production).
- */
-export const ENV_NAME: string = extra.envName ?? (IS_DEV ? 'development' : 'production');
+if (IS_DEV) {
+  console.log('[config] API_BASE_URL:', API_BASE_URL);
+}

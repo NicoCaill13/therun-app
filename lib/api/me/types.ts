@@ -1,54 +1,54 @@
 import { z } from 'zod';
 
 // ============================================================================
-// Plan Enum
-// ============================================================================
-
-export const PlanTypeSchema = z.enum(['FREE', 'PREMIUM', 'ENTERPRISE']);
-export type PlanType = z.infer<typeof PlanTypeSchema>;
-
-// ============================================================================
-// Plan Benefits
+// GET /api/me - Profile with plan benefits
 // ============================================================================
 
 export const PlanBenefitsSchema = z.object({
-  maxEventsPerMonth: z.number().int().min(-1), // -1 = unlimited
-  maxParticipantsPerEvent: z.number().int().min(-1), // -1 = unlimited
-  canCreateRoutes: z.boolean(),
-  canBroadcast: z.boolean(),
-  canDuplicate: z.boolean(),
-  canInvite: z.boolean(),
+  maxActiveEventsPerWeek: z.number(),
+  globalRouteLibraryAccess: z.boolean(),
+  description: z.string(),
 });
 
-export type PlanBenefits = z.infer<typeof PlanBenefitsSchema>;
-
-// ============================================================================
-// User Profile
-// ============================================================================
-
-export const UserProfileSchema = z.object({
-  id: z.string().uuid(),
-  email: z.string().email().nullable(),
-  firstName: z.string().nullable(),
+export const MeProfileSchema = z.object({
+  id: z.string(),
+  email: z.string().nullable(),
+  firstName: z.string(),
   lastName: z.string().nullable(),
-  displayName: z.string().nullable(),
+  displayName: z.string(),
   isGuest: z.boolean(),
-  createdAt: z.string().datetime(),
+  plan: z.string(),
+  planSince: z.string().nullable(),
+  planUntil: z.string().nullable(),
+  acceptedTermsAt: z.string().nullable(),
+  createdAt: z.string(),
+  planBenefits: PlanBenefitsSchema,
 });
 
-export type UserProfile = z.infer<typeof UserProfileSchema>;
+export type MeProfile = z.infer<typeof MeProfileSchema>;
 
 // ============================================================================
-// Profile with Benefits Response
+// GET /api/me/events - My events list
 // ============================================================================
 
-export const ProfileWithBenefitsResponseSchema = z.object({
-  user: UserProfileSchema,
-  plan: PlanTypeSchema,
-  benefits: PlanBenefitsSchema,
-  usage: z.object({
-    eventsThisMonth: z.number().int().min(0),
-  }),
+export const MeEventItemSchema = z.object({
+  id: z.string(),
+  title: z.string(),
+  startDateTime: z.string(),
+  status: z.string(),
+  locationName: z.string().nullable(),
+  locationAddress: z.string().nullable(),
+  goingCount: z.number(),
 });
 
-export type ProfileWithBenefitsResponse = z.infer<typeof ProfileWithBenefitsResponseSchema>;
+export const MeEventsListSchema = z.object({
+  items: z.array(MeEventItemSchema),
+  page: z.number(),
+  pageSize: z.number(),
+  total: z.number(),
+});
+
+export type MeEventItem = z.infer<typeof MeEventItemSchema>;
+export type MeEventsList = z.infer<typeof MeEventsListSchema>;
+
+export type MeEventsScope = 'future' | 'past' | 'cancelled';

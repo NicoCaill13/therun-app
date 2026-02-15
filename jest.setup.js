@@ -13,6 +13,7 @@ jest.mock('expo-router', () => ({
     push: jest.fn(),
     replace: jest.fn(),
     back: jest.fn(),
+    canGoBack: () => true,
   }),
   useNavigation: () => ({
     setOptions: jest.fn(),
@@ -22,6 +23,9 @@ jest.mock('expo-router', () => ({
   useLocalSearchParams: () => ({}),
   Stack: {
     Screen: 'Stack.Screen',
+  },
+  Tabs: {
+    Screen: 'Tabs.Screen',
   },
   Link: 'Link',
 }));
@@ -38,6 +42,40 @@ jest.mock('react-native-reanimated', () => {
   Reanimated.default.call = () => {};
   return Reanimated;
 });
+
+// Mock @expo-google-fonts/inter
+jest.mock('@expo-google-fonts/inter', () => ({
+  useFonts: () => [true, null],
+  Inter_400Regular: 'Inter_400Regular',
+  Inter_500Medium: 'Inter_500Medium',
+  Inter_600SemiBold: 'Inter_600SemiBold',
+  Inter_700Bold: 'Inter_700Bold',
+  Inter_800ExtraBold: 'Inter_800ExtraBold',
+}));
+
+// Mock expo-font
+jest.mock('expo-font', () => ({
+  useFonts: () => [true, null],
+  loadAsync: jest.fn(),
+}));
+
+// Mock @expo/vector-icons/MaterialIcons
+jest.mock('@expo/vector-icons/MaterialIcons', () => 'MaterialIcons');
+
+// Mock expo-splash-screen
+jest.mock('expo-splash-screen', () => ({
+  preventAutoHideAsync: jest.fn(),
+  hideAsync: jest.fn(),
+}));
+
+// Mock expo-constants
+jest.mock('expo-constants', () => ({
+  expoConfig: {
+    extra: {
+      apiBaseUrl: 'http://localhost:3000',
+    },
+  },
+}));
 
 // Silence console warnings in tests
 global.console = {

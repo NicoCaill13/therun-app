@@ -1,125 +1,72 @@
 import { z } from 'zod';
 
 // ============================================================================
-// Participant Role and Status
-// ============================================================================
-
-export const ParticipantRoleSchema = z.enum(['PARTICIPANT', 'ENCADRANT', 'ORGANISER']);
-export type ParticipantRole = z.infer<typeof ParticipantRoleSchema>;
-
-export const InvitationStatusSchema = z.enum(['INVITED', 'GOING', 'DECLINED', 'MAYBE']);
-export type InvitationStatus = z.infer<typeof InvitationStatusSchema>;
-
-// ============================================================================
-// Invitation Item
+// GET /api/me/invitations - My invitations
 // ============================================================================
 
 export const InvitationItemSchema = z.object({
-  participantId: z.string().uuid(),
-  eventId: z.string().uuid(),
-  role: ParticipantRoleSchema,
-  status: z.literal('INVITED'),
+  participantId: z.string(),
+  eventId: z.string(),
+  role: z.string(),
+  status: z.string(),
   eventTitle: z.string(),
-  startDateTime: z.string().datetime(),
+  startDateTime: z.string(),
   locationName: z.string().nullable(),
-  organiserId: z.string().uuid(),
+  organiserId: z.string(),
   organiserFirstName: z.string(),
   organiserLastName: z.string().nullable(),
 });
 
-export type InvitationItem = z.infer<typeof InvitationItemSchema>;
-
-// ============================================================================
-// My Invitations Response (paginated)
-// ============================================================================
-
-export const MyInvitationsResponseSchema = z.object({
+export const InvitationsListSchema = z.object({
   items: z.array(InvitationItemSchema),
-  page: z.number().int().min(1),
-  pageSize: z.number().int().min(1),
-  totalCount: z.number().int().min(0),
-  totalPages: z.number().int().min(0),
+  page: z.number(),
+  pageSize: z.number(),
+  totalCount: z.number(),
+  totalPages: z.number(),
 });
 
-export type MyInvitationsResponse = z.infer<typeof MyInvitationsResponseSchema>;
+export type InvitationItem = z.infer<typeof InvitationItemSchema>;
+export type InvitationsList = z.infer<typeof InvitationsListSchema>;
 
 // ============================================================================
-// Respond to Invitation
+// GET /api/events/:id/invite/search - Search users to invite
 // ============================================================================
 
-export const RespondInvitationInputSchema = z.object({
-  status: z.enum(['GOING', 'DECLINED', 'MAYBE']),
-});
-
-export type RespondInvitationInput = z.infer<typeof RespondInvitationInputSchema>;
-
-export const RespondInvitationResponseSchema = z.object({
-  participantId: z.string().uuid(),
-  status: InvitationStatusSchema,
-  respondedAt: z.string().datetime(),
-});
-
-export type RespondInvitationResponse = z.infer<typeof RespondInvitationResponseSchema>;
-
-// ============================================================================
-// Invite User to Event
-// ============================================================================
-
-export const InviteUserInputSchema = z.object({
-  userId: z.string().uuid(),
-  role: ParticipantRoleSchema.optional(),
-});
-
-export type InviteUserInput = z.infer<typeof InviteUserInputSchema>;
-
-export const InviteUserResponseSchema = z.object({
-  participantId: z.string().uuid(),
-  userId: z.string().uuid(),
-  eventId: z.string().uuid(),
-  role: ParticipantRoleSchema,
-  status: z.literal('INVITED'),
-  displayName: z.string().nullable(),
-  email: z.string().email().nullable(),
-});
-
-export type InviteUserResponse = z.infer<typeof InviteUserResponseSchema>;
-
-// ============================================================================
-// Search Users to Invite
-// ============================================================================
-
-export const SearchUserItemSchema = z.object({
-  id: z.string().uuid(),
-  displayName: z.string().nullable(),
-  email: z.string().email().nullable(),
-  firstName: z.string().nullable(),
+export const InviteSearchItemSchema = z.object({
+  id: z.string(),
+  firstName: z.string(),
   lastName: z.string().nullable(),
+  email: z.string().nullable(),
 });
 
-export type SearchUserItem = z.infer<typeof SearchUserItemSchema>;
-
-export const SearchUsersResponseSchema = z.object({
-  items: z.array(SearchUserItemSchema),
-  page: z.number().int().min(1),
-  pageSize: z.number().int().min(1),
-  totalCount: z.number().int().min(0),
-  totalPages: z.number().int().min(0),
+export const InviteSearchResponseSchema = z.object({
+  items: z.array(InviteSearchItemSchema),
+  page: z.number(),
+  pageSize: z.number(),
+  totalCount: z.number(),
+  totalPages: z.number(),
 });
 
-export type SearchUsersResponse = z.infer<typeof SearchUsersResponseSchema>;
+export type InviteSearchItem = z.infer<typeof InviteSearchItemSchema>;
+export type InviteSearchResponse = z.infer<typeof InviteSearchResponseSchema>;
 
 // ============================================================================
-// Query Params
+// POST /api/events/:id/participants/invite - Invite a participant
 // ============================================================================
 
-export interface InvitationsQueryParams {
-  page?: number;
-  pageSize?: number;
-}
+export const InviteParticipantInputSchema = z.object({
+  userId: z.string(),
+  role: z.enum(['PARTICIPANT', 'ENCADRANT']),
+});
 
-export interface SearchUsersQueryParams {
-  query: string;
-  eventId: string;
-  page?: number;
-  pageSize?: number;
-}
+export type InviteParticipantInput = z.infer<typeof InviteParticipantInputSchema>;
+
+export const InviteParticipantResponseSchema = z.object({
+  id: z.string(),
+  eventId: z.string(),
+  userId: z.string(),
+  role: z.string(),
+  status: z.string(),
+});
+
+export type InviteParticipantResponse = z.infer<typeof InviteParticipantResponseSchema>;

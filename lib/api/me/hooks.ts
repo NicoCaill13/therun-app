@@ -1,42 +1,28 @@
-import { useApiQuery } from '@/lib/hooks';
+import { useQuery } from '@tanstack/react-query';
 import { apiClient } from '@/lib/api/client';
-import {
-  ProfileWithBenefitsResponse,
-  ProfileWithBenefitsResponseSchema,
-} from './types';
+import { MeProfileSchema, MeEventsListSchema } from './types';
+import type { MeProfile, MeEventsList, MeEventsScope } from './types';
 
-// ============================================================================
-// Query Keys
-// ============================================================================
-
-export const meKeys = {
-  all: ['me'] as const,
-  profile: () => [...meKeys.all, 'profile'] as const,
-};
-
-// ============================================================================
-// useProfile - Get current user's profile with plan benefits
-// ============================================================================
-
-interface UseProfileOptions {
-  enabled?: boolean;
+/** GET /api/me - Current user profile with plan benefits */
+export function useMe() {
+  return useQuery<MeProfile>({
+    queryKey: ['me'],
+    queryFn: async () => {
+      const { data } = await apiClient.get('/api/me');
+      return MeProfileSchema.parse(data);
+    },
+  });
 }
 
-/**
- * Hook to fetch current user's profile with plan benefits.
- * Uses GET /me endpoint.
- */
-export function useProfile(options?: UseProfileOptions) {
-  return useApiQuery<ProfileWithBenefitsResponse>(
-    meKeys.profile(),
-    async () => {
-      const response = await apiClient.get('/me');
-
-      // Validate response with Zod (DoD 1)
-      return ProfileWithBenefitsResponseSchema.parse(response.data);
+/** GET /api/me/events - My events (future | past | cancelled) */
+export function useMeEvents(scope: MeEventsScope, page = 1, pageSize = 20) {
+  return useQuery<MeEventsList>({
+    queryKey: ['me', 'events', scope, page],
+    queryFn: async () => {
+      const { data } = await apiClient.get('/api/me/events', {
+        params: { scope, page, pageSize },
+      });
+      return MeEventsListSchema.parse(data);
     },
-    {
-      enabled: options?.enabled ?? true,
-    }
-  );
+  });
 }

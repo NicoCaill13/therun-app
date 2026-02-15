@@ -1,45 +1,32 @@
-import { TextInput, TextInputProps, View } from 'react-native';
+import { TextInput, TextInputProps, View, Platform } from 'react-native';
 import { forwardRef, useMemo } from 'react';
-import MaterialIcons from '@expo/vector-icons/MaterialIcons';
 import { Typography } from './Typography';
 
 // ============================================================================
-// Constants
+// Constants - Aligned with Stitch maquettes
 // ============================================================================
 
 const SIZE_CLASSES = {
-  sm: 'px-3 py-2 text-sm',
-  md: 'px-4 py-3 text-base',
-  lg: 'px-4 py-4 text-lg',
+  sm: 'h-10 px-3 text-sm',
+  md: 'h-12 px-4 text-base',
+  lg: 'h-14 px-4 text-base',
 } as const;
 
 // ============================================================================
 // Component
 // ============================================================================
 
-/**
- * Input component with label, error, and hint support.
- * Uses NativeWind for cross-platform styling.
- *
- * @example
- * <Input
- *   label="Email"
- *   placeholder="Enter your email"
- *   error={errors.email?.message}
- * />
- */
 export const Input = forwardRef<TextInput, InputProps>(function Input(
   {
     label,
     error,
     hint,
-    size = 'md',
+    size = 'lg',
     isDisabled = false,
     className = '',
     containerClassName = '',
-    labelClassName = '',
-    showErrorIcon = false,
     accessibilityLabel,
+    rightIcon,
     ...props
   },
   ref
@@ -47,24 +34,22 @@ export const Input = forwardRef<TextInput, InputProps>(function Input(
   const hasError = Boolean(error);
 
   const combinedClasses = useMemo(() => {
-    const baseClasses = 'rounded-xl border bg-white dark:bg-secondary-800';
+    const baseClasses =
+      'rounded-xl bg-white dark:bg-gray-900 text-primary dark:text-white font-sans';
     const borderClasses = hasError
-      ? 'border-2 border-errorRed'
-      : 'border-borderGrey dark:border-secondary-600';
-    const disabledClasses = isDisabled ? 'bg-secondary-100 dark:bg-secondary-700 opacity-60' : '';
-    const textClasses = 'text-secondary-900 dark:text-secondary-100';
+      ? 'border-2 border-error-red'
+      : 'border border-border-grey dark:border-gray-700';
+    const disabledClasses = isDisabled ? 'bg-gray-100 dark:bg-gray-800 opacity-60' : '';
 
-    return `${baseClasses} ${borderClasses} ${disabledClasses} ${textClasses} ${SIZE_CLASSES[size]} ${className}`.trim();
+    return `${baseClasses} ${borderClasses} ${disabledClasses} ${SIZE_CLASSES[size]} ${className}`.trim();
   }, [hasError, isDisabled, size, className]);
-
-  const labelClasses = labelClassName || undefined;
 
   const computedAccessibilityLabel = accessibilityLabel ?? label;
 
   return (
     <View className={containerClassName}>
       {label && (
-        <Typography variant="label" className={`mb-1.5 ${labelClasses || ''}`.trim()}>
+        <Typography variant="label" color="secondary" className="mb-2">
           {label}
         </Typography>
       )}
@@ -73,27 +58,21 @@ export const Input = forwardRef<TextInput, InputProps>(function Input(
           ref={ref}
           className={combinedClasses}
           editable={!isDisabled}
-          placeholderTextColor="#94a3b8"
+          placeholderTextColor="#9ca3af"
           accessibilityLabel={computedAccessibilityLabel}
-          accessibilityState={{
-            disabled: isDisabled,
-          }}
+          accessibilityState={{ disabled: isDisabled }}
           accessibilityHint={hint}
+          style={Platform.OS === 'web' ? { outlineStyle: 'none' } : undefined}
           {...props}
         />
-        {showErrorIcon && hasError && (
+        {rightIcon && (
           <View className="absolute right-4 top-0 bottom-0 justify-center" pointerEvents="none">
-            <MaterialIcons name="error" size={24} color="#E5484D" />
+            {rightIcon}
           </View>
         )}
       </View>
       {error && (
-        <Typography
-          variant="caption"
-          color="error"
-          className="mt-1"
-          accessibilityRole="alert"
-        >
+        <Typography variant="caption" color="error" className="mt-1" accessibilityRole="alert">
           {error}
         </Typography>
       )}
@@ -120,6 +99,5 @@ interface InputProps extends TextInputProps {
   isDisabled?: boolean;
   className?: string;
   containerClassName?: string;
-  labelClassName?: string;
-  showErrorIcon?: boolean;
+  rightIcon?: React.ReactNode;
 }

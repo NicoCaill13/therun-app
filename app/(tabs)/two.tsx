@@ -13,7 +13,7 @@ import { useAuth } from '@/lib/auth';
 
 export default function ProfileScreen() {
   const router = useRouter();
-  const { logout, isAuthenticated } = useAuth();
+  const { signOut, isAuthenticated } = useAuth();
   const { data, isLoading, error, refetch } = useProfile({
     enabled: isAuthenticated,
   });
@@ -46,8 +46,11 @@ export default function ProfileScreen() {
           <Typography color="muted" className="text-center mb-6">
             Connectez-vous pour acceder a votre profil
           </Typography>
-          <Button variant="primary" size="lg" isFullWidth>
+          <Button variant="primary" size="lg" isFullWidth onPress={() => router.push('/auth/login')} testID="button-profile-login">
             Se connecter
+          </Button>
+          <Button variant="outline" size="lg" isFullWidth onPress={() => router.push('/auth/register')} className="mt-3" testID="button-profile-register">
+            Creer un compte
           </Button>
         </View>
       </ScrollContainer>
@@ -134,7 +137,7 @@ export default function ProfileScreen() {
         <MenuButton
           icon="sign-out"
           label="Deconnexion"
-          onPress={logout}
+          onPress={signOut}
           isDanger
         />
       </View>
