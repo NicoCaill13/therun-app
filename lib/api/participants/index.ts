@@ -3,11 +3,13 @@ export {
   useParticipantsSummary,
   useUpsertMyParticipation,
   useUpdateMySelection,
+  useUpdateParticipantRole,
 } from './hooks';
 export {
   ParticipantsListSchema,
   ParticipantsSummarySchema,
   ParticipantItemSchema,
+  UpdateParticipantRoleInputSchema,
 } from './types';
 export type {
   ParticipantsList,
@@ -15,4 +17,5 @@ export type {
   ParticipantItem,
   ParticipationStatus,
   UpdateSelectionInput,
+  UpdateParticipantRoleInput,
 } from './types';

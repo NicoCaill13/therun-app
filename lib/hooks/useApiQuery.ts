@@ -3,10 +3,11 @@ import { normalizeApiError, NormalizedApiError } from '@/lib/api/normalizeApiErr
 
 /**
  * Extended query options with automatic error handling.
+ * queryKey and queryFn are provided as separate arguments to useApiQuery.
  */
 type UseApiQueryOptions<TData, TQueryKey extends readonly unknown[]> = Omit<
   UseQueryOptions<TData, NormalizedApiError, TData, TQueryKey>,
-  'queryFn'
+  'queryFn' | 'queryKey'
 >;
 
 /**

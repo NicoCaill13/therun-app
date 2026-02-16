@@ -1,10 +1,11 @@
 import { View, Platform, KeyboardAvoidingView } from 'react-native';
-import { useRouter } from 'expo-router';
+import { useRouter, Redirect } from 'expo-router';
 import { useForm, Controller } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import MaterialIcons from '@expo/vector-icons/MaterialIcons';
 import { useCreateEvent, CreateEventInputSchema } from '@/lib/api/events';
 import { normalizeApiError, shouldShowUpsell } from '@/lib/api/normalizeApiError';
+import { useAuth } from '@/lib/auth';
 import {
   Header,
   ScrollContainer,
@@ -16,10 +17,12 @@ import type { CreateEventInput } from '@/lib/api/events';
 
 // ============================================================================
 // Create Event Form (maquette: create_event_form)
+// Auth guard: redirect to login if not authenticated
 // ============================================================================
 
 export default function CreateEventScreen() {
   const router = useRouter();
+  const { isAuthenticated, isLoading } = useAuth();
   const createEvent = useCreateEvent();
 
   const {
@@ -36,6 +39,11 @@ export default function CreateEventScreen() {
       locationAddress: '',
     },
   });
+
+  // Auth guard: redirect to login if not authenticated
+  if (!isLoading && !isAuthenticated) {
+    return <Redirect href="/auth/login?redirect=/event/create" />;
+  }
 
   async function onSubmit(data: CreateEventInput) {
     try {

@@ -50,7 +50,7 @@ export function useRoutes(params: ListRoutesQueryParams = {}, options?: UseRoute
   return useApiQuery<RouteListResponse>(
     routeKeys.list(params),
     async () => {
-      const response = await apiClient.get('/routes', {
+      const response = await apiClient.get('/api/routes', {
         params: {
           createdBy: params.createdBy,
           lat: params.lat,
@@ -100,7 +100,7 @@ export function useRoute(routeId: string, options?: UseRouteOptions) {
   return useApiQuery<Route>(
     routeKeys.detail(routeId),
     async () => {
-      const response = await apiClient.get(`/routes/${routeId}`);
+      const response = await apiClient.get(`/api/routes/${routeId}`);
 
       // Validate response with Zod (DoD 1)
       return RouteSchema.parse(response.data);
@@ -127,7 +127,7 @@ export function useSuggestRoutes(params: SuggestRoutesQueryParams, options?: Use
   return useApiQuery<SuggestRoutesResponse>(
     routeKeys.suggestion(params),
     async () => {
-      const response = await apiClient.get('/routes/suggest', {
+      const response = await apiClient.get('/api/routes/suggest', {
         params: {
           lat: params.lat,
           lng: params.lng,
@@ -157,7 +157,7 @@ export function useCreateRoute() {
 
   return useApiMutation<Route, CreateRouteInput>(
     async (data) => {
-      const response = await apiClient.post('/routes', data);
+      const response = await apiClient.post('/api/routes', data);
 
       // Validate response with Zod (DoD 1)
       return RouteSchema.parse(response.data);
@@ -194,7 +194,7 @@ export function useAddRouteToEvent() {
 
   return useApiMutation<EventRoute, AddRouteToEventParams>(
     async ({ eventId, data }) => {
-      const response = await apiClient.post(`/events/${eventId}/routes`, data);
+      const response = await apiClient.post(`/api/events/${eventId}/routes`, data);
 
       // Validate response with Zod (DoD 1)
       return EventRouteSchema.parse(response.data);
@@ -224,7 +224,7 @@ export function useEventRoutes(eventId: string, options?: UseEventRoutesOptions)
   return useApiQuery<EventRoutesList>(
     routeKeys.eventRoute(eventId),
     async () => {
-      const response = await apiClient.get(`/events/${eventId}/routes`);
+      const response = await apiClient.get(`/api/events/${eventId}/routes`);
 
       return EventRoutesListSchema.parse(response.data);
     },

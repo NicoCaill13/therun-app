@@ -4,6 +4,7 @@ describe('RegisterInputSchema', () => {
   it('should validate correct input', () => {
     const result = RegisterInputSchema.safeParse({
       email: 'test@example.com',
+      password: 'secureP@ss1',
       firstName: 'John',
       lastName: 'Doe',
       acceptTerms: true,
@@ -14,6 +15,7 @@ describe('RegisterInputSchema', () => {
   it('should reject invalid email', () => {
     const result = RegisterInputSchema.safeParse({
       email: 'invalid',
+      password: 'secureP@ss1',
       firstName: 'John',
       acceptTerms: true,
     });
@@ -23,6 +25,7 @@ describe('RegisterInputSchema', () => {
   it('should reject empty firstName', () => {
     const result = RegisterInputSchema.safeParse({
       email: 'test@example.com',
+      password: 'secureP@ss1',
       firstName: '',
       acceptTerms: true,
     });
@@ -32,6 +35,7 @@ describe('RegisterInputSchema', () => {
   it('should reject acceptTerms false', () => {
     const result = RegisterInputSchema.safeParse({
       email: 'test@example.com',
+      password: 'secureP@ss1',
       firstName: 'John',
       acceptTerms: false,
     });
@@ -41,10 +45,30 @@ describe('RegisterInputSchema', () => {
   it('should allow optional lastName', () => {
     const result = RegisterInputSchema.safeParse({
       email: 'test@example.com',
+      password: 'secureP@ss1',
       firstName: 'John',
       acceptTerms: true,
     });
     expect(result.success).toBe(true);
+  });
+
+  it('should reject password shorter than 8 characters', () => {
+    const result = RegisterInputSchema.safeParse({
+      email: 'test@example.com',
+      password: 'short',
+      firstName: 'John',
+      acceptTerms: true,
+    });
+    expect(result.success).toBe(false);
+  });
+
+  it('should reject missing password', () => {
+    const result = RegisterInputSchema.safeParse({
+      email: 'test@example.com',
+      firstName: 'John',
+      acceptTerms: true,
+    });
+    expect(result.success).toBe(false);
   });
 });
 

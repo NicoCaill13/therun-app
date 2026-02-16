@@ -1,8 +1,10 @@
-export { useInvitations, useInviteSearch, useInviteParticipant } from './hooks';
+export { useInvitations, useInviteSearch, useInviteParticipant, useRespondInvitation } from './hooks';
 export {
   InvitationsListSchema,
   InviteSearchResponseSchema,
   InviteParticipantInputSchema,
+  RespondInvitationInputSchema,
+  RespondInvitationResponseSchema,
 } from './types';
 export type {
   InvitationItem,
@@ -11,4 +13,6 @@ export type {
   InviteSearchResponse,
   InviteParticipantInput,
   InviteParticipantResponse,
+  RespondInvitationInput,
+  RespondInvitationResponse,
 } from './types';

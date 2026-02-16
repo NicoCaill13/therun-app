@@ -4,12 +4,15 @@ import {
   InvitationsListSchema,
   InviteSearchResponseSchema,
   InviteParticipantResponseSchema,
+  RespondInvitationResponseSchema,
 } from './types';
 import type {
   InvitationsList,
   InviteSearchResponse,
   InviteParticipantInput,
   InviteParticipantResponse,
+  RespondInvitationInput,
+  RespondInvitationResponse,
 } from './types';
 
 /** GET /api/me/invitations - My pending invitations */
@@ -52,6 +55,26 @@ export function useInviteParticipant(eventId: string) {
       return InviteParticipantResponseSchema.parse(data);
     },
     onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['events', eventId, 'participants'] });
+    },
+  });
+}
+
+/** POST /api/events/:id/participants/:participantId/respond - RSVP to invitation */
+export function useRespondInvitation(eventId: string, participantId: string) {
+  const queryClient = useQueryClient();
+
+  return useMutation<RespondInvitationResponse, unknown, RespondInvitationInput>({
+    mutationFn: async (input) => {
+      const { data } = await apiClient.post(
+        `/api/events/${eventId}/participants/${participantId}/respond`,
+        input
+      );
+      return RespondInvitationResponseSchema.parse(data);
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['me', 'invitations'] });
+      queryClient.invalidateQueries({ queryKey: ['events', eventId] });
       queryClient.invalidateQueries({ queryKey: ['events', eventId, 'participants'] });
     },
   });

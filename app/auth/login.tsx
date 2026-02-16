@@ -1,17 +1,17 @@
 import { useCallback } from 'react';
 import { View, Pressable, KeyboardAvoidingView, Platform, ScrollView, Keyboard } from 'react-native';
-import { useRouter, Stack } from 'expo-router';
+import { useRouter, useLocalSearchParams, Stack } from 'expo-router';
 import { useForm, Controller } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Typography, Button, Input } from '@/components/ui';
-import { useAuth } from '@/lib/auth';
 import { useLogin, LoginInputSchema, type LoginInput } from '@/lib/api';
+import { safeRedirect } from '@/lib/auth';
 
 export default function LoginScreen() {
   const router = useRouter();
   const insets = useSafeAreaInsets();
-  const { signIn } = useAuth();
+  const { redirect } = useLocalSearchParams<{ redirect?: string }>();
   const login = useLogin();
 
   const {
@@ -28,14 +28,15 @@ export default function LoginScreen() {
     async (data: LoginInput) => {
       Keyboard.dismiss();
       try {
-        const result = await login.mutateAsync(data);
-        await signIn(result.accessToken, result.user);
-        router.replace('/(tabs)');
+        await login.mutateAsync(data);
+        // useLogin hook handles signIn via onSuccess
+        const destination = safeRedirect(redirect) ?? '/(tabs)';
+        router.replace(destination as '/(tabs)');
       } catch {
         // Error shown via login.error in UI
       }
     },
-    [login, signIn, router]
+    [login, router, redirect]
   );
 
   return (
@@ -112,7 +113,7 @@ export default function LoginScreen() {
           )}
 
           <Button
-            variant="charcoal"
+            variant="primary"
             size="lg"
             isFullWidth
             isLoading={login.isPending}
@@ -124,7 +125,10 @@ export default function LoginScreen() {
           </Button>
 
           <Pressable
-            onPress={() => router.push('/auth/register')}
+            onPress={() => {
+              const params = redirect ? `?redirect=${encodeURIComponent(redirect)}` : '';
+              router.push(`/auth/register${params}` as '/auth/register');
+            }}
             className="mt-6 items-center"
             accessibilityLabel="Creer un compte"
             testID="link-register"

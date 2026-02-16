@@ -1,3 +1,3 @@
-export { useRegister } from './hooks';
-export { RegisterInputSchema, AuthResponseSchema, AuthUserSchema } from './types';
-export type { RegisterInput, AuthResponse, AuthUser } from './types';
+export { useRegister, useLogin } from './hooks';
+export { RegisterInputSchema, LoginInputSchema, AuthResponseSchema, AuthUserSchema, LoginResponseSchema } from './types';
+export type { RegisterInput, LoginInput, AuthResponse, AuthUser, LoginResponse } from './types';

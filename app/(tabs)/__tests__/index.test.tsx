@@ -64,7 +64,7 @@ describe('HomeScreen', () => {
 
     expect(screen.getByText('THE RUN')).toBeTruthy();
     expect(screen.getByText('Create your next run')).toBeTruthy();
-    expect(screen.getByText('Create an event')).toBeTruthy();
+    expect(screen.getByText('Sign in to get started')).toBeTruthy();
     expect(screen.getByText('Join with a code')).toBeTruthy();
   });
 

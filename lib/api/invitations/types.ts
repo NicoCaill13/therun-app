@@ -70,3 +70,23 @@ export const InviteParticipantResponseSchema = z.object({
 });
 
 export type InviteParticipantResponse = z.infer<typeof InviteParticipantResponseSchema>;
+
+// ============================================================================
+// POST /api/events/:id/participants/:participantId/respond - RSVP
+// ============================================================================
+
+export const RespondInvitationInputSchema = z.object({
+  status: z.enum(['GOING', 'DECLINED']),
+});
+
+export type RespondInvitationInput = z.infer<typeof RespondInvitationInputSchema>;
+
+export const RespondInvitationResponseSchema = z.object({
+  id: z.string(),
+  eventId: z.string(),
+  userId: z.string(),
+  role: z.string(),
+  status: z.string(),
+});
+
+export type RespondInvitationResponse = z.infer<typeof RespondInvitationResponseSchema>;

@@ -73,3 +73,13 @@ export const UpdateSelectionInputSchema = z.object({
 });
 
 export type UpdateSelectionInput = z.infer<typeof UpdateSelectionInputSchema>;
+
+// ============================================================================
+// PATCH /api/events/:id/participants/:userId/role - Update participant role
+// ============================================================================
+
+export const UpdateParticipantRoleInputSchema = z.object({
+  roleInEvent: z.enum(['ORGANISER', 'ENCADRANT', 'PARTICIPANT']),
+});
+
+export type UpdateParticipantRoleInput = z.infer<typeof UpdateParticipantRoleInputSchema>;

@@ -22,3 +22,6 @@ export {
   hasStoredCredentials,
 } from './storage';
 export type { StoredUserData } from './storage';
+
+// Utilities
+export { safeRedirect } from './safeRedirect';

@@ -60,8 +60,8 @@ export default function JoinByCodeScreen() {
         setError(normalized.message);
       }
     } else {
-      // Redirect to guest join on web or prompt login
-      setShowSuccess(true);
+      // Redirect to login, preserving the code for post-auth join
+      router.push(`/auth/login?redirect=/join/${code}` as '/auth/login');
     }
   }, [code, resolveQuery, isAuthenticated, participate]);
 

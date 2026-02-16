@@ -1,51 +1,48 @@
 import { useCallback } from 'react';
 import { View, Pressable, KeyboardAvoidingView, Platform, ScrollView, Keyboard } from 'react-native';
-import { useRouter, Stack } from 'expo-router';
+import { useRouter, useLocalSearchParams, Stack } from 'expo-router';
 import { useForm, Controller } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Typography, Button, Input } from '@/components/ui';
-import { useAuth } from '@/lib/auth';
 import { useRegister, RegisterInputSchema, type RegisterInput } from '@/lib/api';
-
-type RegisterFormValues = Omit<RegisterInput, 'acceptTerms'> & { acceptTerms: boolean };
+import { safeRedirect } from '@/lib/auth';
 
 export default function RegisterScreen() {
   const router = useRouter();
   const insets = useSafeAreaInsets();
-  const { signIn } = useAuth();
+  const { redirect } = useLocalSearchParams<{ redirect?: string }>();
   const register = useRegister();
 
   const {
     control,
     handleSubmit,
     formState: { errors },
-  } = useForm<RegisterFormValues>({
+  } = useForm<RegisterInput>({
     resolver: zodResolver(RegisterInputSchema),
     defaultValues: {
       email: '',
       password: '',
       firstName: '',
       lastName: '',
-      acceptTerms: false,
+      acceptTerms: true as const,
     },
     mode: 'onChange',
   });
 
   const onSubmit = useCallback(
-    async (data: RegisterFormValues) => {
+    async (data: RegisterInput) => {
       Keyboard.dismiss();
-      const parsed = RegisterInputSchema.safeParse(data);
-      if (!parsed.success) return;
       try {
-        const result = await register.mutateAsync(parsed.data);
-        await signIn(result.accessToken, result.user);
-        router.replace('/(tabs)');
+        await register.mutateAsync(data);
+        // useRegister hook handles signIn via onSuccess
+        const destination = safeRedirect(redirect) ?? '/(tabs)';
+        router.replace(destination as '/(tabs)');
       } catch {
         // Error shown via register.error in UI
       }
     },
-    [register, signIn, router]
+    [register, router, redirect]
   );
 
   return (
@@ -161,13 +158,13 @@ export default function RegisterScreen() {
                 accessibilityLabel="Accepter les conditions d'utilisation"
                 testID="checkbox-register-acceptTerms"
                 accessibilityRole="checkbox"
-                accessibilityState={{ checked: value }}
+                accessibilityState={{ checked: value === true }}
               >
                 <View
                   className="mr-3 h-5 w-5 items-center justify-center rounded border border-outlineLight dark:border-outlineDark"
-                  style={{ backgroundColor: value ? 'rgba(0,0,0,0.2)' : 'transparent' }}
+                  style={{ backgroundColor: value === true ? 'rgba(0,0,0,0.2)' : 'transparent' }}
                 >
-                  {value && <Typography className="text-xs">✓</Typography>}
+                  {value === true && <Typography className="text-xs">✓</Typography>}
                 </View>
                 <Typography color="muted" className="flex-1">
                   J'accepte les conditions d'utilisation et la politique de confidentialite
@@ -188,7 +185,7 @@ export default function RegisterScreen() {
           )}
 
           <Button
-            variant="charcoal"
+            variant="primary"
             size="lg"
             isFullWidth
             isLoading={register.isPending}
@@ -199,7 +196,10 @@ export default function RegisterScreen() {
           </Button>
 
           <Pressable
-            onPress={() => router.push('/auth/login')}
+            onPress={() => {
+              const params = redirect ? `?redirect=${encodeURIComponent(redirect)}` : '';
+              router.push(`/auth/login${params}` as '/auth/login');
+            }}
             className="mt-6 items-center"
             accessibilityLabel="Deja un compte ? Se connecter"
             testID="link-login"

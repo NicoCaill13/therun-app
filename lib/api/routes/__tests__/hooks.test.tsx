@@ -74,7 +74,7 @@ describe('Routes Hooks', () => {
         expect(result.current.isSuccess).toBe(true);
       });
 
-      expect(mockedApiClient.get).toHaveBeenCalledWith('/events/evt_123/routes');
+      expect(mockedApiClient.get).toHaveBeenCalledWith('/api/events/evt_123/routes');
       expect(result.current.data).toHaveLength(2);
       expect(result.current.data?.[0].name).toBe('Parcours 10K');
       expect(result.current.data?.[1].name).toBe('Parcours 5K');

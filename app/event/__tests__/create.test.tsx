@@ -3,13 +3,16 @@ import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { ReactNode } from 'react';
 import CreateEventScreen from '../create';
 
+jest.mock('@/lib/auth', () => ({ useAuth: jest.fn() }));
 jest.mock('@/lib/api/events', () => ({
   ...jest.requireActual('@/lib/api/events'),
   useCreateEvent: jest.fn(),
 }));
 
+import { useAuth } from '@/lib/auth';
 import { useCreateEvent } from '@/lib/api/events';
 
+const mockedUseAuth = useAuth as jest.MockedFunction<typeof useAuth>;
 const mockedUseCreateEvent = useCreateEvent as jest.MockedFunction<typeof useCreateEvent>;
 
 const createWrapper = () => {
@@ -22,6 +25,17 @@ const createWrapper = () => {
 describe('CreateEventScreen', () => {
   beforeEach(() => {
     jest.clearAllMocks();
+    mockedUseAuth.mockReturnValue({
+      isAuthenticated: true,
+      isLoading: false,
+      user: { id: 'user-1', displayName: 'John' },
+      token: 'token',
+      isGuest: false,
+      signIn: jest.fn(),
+      signInAsGuest: jest.fn(),
+      signOut: jest.fn(),
+      updateUser: jest.fn(),
+    } as any);
     mockedUseCreateEvent.mockReturnValue({
       mutateAsync: jest.fn(),
       mutate: jest.fn(),

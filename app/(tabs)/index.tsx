@@ -142,6 +142,7 @@ function EventCard({ event }: { event: MeEventItem }) {
 
 function EmptyStateHome() {
   const router = useRouter();
+  const { isAuthenticated } = useAuth();
 
   return (
     <View className="flex-1 px-4 pt-6 items-center">
@@ -156,12 +157,21 @@ function EmptyStateHome() {
         Start a group run and invite others in seconds.
       </Typography>
 
-      <Button
-        onPress={() => router.push('/event/create')}
-        leftIcon={<MaterialIcons name="add-circle" size={20} color="#ffffff" className="mr-2" />}
-      >
-        Create an event
-      </Button>
+      {isAuthenticated ? (
+        <Button
+          onPress={() => router.push('/event/create')}
+          leftIcon={<MaterialIcons name="add-circle" size={20} color="#ffffff" className="mr-2" />}
+        >
+          Create an event
+        </Button>
+      ) : (
+        <Button
+          onPress={() => router.push('/auth/login?redirect=/event/create' as '/auth/login')}
+          leftIcon={<MaterialIcons name="login" size={20} color="#ffffff" className="mr-2" />}
+        >
+          Sign in to get started
+        </Button>
+      )}
 
       <Pressable className="mt-4 mb-8" onPress={() => router.push('/join')}>
         <Typography variant="body" color="orange" className="underline underline-offset-4 font-sans-medium">

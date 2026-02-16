@@ -6,6 +6,7 @@ import type {
   ParticipantsSummary,
   ParticipationStatus,
   UpdateSelectionInput,
+  UpdateParticipantRoleInput,
 } from './types';
 
 /** GET /api/events/:id/participants - Paginated participant list */
@@ -64,6 +65,24 @@ export function useUpdateMySelection(eventId: string) {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['events', eventId] });
+    },
+  });
+}
+
+/** PATCH /api/events/:id/participants/:userId/role - Update participant role */
+export function useUpdateParticipantRole(eventId: string, userId: string) {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: async (input: UpdateParticipantRoleInput) => {
+      const { data } = await apiClient.patch(
+        `/api/events/${eventId}/participants/${userId}/role`,
+        input
+      );
+      return data;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['events', eventId, 'participants'] });
     },
   });
 }
