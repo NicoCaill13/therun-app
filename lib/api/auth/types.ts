@@ -15,10 +15,10 @@ export const RegisterInputSchema = z.object({
 
 export type RegisterInput = z.infer<typeof RegisterInputSchema>;
 
-/** POST /api/user/login - request body */
+/** POST /api/user/login - request body (must match backend LoginDto) */
 export const LoginInputSchema = z.object({
-  email: z.string().email('Email invalide'),
-  password: z.string().min(1, 'Mot de passe requis'),
+  email: z.string().email('Email invalide').max(255),
+  password: z.string().min(8, 'Mot de passe trop court (min 8 caracteres)').max(128),
 });
 
 export type LoginInput = z.infer<typeof LoginInputSchema>;

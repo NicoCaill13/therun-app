@@ -8,8 +8,19 @@ import Constants from 'expo-constants';
 
 const extra = Constants.expoConfig?.extra ?? {};
 
-/** API base URL. Dev: localhost:3000, Prod: https://api.runningparty.run */
-export const API_BASE_URL: string = extra.apiBaseUrl ?? 'http://localhost:3000';
+/**
+ * API base URL (origin only, no path).
+ * Dev: http://localhost:3000, Prod: https://api.runningparty.run
+ * Paths in apiClient always use /api/... so base must not end with /api.
+ */
+function normalizeApiBaseUrl(url: string): string {
+  const trimmed = url.trim().replace(/\/+$/, '');
+  return trimmed.endsWith('/api') ? trimmed.slice(0, -4) : trimmed;
+}
+
+export const API_BASE_URL: string = normalizeApiBaseUrl(
+  extra.apiBaseUrl ?? 'http://localhost:3000'
+);
 
 /** Auth API paths (relative to API_BASE_URL, no leading slash). */
 export const AUTH_REGISTER_PATH = 'user/register';

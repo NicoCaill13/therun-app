@@ -56,7 +56,10 @@ export function useLogin() {
 
   return useMutation<LoginResponse, ReturnType<typeof normalizeApiError>, LoginInput>({
     mutationFn: async (input) => {
-      const { data } = await apiClient.post('/api/user/login', input);
+      const { data } = await apiClient.post('/api/user/login', {
+        email: input.email,
+        password: input.password,
+      });
       return LoginResponseSchema.parse(data);
     },
     onSuccess: async (response) => {

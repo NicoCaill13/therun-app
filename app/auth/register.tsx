@@ -1,17 +1,15 @@
 import { useCallback } from 'react';
 import { View, Pressable, KeyboardAvoidingView, Platform, ScrollView, Keyboard } from 'react-native';
-import { useRouter, useLocalSearchParams, Stack } from 'expo-router';
+import { useRouter, Stack } from 'expo-router';
 import { useForm, Controller } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Typography, Button, Input } from '@/components/ui';
 import { useRegister, RegisterInputSchema, type RegisterInput } from '@/lib/api';
-import { safeRedirect } from '@/lib/auth';
 
 export default function RegisterScreen() {
   const router = useRouter();
   const insets = useSafeAreaInsets();
-  const { redirect } = useLocalSearchParams<{ redirect?: string }>();
   const register = useRegister();
 
   const {
@@ -35,14 +33,13 @@ export default function RegisterScreen() {
       Keyboard.dismiss();
       try {
         await register.mutateAsync(data);
-        // useRegister hook handles signIn via onSuccess
-        const destination = safeRedirect(redirect) ?? '/(tabs)';
-        router.replace(destination as '/(tabs)');
+        // useRegister hook handles signIn via onSuccess; always land on profile after signup
+        router.replace('/(tabs)/profile');
       } catch {
         // Error shown via register.error in UI
       }
     },
-    [register, router, redirect]
+    [register, router]
   );
 
   return (
