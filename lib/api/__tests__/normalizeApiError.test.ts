@@ -1,4 +1,4 @@
-import { AxiosError } from 'axios';
+import { AxiosError, type InternalAxiosRequestConfig } from 'axios';
 import {
   normalizeApiError,
   isApiErrorKind,
@@ -6,13 +6,15 @@ import {
   shouldReauthenticate,
 } from '../normalizeApiError';
 
+const MOCK_REQUEST_CONFIG = {} as InternalAxiosRequestConfig;
+
 function createAxiosError(status: number, data: Record<string, unknown> = {}) {
   return new AxiosError(
     'Request failed',
     'ERR_BAD_RESPONSE',
     undefined,
     undefined,
-    { status, data, statusText: String(status), headers: {}, config: {} as any }
+    { status, data, statusText: String(status), headers: {}, config: MOCK_REQUEST_CONFIG }
   );
 }
 

@@ -1,17 +1,22 @@
+import { ReactNode } from 'react';
+
 import { renderHook, waitFor } from '@testing-library/react-native';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
-import { ReactNode } from 'react';
-import { AxiosError } from 'axios';
-import {
-  useMyEvents,
-  useEventDetails,
-  useCreateEvent,
-  useCompleteEvent,
-  useMyEventsInfinite,
-  flattenInfiniteEvents,
-  eventKeys,
-} from '../hooks';
+import { AxiosError, type InternalAxiosRequestConfig } from 'axios';
+
 import { apiClient } from '@/lib/api/client';
+
+import {
+  eventKeys,
+  flattenInfiniteEvents,
+  useCompleteEvent,
+  useCreateEvent,
+  useEventDetails,
+  useMyEvents,
+  useMyEventsInfinite,
+} from '../hooks';
+
+const MOCK_REQUEST_CONFIG = {} as InternalAxiosRequestConfig;
 
 /** Create an AxiosError so normalizeApiError returns the correct kind. */
 function createAxiosError(status: number, data: Record<string, unknown> = {}) {
@@ -20,7 +25,7 @@ function createAxiosError(status: number, data: Record<string, unknown> = {}) {
     'ERR_BAD_RESPONSE',
     undefined,
     undefined,
-    { status, data, statusText: String(status), headers: {}, config: {} as any }
+    { status, data, statusText: String(status), headers: {}, config: MOCK_REQUEST_CONFIG }
   );
 }
 

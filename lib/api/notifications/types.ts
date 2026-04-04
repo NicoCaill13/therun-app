@@ -27,7 +27,7 @@ export const NotificationSchema = z.object({
   title: z.string(),
   body: z.string(),
   eventId: z.string().uuid().nullable(),
-  data: z.any().nullable(),
+  data: z.unknown().nullable(),
   createdAt: z.string().datetime(),
   readAt: z.string().datetime().nullable(),
 });

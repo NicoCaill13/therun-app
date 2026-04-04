@@ -1,7 +1,7 @@
 import React, { ReactNode } from 'react';
-import { render, screen, fireEvent, waitFor } from '@testing-library/react-native';
+
+import { fireEvent, render, screen, waitFor } from '@testing-library/react-native';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
-import EventDetailScreen from '../[id]';
 
 // Mock hooks and navigation
 const mockPush = jest.fn();
@@ -16,7 +16,7 @@ jest.mock('expo-router', () => ({
   }),
   useLocalSearchParams: () => ({ id: 'event-123' }),
   Stack: {
-    Screen: ({ options }: any) => null,
+    Screen: (_props: { options?: Record<string, unknown> }) => null,
   },
 }));
 
@@ -97,7 +97,14 @@ jest.mock('@/lib/api', () => ({
 }));
 
 import { useAuth } from '@/lib/auth';
-import { useEventDetails, useEventRoutes, useCompleteEvent } from '@/lib/api';
+import { useCompleteEvent, useEventDetails, useEventRoutes } from '@/lib/api';
+
+import EventDetailScreen from '../[id]';
+
+type MockedAuthResult = ReturnType<typeof useAuth>;
+type MockedEventDetailsResult = ReturnType<typeof useEventDetails>;
+type MockedEventRoutesResult = ReturnType<typeof useEventRoutes>;
+type MockedCompleteEventResult = ReturnType<typeof useCompleteEvent>;
 
 const mockedUseCompleteEvent = useCompleteEvent as jest.MockedFunction<typeof useCompleteEvent>;
 
@@ -169,7 +176,7 @@ describe('EventDetailScreen', () => {
 
     mockedUseAuth.mockReturnValue({
       user: { id: 'user-1', displayName: 'John Doe', email: 'john@example.com', isGuest: false },
-    } as any);
+    } as unknown as MockedAuthResult);
 
     mockedUseEventDetails.mockReturnValue({
       data: mockEventDetails,
@@ -177,13 +184,13 @@ describe('EventDetailScreen', () => {
       error: null,
       refetch: mockRefetch,
       isRefetching: false,
-    } as any);
+    } as unknown as MockedEventDetailsResult);
 
     mockedUseEventRoutes.mockReturnValue({
       data: undefined,
       isLoading: false,
       error: null,
-    } as any);
+    } as unknown as MockedEventRoutesResult);
   });
 
   describe('Loading State', () => {
@@ -194,7 +201,7 @@ describe('EventDetailScreen', () => {
         error: null,
         refetch: mockRefetch,
         isRefetching: false,
-      } as any);
+      } as unknown as MockedEventDetailsResult);
 
       render(<EventDetailScreen />, { wrapper: createWrapper() });
 
@@ -210,7 +217,7 @@ describe('EventDetailScreen', () => {
         error: { kind: 'NOT_FOUND', message: 'Event not found', status: 404 },
         refetch: mockRefetch,
         isRefetching: false,
-      } as any);
+      } as unknown as MockedEventDetailsResult);
 
       render(<EventDetailScreen />, { wrapper: createWrapper() });
 
@@ -225,7 +232,7 @@ describe('EventDetailScreen', () => {
         error: { kind: 'UNKNOWN', message: 'Error', status: 500 },
         refetch: mockRefetch,
         isRefetching: false,
-      } as any);
+      } as unknown as MockedEventDetailsResult);
 
       render(<EventDetailScreen />, { wrapper: createWrapper() });
 
@@ -281,7 +288,7 @@ describe('EventDetailScreen', () => {
         error: null,
         refetch: mockRefetch,
         isRefetching: false,
-      } as any);
+      } as unknown as MockedEventDetailsResult);
 
       render(<EventDetailScreen />, { wrapper: createWrapper() });
 
@@ -308,7 +315,7 @@ describe('EventDetailScreen', () => {
         error: null,
         refetch: mockRefetch,
         isRefetching: false,
-      } as any);
+      } as unknown as MockedEventDetailsResult);
 
       render(<EventDetailScreen />, { wrapper: createWrapper() });
 
@@ -327,7 +334,7 @@ describe('EventDetailScreen', () => {
         error: null,
         refetch: mockRefetch,
         isRefetching: false,
-      } as any);
+      } as unknown as MockedEventDetailsResult);
 
       render(<EventDetailScreen />, { wrapper: createWrapper() });
 
@@ -346,7 +353,7 @@ describe('EventDetailScreen', () => {
         error: null,
         refetch: mockRefetch,
         isRefetching: false,
-      } as any);
+      } as unknown as MockedEventDetailsResult);
 
       render(<EventDetailScreen />, { wrapper: createWrapper() });
 
@@ -381,7 +388,7 @@ describe('EventDetailScreen', () => {
         error: null,
         refetch: mockRefetch,
         isRefetching: false,
-      } as any);
+      } as unknown as MockedEventDetailsResult);
 
       render(<EventDetailScreen />, { wrapper: createWrapper() });
 
@@ -401,7 +408,7 @@ describe('EventDetailScreen', () => {
     it('should not display share code for non-organiser', () => {
       mockedUseAuth.mockReturnValue({
         user: { id: 'other-user', displayName: 'Other User', email: 'other@example.com', isGuest: false },
-      } as any);
+      } as unknown as MockedAuthResult);
 
       render(<EventDetailScreen />, { wrapper: createWrapper() });
 
@@ -420,7 +427,7 @@ describe('EventDetailScreen', () => {
         error: null,
         refetch: mockRefetch,
         isRefetching: false,
-      } as any);
+      } as unknown as MockedEventDetailsResult);
 
       render(<EventDetailScreen />, { wrapper: createWrapper() });
 
@@ -432,7 +439,7 @@ describe('EventDetailScreen', () => {
     it('should show participate button for non-organiser', () => {
       mockedUseAuth.mockReturnValue({
         user: { id: 'other-user', displayName: 'Other User', email: 'other@example.com', isGuest: false },
-      } as any);
+      } as unknown as MockedAuthResult);
 
       render(<EventDetailScreen />, { wrapper: createWrapper() });
 
@@ -448,7 +455,7 @@ describe('EventDetailScreen', () => {
     it('should not show participate button for completed events', () => {
       mockedUseAuth.mockReturnValue({
         user: { id: 'other-user', displayName: 'Other User', email: 'other@example.com', isGuest: false },
-      } as any);
+      } as unknown as MockedAuthResult);
 
       const completedEvent = {
         ...mockEventDetails,
@@ -461,7 +468,7 @@ describe('EventDetailScreen', () => {
         error: null,
         refetch: mockRefetch,
         isRefetching: false,
-      } as any);
+      } as unknown as MockedEventDetailsResult);
 
       render(<EventDetailScreen />, { wrapper: createWrapper() });
 
@@ -479,7 +486,7 @@ describe('EventDetailScreen', () => {
       mockedUseCompleteEvent.mockReturnValue({
         mutate: mockCompleteEvent,
         isPending: false,
-      } as any);
+      } as unknown as MockedCompleteEventResult);
     });
 
     it('should show complete button for organiser on SCHEDULED event', () => {
@@ -500,7 +507,7 @@ describe('EventDetailScreen', () => {
         error: null,
         refetch: mockRefetch,
         isRefetching: false,
-      } as any);
+      } as unknown as MockedEventDetailsResult);
 
       render(<EventDetailScreen />, { wrapper: createWrapper() });
 
@@ -510,7 +517,7 @@ describe('EventDetailScreen', () => {
     it('should not show complete button for non-organiser', () => {
       mockedUseAuth.mockReturnValue({
         user: { id: 'other-user', displayName: 'Other User', email: 'other@example.com', isGuest: false },
-      } as any);
+      } as unknown as MockedAuthResult);
 
       render(<EventDetailScreen />, { wrapper: createWrapper() });
 
@@ -529,7 +536,7 @@ describe('EventDetailScreen', () => {
         error: null,
         refetch: mockRefetch,
         isRefetching: false,
-      } as any);
+      } as unknown as MockedEventDetailsResult);
 
       render(<EventDetailScreen />, { wrapper: createWrapper() });
 
@@ -548,7 +555,7 @@ describe('EventDetailScreen', () => {
         error: null,
         refetch: mockRefetch,
         isRefetching: false,
-      } as any);
+      } as unknown as MockedEventDetailsResult);
 
       render(<EventDetailScreen />, { wrapper: createWrapper() });
 
@@ -577,7 +584,7 @@ describe('EventDetailScreen', () => {
         error: null,
         refetch: mockRefetch,
         isRefetching: false,
-      } as any);
+      } as unknown as MockedEventDetailsResult);
 
       render(<EventDetailScreen />, { wrapper: createWrapper() });
 
@@ -597,7 +604,7 @@ describe('EventDetailScreen', () => {
         error: null,
         refetch: mockRefetch,
         isRefetching: false,
-      } as any);
+      } as unknown as MockedEventDetailsResult);
 
       render(<EventDetailScreen />, { wrapper: createWrapper() });
 

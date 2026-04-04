@@ -1,8 +1,12 @@
-import { View, Pressable, ScrollView } from 'react-native';
+import { useMemo } from 'react';
+import { View, Pressable, ScrollView, StyleSheet } from 'react-native';
+import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
 import MaterialIcons from '@expo/vector-icons/MaterialIcons';
+
 import { Typography } from '@/components/ui';
-import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useColorScheme } from '@/components/useColorScheme';
+
+const SCROLL_BOTTOM_EXTRA_PADDING = 48;
 
 // ============================================================================
 // Home Hub Header (design: TopAppBar)
@@ -121,17 +125,26 @@ export function HomeHubEmptyState({
   onSettings,
 }: HomeHubEmptyStateProps) {
   const insets = useSafeAreaInsets();
+  const scrollContentStyle = useMemo(
+    () =>
+      StyleSheet.create({
+        scrollContent: {
+          paddingBottom: insets.bottom + SCROLL_BOTTOM_EXTRA_PADDING,
+        },
+      }),
+    [insets.bottom]
+  );
 
   return (
-    <View
+    <SafeAreaView
       className="flex-1 bg-backgroundLight dark:bg-backgroundDark"
-      style={{ paddingTop: insets.top }}
+      edges={['top']}
     >
       <HomeHubHeader onSettings={onSettings} />
 
       <ScrollView
         className="flex-1"
-        contentContainerStyle={{ paddingBottom: insets.bottom + 48 }}
+        contentContainerStyle={scrollContentStyle.scrollContent}
         showsVerticalScrollIndicator={false}
       >
         <View className="px-6 py-10">
@@ -157,7 +170,9 @@ export function HomeHubEmptyState({
                 accessibilityRole="button"
                 accessibilityLabel="Create an event"
               >
-                <MaterialIcons name="add-circle" size={22} color="#fff" style={{ marginRight: 8 }} />
+                <View className="mr-2">
+                  <MaterialIcons name="add-circle" size={22} color="#fff" />
+                </View>
                 <Typography className="text-white text-lg font-bold">Create an event</Typography>
               </Pressable>
 
@@ -179,6 +194,6 @@ export function HomeHubEmptyState({
           <HowItWorks />
         </View>
       </ScrollView>
-    </View>
+    </SafeAreaView>
   );
 }

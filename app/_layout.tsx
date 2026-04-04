@@ -1,21 +1,21 @@
-import FontAwesome from '@expo/vector-icons/FontAwesome';
-import { DarkTheme, DefaultTheme, ThemeProvider } from '@react-navigation/native';
+import { useEffect } from 'react';
+import { ActivityIndicator, View } from 'react-native';
+
 import { useFonts } from 'expo-font';
 import { Stack } from 'expo-router';
 import * as SplashScreen from 'expo-splash-screen';
-import { useEffect } from 'react';
-import { View, ActivityIndicator } from 'react-native';
+
+import FontAwesome from '@expo/vector-icons/FontAwesome';
+import { DarkTheme, DefaultTheme, ThemeProvider } from '@react-navigation/native';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 import 'react-native-reanimated';
 
-// NativeWind global styles
 import '../global.css';
 
-// Providers
-import { QueryProvider } from '@/lib/query';
-import { AuthProvider, useAuthLoading } from '@/lib/auth';
 import { UpsellModalProvider } from '@/components/providers';
 import { useColorScheme } from '@/components/useColorScheme';
+import { AuthProvider, useAuthLoading } from '@/lib/auth';
+import { QueryProvider } from '@/lib/query';
 
 export {
   // Catch any errors thrown by the Layout component.
@@ -23,8 +23,8 @@ export {
 } from 'expo-router';
 
 export const unstable_settings = {
-  // Ensure that reloading on `/modal` keeps a back button present.
-  initialRouteName: '(tabs)',
+  // Auth stitch landing at /; replace to /home when session exists (see app/(auth)/index.tsx).
+  initialRouteName: '(auth)',
 };
 
 // Prevent the splash screen from auto-hiding before asset loading is complete.
@@ -95,6 +95,7 @@ function RootLayoutNav() {
     <ThemeProvider value={colorScheme === 'dark' ? DarkTheme : DefaultTheme}>
       <Stack>
         <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
+        <Stack.Screen name="(auth)" options={{ headerShown: false }} />
         <Stack.Screen name="join/[code]" options={{ headerShown: false, presentation: 'modal' }} />
         <Stack.Screen name="event/create" options={{ headerShown: true, title: 'Nouvelle sortie' }} />
         <Stack.Screen name="event/[id]" options={{ headerShown: true, title: 'Sortie' }} />

@@ -1,10 +1,10 @@
 import { useCallback, useMemo } from 'react';
-import { View, Pressable, Platform, KeyboardAvoidingView, ScrollView } from 'react-native';
+import { View, Pressable, Platform, KeyboardAvoidingView } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import { useRouter, Stack } from 'expo-router';
 import { useForm, Controller } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import MaterialIcons from '@expo/vector-icons/MaterialIcons';
-import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useColorScheme } from '@/components/useColorScheme';
 import { ScrollContainer, Typography, Button, Input } from '@/components/ui';
 import { useCreateEvent, CreateEventInput, CreateEventInputSchema } from '@/lib/api';
@@ -162,7 +162,6 @@ export default function CreateEventScreen() {
     }
   }, [createEvent, router]);
 
-  const insets = useSafeAreaInsets();
   const colorScheme = useColorScheme();
   const headerIconColor = colorScheme === 'dark' ? '#fff' : '#0a181e';
 
@@ -175,23 +174,25 @@ export default function CreateEventScreen() {
         className="flex-1 bg-backgroundLight dark:bg-backgroundDark"
       >
         {/* Header (design: sticky, back + title + spacer) */}
-        <View
-          className="flex-row items-center justify-between border-b border-borderGrey/50 bg-backgroundLight dark:bg-backgroundDark px-4 py-4"
-          style={{ paddingTop: insets.top + 12 }}
+        <SafeAreaView
+          edges={['top']}
+          className="border-b border-borderGrey/50 bg-backgroundLight dark:bg-backgroundDark"
         >
-          <Pressable
-            onPress={() => router.back()}
-            className="p-2 rounded-full"
-            accessibilityRole="button"
-            accessibilityLabel="Retour"
-          >
-            <MaterialIcons name="arrow-back-ios" size={24} color={headerIconColor} />
-          </Pressable>
-          <Typography className="text-lg font-bold tracking-tight text-charcoal dark:text-white">
-            Create Event
-          </Typography>
-          <View className="w-10" />
-        </View>
+          <View className="flex-row items-center justify-between px-4 pb-4 pt-3">
+            <Pressable
+              onPress={() => router.back()}
+              className="p-2 rounded-full"
+              accessibilityRole="button"
+              accessibilityLabel="Retour"
+            >
+              <MaterialIcons name="arrow-back-ios" size={24} color={headerIconColor} />
+            </Pressable>
+            <Typography className="text-lg font-bold tracking-tight text-charcoal dark:text-white">
+              Create Event
+            </Typography>
+            <View className="w-10" />
+          </View>
+        </SafeAreaView>
 
         <ScrollContainer
           hasSafeArea
@@ -312,9 +313,9 @@ export default function CreateEventScreen() {
         </ScrollContainer>
 
         {/* Sticky bottom (design) */}
-        <View
-          className="absolute left-0 right-0 bottom-0 bg-white/80 dark:bg-backgroundDark/80 border-t border-borderGrey/50 px-4 pt-4"
-          style={{ paddingBottom: insets.bottom + 24 }}
+        <SafeAreaView
+          edges={['bottom']}
+          className="absolute left-0 right-0 bottom-0 bg-white/80 dark:bg-backgroundDark/80 border-t border-borderGrey/50 px-4 pt-4 pb-6"
         >
           <Button
             variant="charcoal"
@@ -338,7 +339,7 @@ export default function CreateEventScreen() {
               Cancel
             </Typography>
           </Pressable>
-        </View>
+        </SafeAreaView>
       </KeyboardAvoidingView>
     </>
   );

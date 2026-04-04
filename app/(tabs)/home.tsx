@@ -1,12 +1,30 @@
-import { useCallback, useState, useLayoutEffect } from 'react';
-import { View, FlatList, Pressable, RefreshControl, ActivityIndicator } from 'react-native';
-import { useRouter, useNavigation } from 'expo-router';
-import { Container, Typography, H1 } from '@/components/ui';
-import { LoadingState, ErrorState, EmptyState, HomeHubEmptyState, HomeHubLoadingState } from '@/components/states';
+import { useCallback, useLayoutEffect, useState } from 'react';
+import { ActivityIndicator, FlatList, Pressable, RefreshControl, StyleSheet, View } from 'react-native';
+
+import { useNavigation, useRouter } from 'expo-router';
+
 import { EventStatusBadge } from '@/components/event';
-import { useMyEventsInfinite, flattenInfiniteEvents, type MeEventItem, type EventScope } from '@/lib/api';
-import { formatEventDate } from '@/lib/utils';
+import {
+  EmptyState,
+  ErrorState,
+  GuestLandingScreen,
+  HomeHubEmptyState,
+  HomeHubLoadingState,
+  LoadingState,
+} from '@/components/states';
+import { Container, H1, Typography } from '@/components/ui';
+import {
+  flattenInfiniteEvents,
+  useMyEventsInfinite,
+  type EventScope,
+  type MeEventItem,
+} from '@/lib/api';
 import { useAuth } from '@/lib/auth';
+import { formatEventDate } from '@/lib/utils';
+
+const EVENTS_LIST_CONTENT_STYLE = StyleSheet.create({
+  container: { padding: 16, paddingBottom: 80 },
+});
 
 // ============================================================================
 // Tab Component (Phase 4.2)
@@ -216,21 +234,35 @@ export default function DashboardScreen() {
 
   const keyExtractor = useCallback((item: MeEventItem) => item.id, []);
 
-  const showHomeHubEmpty =
-    !isAuthenticated ||
-    (events.length === 0 && activeScope === 'future' && !isLoading && !error);
+  const showGuestLanding = !isAuthenticated;
+  const showAuthenticatedHomeHubEmpty =
+    isAuthenticated &&
+    events.length === 0 &&
+    activeScope === 'future' &&
+    !isLoading &&
+    !error;
+  const hideTabHeader = showGuestLanding || showAuthenticatedHomeHubEmpty;
 
   useLayoutEffect(() => {
-    navigation.setOptions({ headerShown: !showHomeHubEmpty });
-  }, [navigation, showHomeHubEmpty]);
+    navigation.setOptions({ headerShown: !hideTabHeader });
+  }, [navigation, hideTabHeader]);
 
   // Show loading while auth is being determined
   if (isAuthLoading) {
     return <LoadingState />;
   }
 
-  // Show Home Hub empty state (design) when not authenticated or no future events (after load)
-  if (showHomeHubEmpty) {
+  if (showGuestLanding) {
+    return (
+      <GuestLandingScreen
+        onJoinRun={() => router.push('/(auth)/join-code')}
+        onCreateAccount={() => router.push('/(auth)/sign-up')}
+        onLogIn={() => router.push('/(auth)/sign-in')}
+      />
+    );
+  }
+
+  if (showAuthenticatedHomeHubEmpty) {
     return (
       <HomeHubEmptyState
         onCreateEvent={() => router.push('/event/create')}
@@ -274,7 +306,7 @@ export default function DashboardScreen() {
         data={events}
         renderItem={renderItem}
         keyExtractor={keyExtractor}
-        contentContainerStyle={{ padding: 16, paddingBottom: 80 }}
+        contentContainerStyle={EVENTS_LIST_CONTENT_STYLE.container}
         refreshControl={
           <RefreshControl
             refreshing={isRefetching && !isFetchingNextPage}

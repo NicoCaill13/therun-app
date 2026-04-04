@@ -13,7 +13,7 @@ module.exports = {
     'lib/api/events/**/*.{ts,tsx}',
     'lib/api/normalizeApiError.ts',
     'lib/hooks/**/*.{ts,tsx}',
-    'app/(tabs)/index.tsx',
+    'app/(tabs)/home.tsx',
     'app/event/create.tsx',
     'app/event/[id].tsx',
     'components/ui/*.{ts,tsx}',

@@ -1,8 +1,7 @@
-import { render, screen, fireEvent, waitFor } from '@testing-library/react-native';
-import { QueryClient, QueryClientProvider, InfiniteData } from '@tanstack/react-query';
 import { ReactNode } from 'react';
-import DashboardScreen from '../index';
-import type { MeEventsListResponse } from '@/lib/api';
+
+import { fireEvent, render, screen, waitFor } from '@testing-library/react-native';
+import { InfiniteData, QueryClient, QueryClientProvider } from '@tanstack/react-query';
 
 // Mock hooks
 const mockPush = jest.fn();
@@ -38,8 +37,18 @@ jest.mock('@/lib/api', () => ({
   }),
 }));
 
+import {
+  flattenInfiniteEvents,
+  useMyEventsInfinite,
+  type EventScope,
+  type MeEventItem,
+  type MeEventsListResponse,
+} from '@/lib/api';
 import { useAuth } from '@/lib/auth';
-import { useMyEventsInfinite, flattenInfiniteEvents } from '@/lib/api';
+
+import DashboardScreen from '../home';
+
+type MyEventsInfiniteResult = ReturnType<typeof useMyEventsInfinite>;
 
 const mockedUseAuth = useAuth as jest.MockedFunction<typeof useAuth>;
 const mockedUseMyEventsInfinite = useMyEventsInfinite as jest.MockedFunction<typeof useMyEventsInfinite>;
@@ -60,7 +69,7 @@ function createWrapper() {
 }
 
 // Helper to create infinite data structure
-function createInfiniteData(items: any[]): InfiniteData<MeEventsListResponse> {
+function createInfiniteData(items: MeEventItem[]): InfiniteData<MeEventsListResponse> {
   return {
     pages: [{
       items,
@@ -116,7 +125,7 @@ describe('DashboardScreen', () => {
         fetchNextPage: mockFetchNextPage,
         hasNextPage: false,
         isFetchingNextPage: false,
-      } as any);
+      } as unknown as MyEventsInfiniteResult);
 
       render(<DashboardScreen />, { wrapper: createWrapper() });
 
@@ -133,7 +142,7 @@ describe('DashboardScreen', () => {
         fetchNextPage: mockFetchNextPage,
         hasNextPage: false,
         isFetchingNextPage: false,
-      } as any);
+      } as unknown as MyEventsInfiniteResult);
 
       render(<DashboardScreen />, { wrapper: createWrapper() });
 
@@ -152,7 +161,7 @@ describe('DashboardScreen', () => {
         fetchNextPage: mockFetchNextPage,
         hasNextPage: false,
         isFetchingNextPage: false,
-      } as any);
+      } as unknown as MyEventsInfiniteResult);
 
       render(<DashboardScreen />, { wrapper: createWrapper() });
 
@@ -162,7 +171,7 @@ describe('DashboardScreen', () => {
       expect(screen.getByText('Join with a code')).toBeTruthy();
     });
 
-    it('should show empty state when not authenticated', () => {
+    it('should show guest landing when not authenticated', () => {
       mockedUseAuth.mockReturnValue({
         isAuthenticated: false,
         isLoading: false,
@@ -184,12 +193,17 @@ describe('DashboardScreen', () => {
         fetchNextPage: mockFetchNextPage,
         hasNextPage: false,
         isFetchingNextPage: false,
-      } as any);
+      } as unknown as MyEventsInfiniteResult);
 
       render(<DashboardScreen />, { wrapper: createWrapper() });
 
-      expect(screen.getByText('THE RUN')).toBeTruthy();
-      expect(screen.getByText('Create your next run')).toBeTruthy();
+      expect(screen.getByLabelText('THE RUN')).toBeTruthy();
+      expect(screen.getByText('RUN. COMMUNITY. REPEAT.')).toBeTruthy();
+      expect(screen.getByLabelText('Join a run, scan or enter code')).toBeTruthy();
+      expect(screen.getByText('OR')).toBeTruthy();
+      expect(screen.getByLabelText('Create full account')).toBeTruthy();
+      expect(screen.getByText('Already registered?')).toBeTruthy();
+      expect(screen.getByLabelText('Log in')).toBeTruthy();
     });
 
     it('should navigate to create screen when CTA is pressed', () => {
@@ -202,7 +216,7 @@ describe('DashboardScreen', () => {
         fetchNextPage: mockFetchNextPage,
         hasNextPage: false,
         isFetchingNextPage: false,
-      } as any);
+      } as unknown as MyEventsInfiniteResult);
 
       render(<DashboardScreen />, { wrapper: createWrapper() });
 
@@ -245,7 +259,7 @@ describe('DashboardScreen', () => {
         fetchNextPage: mockFetchNextPage,
         hasNextPage: false,
         isFetchingNextPage: false,
-      } as any);
+      } as unknown as MyEventsInfiniteResult);
 
       render(<DashboardScreen />, { wrapper: createWrapper() });
 
@@ -264,7 +278,7 @@ describe('DashboardScreen', () => {
         fetchNextPage: mockFetchNextPage,
         hasNextPage: false,
         isFetchingNextPage: false,
-      } as any);
+      } as unknown as MyEventsInfiniteResult);
 
       render(<DashboardScreen />, { wrapper: createWrapper() });
 
@@ -282,7 +296,7 @@ describe('DashboardScreen', () => {
         fetchNextPage: mockFetchNextPage,
         hasNextPage: false,
         isFetchingNextPage: false,
-      } as any);
+      } as unknown as MyEventsInfiniteResult);
 
       render(<DashboardScreen />, { wrapper: createWrapper() });
 
@@ -299,7 +313,7 @@ describe('DashboardScreen', () => {
         fetchNextPage: mockFetchNextPage,
         hasNextPage: false,
         isFetchingNextPage: false,
-      } as any);
+      } as unknown as MyEventsInfiniteResult);
 
       render(<DashboardScreen />, { wrapper: createWrapper() });
 
@@ -324,7 +338,7 @@ describe('DashboardScreen', () => {
         fetchNextPage: mockFetchNextPage,
         hasNextPage: false,
         isFetchingNextPage: false,
-      } as any);
+      } as unknown as MyEventsInfiniteResult);
 
       render(<DashboardScreen />, { wrapper: createWrapper() });
 
@@ -357,7 +371,7 @@ describe('DashboardScreen', () => {
         fetchNextPage: mockFetchNextPage,
         hasNextPage: false,
         isFetchingNextPage: false,
-      } as any);
+      } as unknown as MyEventsInfiniteResult);
 
       render(<DashboardScreen />, { wrapper: createWrapper() });
 
@@ -375,7 +389,7 @@ describe('DashboardScreen', () => {
         fetchNextPage: mockFetchNextPage,
         hasNextPage: false,
         isFetchingNextPage: false,
-      } as any);
+      } as unknown as MyEventsInfiniteResult);
 
       render(<DashboardScreen />, { wrapper: createWrapper() });
 
@@ -397,16 +411,18 @@ describe('DashboardScreen', () => {
         locationAddress: null,
         goingCount: 1,
       };
-      mockedUseMyEventsInfinite.mockImplementation((scope: string) => ({
-        data: scope === 'future' ? createInfiniteData([futureEvent]) : createInfiniteData([]),
-        isLoading: false,
-        error: null,
-        refetch: mockRefetch,
-        isRefetching: false,
-        fetchNextPage: mockFetchNextPage,
-        hasNextPage: false,
-        isFetchingNextPage: false,
-      }));
+      mockedUseMyEventsInfinite.mockImplementation((scope: EventScope) =>
+        ({
+          data: scope === 'future' ? createInfiniteData([futureEvent]) : createInfiniteData([]),
+          isLoading: false,
+          error: null,
+          refetch: mockRefetch,
+          isRefetching: false,
+          fetchNextPage: mockFetchNextPage,
+          hasNextPage: false,
+          isFetchingNextPage: false,
+        }) as unknown as MyEventsInfiniteResult
+      );
 
       render(<DashboardScreen />, { wrapper: createWrapper() });
 
@@ -443,7 +459,7 @@ describe('DashboardScreen', () => {
         fetchNextPage: mockFetchNextPage,
         hasNextPage: false,
         isFetchingNextPage: false,
-      } as any);
+      } as unknown as MyEventsInfiniteResult);
 
       render(<DashboardScreen />, { wrapper: createWrapper() });
 
@@ -460,7 +476,7 @@ describe('DashboardScreen', () => {
         fetchNextPage: mockFetchNextPage,
         hasNextPage: false,
         isFetchingNextPage: false,
-      } as any);
+      } as unknown as MyEventsInfiniteResult);
 
       render(<DashboardScreen />, { wrapper: createWrapper() });
 
@@ -482,7 +498,7 @@ describe('DashboardScreen', () => {
         fetchNextPage: mockFetchNextPage,
         hasNextPage: false,
         isFetchingNextPage: false,
-      } as any);
+      } as unknown as MyEventsInfiniteResult);
 
       render(<DashboardScreen />, { wrapper: createWrapper() });
 
@@ -500,7 +516,7 @@ describe('DashboardScreen', () => {
         fetchNextPage: mockFetchNextPage,
         hasNextPage: false,
         isFetchingNextPage: false,
-      } as any);
+      } as unknown as MyEventsInfiniteResult);
 
       render(<DashboardScreen />, { wrapper: createWrapper() });
 

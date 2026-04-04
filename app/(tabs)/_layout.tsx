@@ -1,17 +1,23 @@
 import React from 'react';
-import FontAwesome from '@expo/vector-icons/FontAwesome';
+import { Pressable, StyleSheet } from 'react-native';
 import { Link, Tabs } from 'expo-router';
-import { Pressable } from 'react-native';
+import FontAwesome from '@expo/vector-icons/FontAwesome';
 
 import Colors from '@/constants/Colors';
 import { useColorScheme } from '@/components/useColorScheme';
 import { useClientOnlyValue } from '@/components/useClientOnlyValue';
 
+const styles = StyleSheet.create({
+  tabBarIcon: { marginBottom: -3 },
+  headerPlusIcon: { marginRight: 15 },
+  headerPlusPressed: { opacity: 0.5 },
+});
+
 function TabBarIcon(props: {
   name: React.ComponentProps<typeof FontAwesome>['name'];
   color: string;
 }) {
-  return <FontAwesome size={24} style={{ marginBottom: -3 }} {...props} />;
+  return <FontAwesome size={24} style={styles.tabBarIcon} {...props} />;
 }
 
 export default function TabLayout() {
@@ -24,7 +30,7 @@ export default function TabLayout() {
         headerShown: useClientOnlyValue(false, true),
       }}>
       <Tabs.Screen
-        name="index"
+        name="home"
         options={{
           title: 'Accueil',
           tabBarIcon: ({ color }) => <TabBarIcon name="home" color={color} />,
@@ -36,7 +42,7 @@ export default function TabLayout() {
                     name="plus"
                     size={22}
                     color={Colors[colorScheme ?? 'light'].tint}
-                    style={{ marginRight: 15, opacity: pressed ? 0.5 : 1 }}
+                    style={[styles.headerPlusIcon, pressed && styles.headerPlusPressed]}
                   />
                 )}
               </Pressable>

@@ -1,7 +1,8 @@
 import { View } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import MaterialIcons from '@expo/vector-icons/MaterialIcons';
+
 import { Typography } from '@/components/ui';
-import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useColorScheme } from '@/components/useColorScheme';
 
 // ============================================================================
@@ -32,12 +33,10 @@ function HomeHubLoadingHeader() {
 // ============================================================================
 
 export function HomeHubLoadingState() {
-  const insets = useSafeAreaInsets();
-
   return (
-    <View
+    <SafeAreaView
       className="flex-1 bg-backgroundLight dark:bg-backgroundDark"
-      style={{ paddingTop: insets.top }}
+      edges={['top']}
     >
       <HomeHubLoadingHeader />
 
@@ -64,6 +63,6 @@ export function HomeHubLoadingState() {
           <View className="h-24 w-full bg-skeleton dark:bg-white/10 rounded-lg" />
         </View>
       </View>
-    </View>
+    </SafeAreaView>
   );
 }

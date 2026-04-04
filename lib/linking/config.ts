@@ -1,5 +1,5 @@
-import { LinkingOptions } from '@react-navigation/native';
 import * as Linking from 'expo-linking';
+
 import { APP_SCHEME, WEB_DOMAIN } from '@/lib/config/env';
 
 /**
@@ -9,6 +9,30 @@ import { APP_SCHEME, WEB_DOMAIN } from '@/lib/config/env';
  * - App Scheme: the-run://
  * - Mapping: /join/[code] (Web) <-> the-run://join/[code] (Native)
  */
+
+/**
+ * Shape compatible with Expo / React Navigation linking `config`.
+ * Defined locally to avoid importing `@react-navigation/native` in app code.
+ */
+export interface AppLinkingConfig {
+  screens: {
+    '(tabs)': {
+      screens: {
+        home: string;
+        two: string;
+      };
+    };
+    'join/[code]': string;
+    'event/[id]': string;
+    modal: string;
+    '+not-found': string;
+  };
+}
+
+export interface AppLinkingOptions {
+  prefixes: string[];
+  config: AppLinkingConfig;
+}
 
 /**
  * Get the linking prefix for the current platform.
@@ -34,12 +58,12 @@ export const linkingPrefixes = [
  * Route configuration for deep linking.
  * Maps URL paths to screen names.
  */
-export const linkingConfig: LinkingOptions<ReactNavigation.RootParamList>['config'] = {
+export const linkingConfig: AppLinkingConfig = {
   screens: {
     // Tab navigator
     '(tabs)': {
       screens: {
-        index: '',
+        home: '',
         two: 'explore',
       },
     },
@@ -55,9 +79,9 @@ export const linkingConfig: LinkingOptions<ReactNavigation.RootParamList>['confi
 };
 
 /**
- * Full linking options for React Navigation.
+ * Full linking options (prefixes + config).
  */
-export const linkingOptions: LinkingOptions<ReactNavigation.RootParamList> = {
+export const linkingOptions: AppLinkingOptions = {
   prefixes: linkingPrefixes,
   config: linkingConfig,
 };
@@ -72,7 +96,7 @@ export const linkingOptions: LinkingOptions<ReactNavigation.RootParamList> = {
 export function parseDeepLink(url: string): { path: string; params: Record<string, string> } | null {
   try {
     const parsed = Linking.parse(url);
-    
+
     if (!parsed.path) {
       return null;
     }
@@ -97,7 +121,7 @@ export function parseDeepLink(url: string): { path: string; params: Record<strin
 
     return {
       path: parsed.path,
-      params: parsed.queryParams as Record<string, string> ?? {},
+      params: (parsed.queryParams as Record<string, string> | undefined) ?? {},
     };
   } catch {
     return null;

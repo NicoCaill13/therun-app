@@ -370,7 +370,7 @@ export default function JoinScreen() {
     if (event) {
       router.replace(`/event/${event.id}`);
     } else {
-      router.replace('/(tabs)');
+      router.replace('/(tabs)/home');
     }
   }, [router, event]);
 

@@ -1,103 +1,90 @@
+You are an elite cross-platform developer specializing in TypeScript, React Native, Expo, and Mobile UI development. Your objective is to build a high-performance Universal App (sharing the exact same codebase for iOS, Android, and Web).
 
-  You are an expert in TypeScript, React Native, Expo, and Mobile UI development.
+# Core Tech Stack
 
-  Code Style and Structure
-  - Write concise, technical TypeScript code with accurate examples.
-  - Use functional and declarative programming patterns; avoid classes.
-  - Prefer iteration and modularization over code duplication.
-  - Use descriptive variable names with auxiliary verbs (e.g., isLoading, hasError).
-  - Structure files: exported component, subcomponents, helpers, static content, types.
-  - Follow Expo's official documentation for setting up and configuring your projects: https://docs.expo.dev/
+- Framework: Expo (Managed Workflow)
+- Routing: Expo Router (File-based routing)
+- Language: Strict TypeScript
+- UI Primitives: React Native core components
 
-  Naming Conventions
-  - Use lowercase with dashes for directories (e.g., components/auth-wizard).
-  - Favor named exports for components.
+# Strict Universal Development Rules (CRITICAL)
 
-  TypeScript Usage
-  - Use TypeScript for all code; prefer interfaces over types.
-  - Avoid enums; use maps instead.
-  - Use functional components with TypeScript interfaces.
-  - Use strict mode in TypeScript for better type safety.
+- NEVER output HTML tags (`<div>`, `<span>`, `<p>`, `<a>`, etc.).
+- ALWAYS use Universal React Native components (`<View>`, `<Text>`, `<Pressable>`, `<ScrollView>`, `<Image>`).
+- NEVER use DOM APIs directly (`window`, `document`, `localStorage`). Use `AsyncStorage` or `expo-secure-store`.
+- If web-specific or mobile-specific code is absolutely necessary, strictly use `Platform.OS` checks (`import { Platform } from 'react-native'`).
 
-  Syntax and Formatting
-  - Use the "function" keyword for pure functions.
-  - Avoid unnecessary curly braces in conditionals; use concise syntax for simple statements.
-  - Use declarative JSX.
-  - Use Prettier for consistent code formatting.
+# Code Style and Structure
 
-  UI and Styling
-  - Use Expo's built-in components for common UI patterns and layouts.
-  - Implement responsive design with Flexbox and Expo's useWindowDimensions for screen size adjustments.
-  - Use styled-components or Tailwind CSS for component styling.
-  - Implement dark mode support using Expo's useColorScheme.
-  - Ensure high accessibility (a11y) standards using ARIA roles and native accessibility props.
-  - Leverage react-native-reanimated and react-native-gesture-handler for performant animations and gestures.
+- Write concise, technical TypeScript code.
+- Use functional and declarative programming patterns; avoid classes.
+- Prefer iteration and modularization over code duplication.
+- Use descriptive variable names with auxiliary verbs for booleans (e.g., isLoading, hasError, canSubmit).
+- No Magic Numbers: Extract arbitrary numbers or strings into descriptive constants.
+- Follow Expo's official documentation: https://docs.expo.dev/
 
-  Safe Area Management
-  - Use SafeAreaProvider from react-native-safe-area-context to manage safe areas globally in your app.
-  - Wrap top-level components with SafeAreaView to handle notches, status bars, and other screen insets on both iOS and Android.
-  - Use SafeAreaScrollView for scrollable content to ensure it respects safe area boundaries.
-  - Avoid hardcoding padding or margins for safe areas; rely on SafeAreaView and context hooks.
+# Naming Conventions & File Structure
 
-  Performance Optimization
-  - Minimize the use of useState and useEffect; prefer context and reducers for state management.
-  - Use Expo's AppLoading and SplashScreen for optimized app startup experience.
-  - Optimize images: use WebP format where supported, include size data, implement lazy loading with expo-image.
-  - Implement code splitting and lazy loading for non-critical components with React's Suspense and dynamic imports.
-  - Profile and monitor performance using React Native's built-in tools and Expo's debugging features.
-  - Avoid unnecessary re-renders by memoizing components and using useMemo and useCallback hooks appropriately.
+- Use lowercase with dashes for directories (e.g., `components/auth-wizard`).
+- Expo Router pages MUST follow standard routing patterns (`index.tsx`, `_layout.tsx`, `[id].tsx`).
+- UI Components MUST be `PascalCase.tsx` (e.g., `RunCard.tsx`) with named exports.
+- Utils, constants, and hooks MUST be `camelCase.ts`.
 
-  Navigation
-  - Use react-navigation for routing and navigation; follow its best practices for stack, tab, and drawer navigators.
-  - Leverage deep linking and universal links for better user engagement and navigation flow.
-  - Use dynamic routes with expo-router for better navigation handling.
+# TypeScript Usage
 
-  State Management
-  - Use React Context and useReducer for managing global state.
-  - Leverage react-query for data fetching and caching; avoid excessive API calls.
-  - For complex state management, consider using Zustand or Redux Toolkit.
-  - Handle URL search parameters using libraries like expo-linking.
+- ZERO tolerance for `any`. If a type is truly unknown, use `unknown` and narrow it down.
+- Prefer interfaces over types for object shapes and API responses. Avoid enums; use maps instead.
+- ALWAYS define explicit return types for custom hooks and complex utility functions.
+- Use strict mode in TypeScript for better type safety.
 
-  Error Handling and Validation
-  - Use Zod for runtime validation and error handling.
-  - Implement proper error logging using Sentry or a similar service.
-  - Prioritize error handling and edge cases:
-    - Handle errors at the beginning of functions.
-    - Use early returns for error conditions to avoid deeply nested if statements.
-    - Avoid unnecessary else statements; use if-return pattern instead.
-    - Implement global error boundaries to catch and handle unexpected errors.
-  - Use expo-error-reporter for logging and reporting errors in production.
+# Imports Ordering
 
-  Testing
-  - Write unit tests using Jest and React Native Testing Library.
-  - Implement integration tests for critical user flows using Detox.
-  - Use Expo's testing tools for running tests in different environments.
-  - Consider snapshot testing for components to ensure UI consistency.
+Organize imports in the following strict order, separated by a blank line:
 
-  Security
-  - Sanitize user inputs to prevent XSS attacks.
-  - Use react-native-encrypted-storage for secure storage of sensitive data.
-  - Ensure secure communication with APIs using HTTPS and proper authentication.
-  - Use Expo's Security guidelines to protect your app: https://docs.expo.dev/guides/security/
+1. React & Expo core (`react`, `react-native`, `expo-router`).
+2. Third-party dependencies (e.g., `axios`, `zustand`, `zod`).
+3. Absolute local imports (e.g., `@/components/...`).
+4. Relative local imports (e.g., `./styles`).
 
-  Internationalization (i18n)
-  - Use react-native-i18n or expo-localization for internationalization and localization.
-  - Support multiple languages and RTL layouts.
-  - Ensure text scaling and font adjustments for accessibility.
+# Syntax, Formatting & Styling
 
-  Key Conventions
-  1. Rely on Expo's managed workflow for streamlined development and deployment.
-  2. Prioritize Mobile Web Vitals (Load Time, Jank, and Responsiveness).
-  3. Use expo-constants for managing environment variables and configuration.
-  4. Use expo-permissions to handle device permissions gracefully.
-  5. Implement expo-updates for over-the-air (OTA) updates.
-  6. Follow Expo's best practices for app deployment and publishing: https://docs.expo.dev/distribution/introduction/
-  7. Ensure compatibility with iOS and Android by testing extensively on both platforms.
+- Avoid unnecessary curly braces in conditionals; use concise syntax.
+- STRICTLY FORBIDDEN: Inline styles. Always use `StyleSheet.create` or your configured universal styling system (like NativeWind).
+- Implement dark mode support using Expo's `useColorScheme`.
+- Use `SafeAreaProvider` and `SafeAreaView` from `react-native-safe-area-context` to handle notches and status bars. Avoid hardcoding padding for safe areas.
 
-  API Documentation
-  - Use Expo's official documentation for setting up and configuring your projects: https://docs.expo.dev/
+# Navigation
 
- - joue toujours la commande `npm run test:coverage` avant de valider ton travail
- - à la fin de chaque itération propose moi un conventional commit
-    
-  
+- EXCLUSIVELY use `expo-router` for routing. DO NOT use `react-navigation` directly.
+- Use the `<Link>` component and `useRouter` hook from `expo-router`.
+- Leverage deep linking and universal links.
+
+# Data & API Integration
+
+- The backend API is already fully developed by the user. DO NOT invent backend logic.
+- Focus purely on consuming the API, managing frontend state, and displaying data.
+- Handle loading states, network errors, and edge cases natively.
+- Use React Context, Zustand, or Redux Toolkit for global state. Use `react-query` for data fetching.
+
+# Error Handling and Validation
+
+- Use Zod for runtime validation and error handling.
+- Handle errors at the beginning of functions (Early Returns).
+- Avoid deeply nested if statements. Avoid unnecessary else statements; use if-return pattern instead.
+- Implement global error boundaries.
+
+# Performance Optimization
+
+- Minimize the use of useState and useEffect.
+- Optimize images: use WebP format, implement lazy loading with `expo-image`.
+- Avoid unnecessary re-renders by memoizing components and using useMemo/useCallback appropriately.
+
+# Security
+
+- Sanitize user inputs to prevent XSS attacks.
+- Use `expo-secure-store` for secure storage of sensitive data (tokens).
+
+# End of Iteration Rules
+
+- Joue TOUJOURS la commande `npm run test:coverage` avant de valider ton travail.
+- À la fin de chaque itération, propose-moi un "conventional commit".

@@ -1,4 +1,4 @@
-import { View, Pressable, FlatList, RefreshControl, Alert } from 'react-native';
+import { View, Pressable, FlatList, RefreshControl, Alert, StyleSheet } from 'react-native';
 import { useRouter, Stack } from 'expo-router';
 import { useCallback, useState } from 'react';
 import FontAwesome from '@expo/vector-icons/FontAwesome';
@@ -12,6 +12,10 @@ import {
   InvitationItem,
 } from '@/lib/api/invitations';
 import { formatEventDate } from '@/lib/utils/date';
+
+const INVITATIONS_LIST_CONTENT_STYLE = StyleSheet.create({
+  container: { padding: 16 },
+});
 
 // ============================================================================
 // Invitations Screen
@@ -147,7 +151,7 @@ export default function InvitationsScreen() {
           refreshControl={
             <RefreshControl refreshing={false} onRefresh={handleRefresh} />
           }
-          contentContainerStyle={{ padding: 16 }}
+          contentContainerStyle={INVITATIONS_LIST_CONTENT_STYLE.container}
           ItemSeparatorComponent={() => <View className="h-4" />}
           ListFooterComponent={
             isFetchingNextPage ? (

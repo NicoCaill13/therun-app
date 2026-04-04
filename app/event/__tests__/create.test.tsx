@@ -1,7 +1,7 @@
-import { render, screen, fireEvent, waitFor, act } from '@testing-library/react-native';
-import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { ReactNode } from 'react';
-import CreateEventScreen from '../create';
+
+import { act, fireEvent, render, screen, waitFor } from '@testing-library/react-native';
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 
 // Mock hooks and navigation
 const mockPush = jest.fn();
@@ -16,7 +16,7 @@ jest.mock('expo-router', () => ({
     back: mockBack,
   }),
   Stack: {
-    Screen: ({ options }: any) => null,
+    Screen: (_props: { options?: Record<string, unknown> }) => null,
   },
 }));
 
@@ -34,6 +34,8 @@ jest.mock('@/components/providers', () => ({
     showUpsell: jest.fn(),
   }),
 }));
+
+import CreateEventScreen from '../create';
 
 // Test wrapper
 function createWrapper() {
