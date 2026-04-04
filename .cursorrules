@@ -23,6 +23,14 @@ You are an elite cross-platform developer specializing in TypeScript, React Nati
 - No Magic Numbers: Extract arbitrary numbers or strings into descriptive constants.
 - Follow Expo's official documentation: https://docs.expo.dev/
 
+# Architecture & Clean Code (DRY & SOLID)
+
+- **DRY (Don't Repeat Yourself):** Strictly avoid code duplication. Extract recurring UI patterns into generic components and abstract business/fetching logic into reusable custom hooks.
+- **SOLID Principles:** - _Single Responsibility:_ Components and functions must do exactly one thing. Separate the UI rendering from the business logic.
+  - _Open/Closed:_ Build components that are open for extension (e.g., via `children` or generic props) but closed for modification.
+  - _Interface Segregation:_ Keep TypeScript interfaces small and specific to the component's exact needs.
+  - _Dependency Inversion:_ Inject dependencies (like API services) rather than hardcoding them inside UI components.
+
 # Naming Conventions & File Structure
 
 - Use lowercase with dashes for directories (e.g., `components/auth-wizard`).
@@ -95,4 +103,5 @@ Organize imports in the following strict order, separated by a blank line:
 - Enforce "The No-Line Rule": ABSOLUTELY NO 1px solid borders for sectioning. Define boundaries through background color shifts.
 - Typography: Use Oversized, massive typography for stats and headers.
 - Colors: Never use 100% white for long body text, use `#adaaaa` (`on_surface_variant`). Use `#ff5722` as the Athletic Orange primary accent.
-- Shapes: Use `full` roundedness for pills/chips and `md` for large containers.
+- Shapes: **No `borderRadius`** (sharp corners) on navigation, primary/secondary actions, cards, form fields, and status chips unless an explicit product exception is documented.
+- **Shell alignment:** Every full-screen route must use the shared top bar — `AuthNavBar` on `(auth)` flows, `AppNavBar` on `(app)` — from `@/components/layout/TheRunNavBar`. Horizontal content padding must follow `shellHorizontalPadding` / `SHELL_PADDING_X_*` in `@/lib/constants/layout` so columns line up with the nav rails.

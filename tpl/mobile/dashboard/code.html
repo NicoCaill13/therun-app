@@ -1,0 +1,237 @@
+<!DOCTYPE html>
+
+<html class="dark" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<link href="https://fonts.googleapis.com/css2?family=Lexend:wght@100..900&amp;family=Manrope:wght@200..800&amp;family=Space+Grotesk:wght@300..700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<script id="tailwind-config">
+    tailwind.config = {
+      darkMode: "class",
+      theme: {
+        extend: {
+          "colors": {
+                  "secondary-fixed": "#e5e2e1",
+                  "surface-container-low": "#131313",
+                  "secondary-dim": "#d6d4d3",
+                  "primary-fixed": "#ff7851",
+                  "on-primary": "#5c1400",
+                  "secondary-container": "#474746",
+                  "on-tertiary-fixed": "#360049",
+                  "tertiary-container": "#e699fd",
+                  "surface": "#0e0e0e",
+                  "on-surface": "#ffffff",
+                  "on-primary-container": "#470e00",
+                  "tertiary-fixed-dim": "#d88cee",
+                  "on-secondary-fixed": "#403f3f",
+                  "primary": "#ff8f6f",
+                  "background": "#0e0e0e",
+                  "secondary-fixed-dim": "#d6d4d3",
+                  "surface-container-lowest": "#000000",
+                  "surface-container-high": "#201f1f",
+                  "outline": "#777575",
+                  "on-primary-fixed-variant": "#581300",
+                  "on-secondary-container": "#d2d0cf",
+                  "on-primary-fixed": "#000000",
+                  "primary-container": "#ff7851",
+                  "on-error": "#490006",
+                  "secondary": "#e5e2e1",
+                  "inverse-primary": "#b12f00",
+                  "error": "#ff716c",
+                  "surface-dim": "#0e0e0e",
+                  "surface-bright": "#2c2c2c",
+                  "inverse-on-surface": "#565554",
+                  "tertiary-dim": "#d88cee",
+                  "on-error-container": "#ffa8a3",
+                  "on-tertiary": "#621c7a",
+                  "error-dim": "#d7383b",
+                  "tertiary": "#eeacff",
+                  "tertiary-fixed": "#e699fd",
+                  "on-background": "#ffffff",
+                  "surface-container-highest": "#262626",
+                  "surface-tint": "#ff8f6f",
+                  "surface-variant": "#262626",
+                  "on-surface-variant": "#adaaaa",
+                  "primary-fixed-dim": "#ff5d2b",
+                  "primary-dim": "#ff734a",
+                  "outline-variant": "#494847",
+                  "on-tertiary-fixed-variant": "#611b79",
+                  "on-tertiary-container": "#570e6f",
+                  "on-secondary-fixed-variant": "#5c5b5b",
+                  "error-container": "#9f0519",
+                  "on-secondary": "#525151",
+                  "surface-container": "#1a1919",
+                  "inverse-surface": "#fcf8f8"
+          },
+          "borderRadius": {
+                  "DEFAULT": "0.125rem",
+                  "lg": "0.25rem",
+                  "xl": "0.5rem",
+                  "full": "0.75rem"
+          },
+          "fontFamily": {
+                  "headline": ["Lexend"],
+                  "body": ["Manrope"],
+                  "label": ["Space Grotesk"]
+          }
+        },
+      },
+    }
+  </script>
+<style>
+    .material-symbols-outlined {
+      font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+    }
+    .custom-gradient-bg {
+      background: linear-gradient(135deg, #ff8f6f 0%, #ff7851 100%);
+    }
+    body {
+      background-color: #0e0e0e;
+      color: #ffffff;
+      font-family: 'Manrope', sans-serif;
+    }
+  </style>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head>
+<body class="antialiased selection:bg-primary selection:text-on-primary">
+<!-- TopAppBar -->
+<header class="flex justify-between items-center w-full px-6 py-4 bg-[#0e0e0e] fixed top-0 z-50 border-none shadow-none bg-gradient-to-b from-[#0e0e0e] to-transparent">
+<div class="flex items-center gap-3">
+<div class="w-10 h-10 rounded-full overflow-hidden border border-outline-variant/30">
+<img alt="User athlete profile photo" class="w-full h-full object-cover" data-alt="Close up portrait of a serious male athlete with short hair in dark moody lighting, high contrast photography style" src="https://lh3.googleusercontent.com/aida-public/AB6AXuAHMdOkYNtlDknmYQxORkXnhU5BuT3VEmbYyIkOiIY1QIJWjijppZ_E8bvkIuy0C0XwiQVO3ZotJH5mGq2RSCczlSevIyf9THRsvTfchpcTfd7YIal3C1K3o6-Wgoq19Z-3Zf_T_Ea6chleo8cp0Ycd8pw6eJtBm5EPXPTpddPVrXILZvLzPcoKkTHg7wuuNOof4KTopcWf2bwzIAHr8lfqvxR2Jp6n714QVuJPFzxrpyXF-kNYlhHFFXyrYSd0s698LAkO7iGmy7c"/>
+</div>
+<span class="font-['Lexend'] font-black tracking-tighter uppercase text-2xl text-[#ff5722] italic">THE RUN</span>
+</div>
+<button class="text-[#adaaaa] hover:text-[#ff8f6f] transition-colors active:scale-95 duration-150">
+<span class="material-symbols-outlined" data-icon="notifications">notifications</span>
+</button>
+</header>
+<main class="pt-24 pb-32 px-4 max-w-lg mx-auto">
+<!-- Header Section -->
+<div class="mb-10 flex flex-col items-start">
+<h1 class="font-headline text-[3.5rem] leading-[0.9] font-black tracking-tighter uppercase text-on-surface mb-2 break-words">
+        UPCOMING<br/><span class="text-primary-fixed-dim">RUNS</span>
+</h1>
+<p class="font-label text-sm tracking-widest text-on-surface-variant uppercase">URBAN KINETICISM / EXPLORE PHASE</p>
+</div>
+<!-- Create Event FAB -->
+<button class="fixed right-6 bottom-32 z-40 w-14 h-14 custom-gradient-bg rounded-xl shadow-[0_8px_24px_rgba(255,87,34,0.4)] flex items-center justify-center text-on-primary-fixed active:scale-90 transition-transform">
+<span class="material-symbols-outlined !text-3xl" style="font-variation-settings: 'FILL' 1;">add</span>
+</button>
+<!-- Events Feed -->
+<section class="flex flex-col gap-4">
+<!-- Event Card 1 -->
+<article class="bg-surface-container-low relative overflow-hidden rounded-xl group">
+<div class="absolute left-0 top-0 bottom-0 w-1 bg-[#ff5722]"></div>
+<div class="p-6">
+<div class="flex justify-between items-start mb-4">
+<span class="font-label text-[10px] font-bold tracking-widest text-primary px-3 py-1 bg-primary/10 rounded-full uppercase">GOING</span>
+<div class="flex -space-x-2">
+<img class="w-8 h-8 rounded-full border-2 border-surface-container-low object-cover" data-alt="Small avatar of a runner" src="https://lh3.googleusercontent.com/aida-public/AB6AXuC3FwKNteH5vXesm53F48G4DkRpeO3l7bKX3XqJe5X7tsnWA51oZGS76u9GkmpJBEZw8J-a60dU2oqkPZmQ8oj-75e0WTaCjCsu4BrALkbLhIZnTiy0Dstzhw_VqTO-uTd_uMPIDXRWoGmE9CheEX5mtEGJP8GlbfqrjSGhRlh1kPiRRz_-zjlj-q_aZ6BZ3Y2x0fqoJwu-bUFRBUd-MFGWEzRnvOeg0aqWm8cJ6LQ9eh8hEUTJ9YVBAqHean0zY5U0fYPXR8fvOUQ"/>
+<img class="w-8 h-8 rounded-full border-2 border-surface-container-low object-cover" data-alt="Small avatar of a female runner" src="https://lh3.googleusercontent.com/aida-public/AB6AXuCNJ-TuL1SVyodEp6PsVXrZn8XU0hv4mfM6G_JdsVfmomUMSaDM3IRAVUFMnLCxBDYEV5yh4Z58E-OsmAbGFDF3ynTeKCXKjhPlsg9kAIhJrUa3tkYdJ6U0vaV6U-Aabhe7d_KlfWIqyRy-YSb-xkI0BK2leWP3uM-i8uOzmx1agiFqslx_TCzMcXS_U18g0RXjdjtaClupmzJ27mEMPPItqYGBzKzqVCt74WtOEKAsRF5vb5UYw5sjsuc0sJJ02VzpAQvfoTwDwec"/>
+<img class="w-8 h-8 rounded-full border-2 border-surface-container-low object-cover" data-alt="Small avatar of a male athlete" src="https://lh3.googleusercontent.com/aida-public/AB6AXuCayJ93FgfQauIA6cJz41NiE3w7qVzGzDKVjOTfgelmADP2Uxh4Y3bvE3ZXDn305kr6G4ARlqCDBtbc7IWF6a4As1UGOQFJ0W0t3JDFNBhBQld4j6OIDkXqJ_UdAT4aOWsRywXk62zwgTXjg31TwvT2KbExi3X163xK06en-X56dvAY6OW6UrpI0SnYuqOzFpy9B7hbQNq6TiOjvlqQZRUFfh0JooGSTtkABfpA3f5HRhyLOUqfy6wlI2xi-BfXDNX0rU5CFND6g6w"/>
+<div class="w-8 h-8 rounded-full border-2 border-surface-container-low bg-surface-container-highest flex items-center justify-center text-[10px] font-bold">+12</div>
+</div>
+</div>
+<h2 class="font-headline text-3xl font-black tracking-tighter uppercase text-on-surface mb-1">CITY LIMITS SPRINT</h2>
+<div class="font-label text-xs tracking-widest text-primary-fixed-dim font-bold mb-4">SAT, OCT 26 • 18:30</div>
+<div class="flex items-center gap-2 text-on-surface-variant mb-4">
+<span class="material-symbols-outlined text-sm" data-icon="location_on">location_on</span>
+<span class="font-body text-sm">Industrial District, Terminal 4</span>
+</div>
+<div class="flex items-center justify-between pt-4 border-t border-outline-variant/10">
+<div class="flex items-center gap-2">
+<span class="font-label text-[10px] text-on-surface-variant uppercase">ORGANIZER</span>
+<span class="font-body text-sm font-bold">MARCUS VANE</span>
+</div>
+<button class="bg-surface-container-highest hover:bg-surface-bright p-2 rounded-lg transition-colors">
+<span class="material-symbols-outlined text-on-surface" data-icon="chevron_right">chevron_right</span>
+</button>
+</div>
+</div>
+</article>
+<!-- Event Card 2 -->
+<article class="bg-surface-container-low relative overflow-hidden rounded-xl group">
+<div class="absolute left-0 top-0 bottom-0 w-1 bg-outline-variant"></div>
+<div class="p-6">
+<div class="flex justify-between items-start mb-4">
+<span class="font-label text-[10px] font-bold tracking-widest text-on-surface-variant px-3 py-1 bg-surface-container-highest rounded-full uppercase">NOT GOING</span>
+<div class="flex -space-x-2">
+<img class="w-8 h-8 rounded-full border-2 border-surface-container-low object-cover" data-alt="Athlete avatar" src="https://lh3.googleusercontent.com/aida-public/AB6AXuBZlp3HPECiZXRVZ2wwddDW2PiYjXmc1DfR6sA-rkfRw8aaEqG2N5HGc3DFhkSUEF8AfxEn0uPzwbNYDFWMMEWX_hGdUj9fKi4DzBxWWG2lL-dIIXNw8yqg2QB27YOhRYFqqSwUbH0_neHDKSYYxlxas4_Oj64dUD-Nq3IqMEnmsc_9CFtlfWHnv3vcbwL-_BemGfsvOC8MAY48AQ0kXotfy82-UTuNTMHIweHxJxA979VhLMhjSTttrk3T_csdPIAWThu21pDlZmM"/>
+<img class="w-8 h-8 rounded-full border-2 border-surface-container-low object-cover" data-alt="Athlete avatar" src="https://lh3.googleusercontent.com/aida-public/AB6AXuCVOzR3mJGc8VRMDKVWTceIv4X18C4rMREr1JWQZDJXaYnCmJVaylFgzWe1xYHsLZgsAe0c12U_3s4_wgixVJWlvXPR3KUx18oGh4MXjDiei9F311ZPKlDRXFGw6tnzTaSS0ip068lgCpG4m7YOdCkAGCH-qzreIYNKEXl7bZDW-APg_-T22zIu9upOOjzCM7CyINziEB-REiGNFojNciB0_I3L0mlkJyO1Rs_G2838B7a4-vJHNG7TJPrwBCzc13T9SwoaEH-rzf0"/>
+<div class="w-8 h-8 rounded-full border-2 border-surface-container-low bg-surface-container-highest flex items-center justify-center text-[10px] font-bold">+5</div>
+</div>
+</div>
+<h2 class="font-headline text-3xl font-black tracking-tighter uppercase text-on-surface mb-1">NEON MIDNIGHT 10K</h2>
+<div class="font-label text-xs tracking-widest text-on-surface-variant font-bold mb-4">TUE, OCT 29 • 23:00</div>
+<div class="flex items-center gap-2 text-on-surface-variant mb-4">
+<span class="material-symbols-outlined text-sm" data-icon="location_on">location_on</span>
+<span class="font-body text-sm">Riverfront Walkway, Sector B</span>
+</div>
+<div class="flex items-center justify-between pt-4 border-t border-outline-variant/10">
+<div class="flex items-center gap-2">
+<span class="font-label text-[10px] text-on-surface-variant uppercase">ORGANIZER</span>
+<span class="font-body text-sm font-bold">LUNA CHEN</span>
+</div>
+<button class="bg-surface-container-highest hover:bg-surface-bright p-2 rounded-lg transition-colors">
+<span class="material-symbols-outlined text-on-surface" data-icon="chevron_right">chevron_right</span>
+</button>
+</div>
+</div>
+</article>
+<!-- Event Card 3 -->
+<article class="bg-surface-container-low relative overflow-hidden rounded-xl group">
+<div class="absolute left-0 top-0 bottom-0 w-1 bg-[#ff5722]"></div>
+<div class="p-6">
+<div class="flex justify-between items-start mb-4">
+<span class="font-label text-[10px] font-bold tracking-widest text-primary px-3 py-1 bg-primary/10 rounded-full uppercase">GOING</span>
+<div class="flex -space-x-2">
+<img class="w-8 h-8 rounded-full border-2 border-surface-container-low object-cover" data-alt="Athlete avatar" src="https://lh3.googleusercontent.com/aida-public/AB6AXuC2lhgmH7CZGCUNSTfQ-EeRAhBMgr6Dhbl9xJ2JO5J2PEmyKoPy_jPkvCxngNMzDGDfrrXcTGQnmc-Uvp5fBrs0yHUufmQDaUnKAw3BYqZ81vbMkuxdmENtIOZNk9-WAMxW0LtKdOwNoL6kWyf5VgfA1B8V15F0S_If6dW6drlykRd77D7Eqc3BtjKZn7QiiDkegeSDNJLZCvSjnQmUldQALqNxo1s1fR7gJ2QKlGPQDOiNVg9MJ77q89E8ZPWpHYk_KCPvjNK8314"/>
+<div class="w-8 h-8 rounded-full border-2 border-surface-container-low bg-surface-container-highest flex items-center justify-center text-[10px] font-bold">+24</div>
+</div>
+</div>
+<h2 class="font-headline text-3xl font-black tracking-tighter uppercase text-on-surface mb-1">ASCENT RIDGE RUN</h2>
+<div class="font-label text-xs tracking-widest text-primary-fixed-dim font-bold mb-4">SUN, NOV 03 • 06:15</div>
+<div class="flex items-center gap-2 text-on-surface-variant mb-4">
+<span class="material-symbols-outlined text-sm" data-icon="location_on">location_on</span>
+<span class="font-body text-sm">East Summit Trailhead</span>
+</div>
+<div class="flex items-center justify-between pt-4 border-t border-outline-variant/10">
+<div class="flex items-center gap-2">
+<span class="font-label text-[10px] text-on-surface-variant uppercase">ORGANIZER</span>
+<span class="font-body text-sm font-bold">TRAIL MASTERS</span>
+</div>
+<button class="bg-surface-container-highest hover:bg-surface-bright p-2 rounded-lg transition-colors">
+<span class="material-symbols-outlined text-on-surface" data-icon="chevron_right">chevron_right</span>
+</button>
+</div>
+</div>
+</article>
+</section>
+</main>
+<!-- BottomNavBar -->
+<nav class="fixed bottom-0 left-0 w-full flex justify-around items-center px-4 pb-6 pt-2 bg-[#1a1919]/90 backdrop-blur-xl z-50 rounded-t-2xl shadow-[0_-8px_24px_rgba(0,0,0,0.5)]">
+<a class="flex flex-col items-center justify-center text-[#adaaaa] px-4 py-2 hover:text-white transition-all active:transform active:scale-110 duration-200" href="#">
+<span class="material-symbols-outlined" data-icon="home">home</span>
+<span class="font-['Lexend'] text-[10px] font-bold tracking-widest uppercase">HOME</span>
+</a>
+<a class="flex flex-col items-center justify-center text-[#ff5722] bg-[#262626] rounded-xl px-4 py-2 hover:text-white transition-all active:transform active:scale-110 duration-200" href="#">
+<span class="material-symbols-outlined" data-icon="explore" style="font-variation-settings: 'FILL' 1;">explore</span>
+<span class="font-['Lexend'] text-[10px] font-bold tracking-widest uppercase">EXPLORE</span>
+</a>
+<a class="flex flex-col items-center justify-center text-[#adaaaa] px-4 py-2 hover:text-white transition-all active:transform active:scale-110 duration-200" href="#">
+<span class="material-symbols-outlined" data-icon="speed">speed</span>
+<span class="font-['Lexend'] text-[10px] font-bold tracking-widest uppercase">ACTIVITY</span>
+</a>
+<a class="flex flex-col items-center justify-center text-[#adaaaa] px-4 py-2 hover:text-white transition-all active:transform active:scale-110 duration-200" href="#">
+<span class="material-symbols-outlined" data-icon="person">person</span>
+<span class="font-['Lexend'] text-[10px] font-bold tracking-widest uppercase">PROFILE</span>
+</a>
+</nav>
+</body></html>

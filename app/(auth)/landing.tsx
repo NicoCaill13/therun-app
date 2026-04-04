@@ -46,6 +46,10 @@ import {
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 
+import { AuthNavBar } from "@/components/layout/TheRunNavBar";
+import { DESKTOP_BREAKPOINT } from "@/lib/constants/breakpoints";
+import { SHELL_PADDING_X_DESKTOP, SHELL_PADDING_X_MOBILE } from "@/lib/constants/layout";
+
 const COLORS = {
   surface_dim: "#0e0e0e",
   surface_container: "#1a1919",
@@ -56,7 +60,6 @@ const COLORS = {
   outline_variant: "#494847",
 } as const;
 
-const DESKTOP_BREAKPOINT = 768;
 const DESKTOP_CREATE_ACCOUNT_LIFT = 200;
 const HERO_IMAGE_EXTRA_HEIGHT = 200;
 
@@ -196,14 +199,7 @@ export default function UnloguedIndex(): ReactElement {
           ]}
           edges={["top", "bottom"]}
         >
-          {isDesktop && (
-            <View style={styles.desktopNav}>
-              <Text style={styles.brandLogo}>THE RUN</Text>
-              <Pressable onPress={handleLogin}>
-                <Text style={styles.navLoginLink}>LOG IN</Text>
-              </Pressable>
-            </View>
-          )}
+          <AuthNavBar variant="transparent" />
 
           {isDesktop ? (
             <>
@@ -269,38 +265,12 @@ const styles = StyleSheet.create({
     alignItems: "center",
   },
 
-  // Desktop nav
-  desktopNav: {
-    flexDirection: "row",
-    justifyContent: "space-between",
-    alignItems: "center",
-    paddingHorizontal: 40,
-    paddingTop: 8,
-    paddingBottom: 8,
-  },
-  brandLogo: {
-    fontFamily: "System",
-    fontSize: 22,
-    fontWeight: "900",
-    fontStyle: "italic",
-    letterSpacing: -1,
-    color: COLORS.primary,
-  },
-  navLoginLink: {
-    fontFamily: "System",
-    fontSize: 13,
-    fontWeight: "700",
-    letterSpacing: 2,
-    color: COLORS.on_surface_variant,
-    textTransform: "uppercase",
-  },
-
   // Hero section
   heroSection: {
     flex: 1,
     justifyContent: "center",
     alignItems: "center",
-    paddingHorizontal: 24,
+    paddingHorizontal: SHELL_PADDING_X_MOBILE,
   },
   heroSectionDesktop: {
     justifyContent: "center",
@@ -319,7 +289,7 @@ const styles = StyleSheet.create({
     maxWidth: 400,
     alignSelf: "center",
     alignItems: "center",
-    paddingHorizontal: 28,
+    paddingHorizontal: SHELL_PADDING_X_MOBILE,
     marginBottom: 112,
   },
   heroTitle: {
@@ -357,7 +327,7 @@ const styles = StyleSheet.create({
 
   // CTA section
   ctaSection: {
-    paddingHorizontal: 28,
+    paddingHorizontal: SHELL_PADDING_X_MOBILE,
     paddingBottom: 12,
     gap: 0,
     alignItems: "stretch",
@@ -383,7 +353,6 @@ const styles = StyleSheet.create({
     alignItems: "center",
     flexDirection: "row",
     height: 60,
-    borderRadius: 0,
     marginBottom: 24,
     alignSelf: "stretch",
     overflow: "hidden",
@@ -428,7 +397,6 @@ const styles = StyleSheet.create({
     backgroundColor: "transparent",
     borderWidth: 2,
     borderColor: COLORS.primary,
-    borderRadius: 0,
     paddingVertical: 20,
     alignItems: "center",
     justifyContent: "center",
@@ -448,7 +416,6 @@ const styles = StyleSheet.create({
     justifyContent: "center",
     alignItems: "center",
     height: 60,
-    borderRadius: 0,
     marginTop: -DESKTOP_CREATE_ACCOUNT_LIFT,
     marginBottom: 28,
     alignSelf: "stretch",
@@ -487,7 +454,7 @@ const styles = StyleSheet.create({
   desktopAmbient: {
     flexDirection: "row",
     justifyContent: "space-between",
-    paddingHorizontal: 40,
+    paddingHorizontal: SHELL_PADDING_X_DESKTOP,
     paddingBottom: 40,
   },
   ambientLeft: {

@@ -9,6 +9,7 @@ jest.mock('expo-secure-store', () => ({
 
 // Mock expo-router
 jest.mock('expo-router', () => ({
+  usePathname: () => '/',
   useRouter: () => ({
     push: jest.fn(),
     replace: jest.fn(),
@@ -38,6 +39,14 @@ jest.mock('react-native-reanimated', () => {
   Reanimated.default.call = () => {};
   return Reanimated;
 });
+
+// Mock expo-image (avoid require('react-native') inside factory — breaks NativeWind interop in Jest)
+jest.mock('expo-image', () => ({
+  __esModule: true,
+  Image: function MockExpoImage() {
+    return null;
+  },
+}));
 
 // Silence console warnings in tests
 global.console = {

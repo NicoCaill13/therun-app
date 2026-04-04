@@ -1,0 +1,259 @@
+<!DOCTYPE html>
+
+<html class="dark" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>THE RUN | Upcoming Runs</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Lexend:wght@100..900&amp;family=Manrope:wght@200..800&amp;family=Space+Grotesk:wght@300..700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+      tailwind.config = {
+        darkMode: "class",
+        theme: {
+          extend: {
+            "colors": {
+                    "background": "#0e0e0e",
+                    "surface-container-lowest": "#000000",
+                    "primary": "#ff8f6f",
+                    "surface-bright": "#2c2c2c",
+                    "surface": "#0e0e0e",
+                    "on-error": "#490006",
+                    "on-secondary-fixed-variant": "#5c5b5b",
+                    "on-secondary-container": "#d2d0cf",
+                    "outline": "#777575",
+                    "primary-container": "#ff7851",
+                    "tertiary-fixed": "#e699fd",
+                    "tertiary-container": "#e699fd",
+                    "secondary-fixed": "#e5e2e1",
+                    "primary-fixed-dim": "#ff5d2b",
+                    "on-tertiary-container": "#570e6f",
+                    "on-primary-fixed": "#000000",
+                    "secondary-container": "#474746",
+                    "on-tertiary-fixed-variant": "#611b79",
+                    "on-tertiary-fixed": "#360049",
+                    "on-primary-fixed-variant": "#581300",
+                    "on-surface": "#ffffff",
+                    "on-background": "#ffffff",
+                    "secondary": "#e5e2e1",
+                    "on-surface-variant": "#adaaaa",
+                    "on-primary": "#5c1400",
+                    "surface-container-high": "#201f1f",
+                    "surface-tint": "#ff8f6f",
+                    "inverse-on-surface": "#565554",
+                    "tertiary-fixed-dim": "#d88cee",
+                    "on-primary-container": "#470e00",
+                    "inverse-surface": "#fcf8f8",
+                    "error": "#ff716c",
+                    "secondary-dim": "#d6d4d3",
+                    "error-dim": "#d7383b",
+                    "error-container": "#9f0519",
+                    "surface-variant": "#262626",
+                    "on-tertiary": "#621c7a",
+                    "on-secondary-fixed": "#403f3f",
+                    "inverse-primary": "#b12f00",
+                    "surface-container-highest": "#262626",
+                    "on-secondary": "#525151",
+                    "outline-variant": "#494847",
+                    "tertiary-dim": "#d88cee",
+                    "tertiary": "#eeacff",
+                    "primary-fixed": "#ff7851",
+                    "primary-dim": "#ff734a",
+                    "surface-container": "#1a1919",
+                    "surface-dim": "#0e0e0e",
+                    "surface-container-low": "#131313",
+                    "secondary-fixed-dim": "#d6d4d3",
+                    "on-error-container": "#ffa8a3"
+            },
+            "borderRadius": {
+                    "DEFAULT": "0.125rem",
+                    "lg": "0.25rem",
+                    "xl": "0.5rem",
+                    "full": "0.75rem"
+            },
+            "fontFamily": {
+                    "headline": ["Lexend"],
+                    "body": ["Manrope"],
+                    "label": ["Space Grotesk"]
+            }
+          },
+        },
+      }
+    </script>
+<style>
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+        .editorial-bleed {
+            letter-spacing: -0.05em;
+        }
+        .glass-panel {
+            backdrop-filter: blur(20px);
+            background: rgba(38, 38, 38, 0.6);
+        }
+    </style>
+</head>
+<body class="bg-background text-on-background font-body selection:bg-primary selection:text-on-primary">
+<!-- TopNavBar -->
+<nav class="flex justify-between items-center w-full px-12 py-6 sticky top-0 z-50 bg-transparent backdrop-blur-md">
+<div class="text-3xl font-black italic text-orange-600 dark:text-orange-500 tracking-widest font-headline">THE RUN</div>
+<div class="hidden md:flex gap-12 items-center">
+<a class="text-zinc-400 font-bold uppercase tracking-widest text-xs hover:text-orange-400 transition-colors duration-300 font-label" href="#">Training</a>
+<a class="text-orange-500 border-b-4 border-orange-500 pb-1 font-bold uppercase tracking-widest text-xs font-label" href="#">Community</a>
+<a class="text-zinc-400 font-bold uppercase tracking-widest text-xs hover:text-orange-400 transition-colors duration-300 font-label" href="#">Shop</a>
+<a class="text-zinc-400 font-bold uppercase tracking-widest text-xs hover:text-orange-400 transition-colors duration-300 font-label" href="#">About</a>
+</div>
+<button class="bg-primary-fixed-dim text-on-primary-fixed px-8 py-3 rounded-md font-label font-bold uppercase tracking-tighter hover:scale-95 transition-transform">
+            Get Started
+        </button>
+</nav>
+<main class="min-h-screen">
+<!-- Hero / Header Section -->
+<header class="pt-24 pb-16 px-12 flex flex-col md:flex-row md:items-end justify-between gap-8">
+<div class="max-w-4xl">
+<h1 class="text-[8rem] leading-[0.85] font-headline font-black italic uppercase editorial-bleed text-on-surface">
+                    UPCOMING<br/>RUNS
+                </h1>
+<p class="mt-6 text-on-surface-variant text-lg max-w-xl font-body leading-relaxed">
+                    Join the collective. From midnight urban sprints to sunrise industrial trails, find your next pace-maker in the concrete jungle.
+                </p>
+</div>
+<div class="flex flex-col items-start md:items-end gap-4 pb-4">
+<button class="bg-primary-fixed-dim text-on-primary-fixed px-10 py-5 rounded-full flex items-center gap-3 font-label font-bold uppercase tracking-widest shadow-2xl hover:bg-primary transition-colors group">
+<span class="material-symbols-outlined font-bold">add</span>
+                    Create Event
+                </button>
+</div>
+</header>
+<!-- Events Grid -->
+<section class="px-12 pb-24">
+<div class="grid grid-cols-1 lg:grid-cols-12 gap-6">
+<!-- Large Featured Card -->
+<div class="lg:col-span-8 bg-surface-container-low rounded-lg overflow-hidden group relative flex h-[500px]">
+<div class="absolute inset-0 z-0">
+<img class="w-full h-full object-cover opacity-60 grayscale hover:grayscale-0 transition-all duration-700" data-alt="Cinematic low light photography of a group of runners moving through dark city streets with orange street light reflections" src="https://lh3.googleusercontent.com/aida-public/AB6AXuBhqLafajFDKcILXV2ztcutONdkEZYtzR8LrAlJNF7Vg4oD2knkwpE0fvNQD5Div6JHBoKVyZfuoF5P48BJ6pUIVKX35XJAaVBBrDy9vBsc2IrV9pO5j8KLlHmDwxpPcolJdY-U1d4V-Dc6llVQdDMk7fYE9voWWcJ4PvVXByeSYy1jed1mdSd2_qSplfyxwzoEwB5uZoLLn7KstYvctiOWqSObWYKspFzcdVmG4y5YndHXJdIGbjo4dJuoTNOaHUjDM58FkJ1ULpY"/>
+<div class="absolute inset-0 bg-gradient-to-r from-background via-transparent to-transparent"></div>
+</div>
+<div class="relative z-10 w-1 bg-primary h-full"></div>
+<div class="relative z-10 p-12 flex flex-col justify-end h-full">
+<div class="flex items-center gap-4 mb-6">
+<span class="bg-primary text-on-primary px-4 py-1 rounded-full text-xs font-label font-bold tracking-widest uppercase">PLANNED</span>
+<span class="text-on-surface-variant text-xs font-label tracking-widest uppercase flex items-center gap-2">
+<span class="material-symbols-outlined text-[14px]">calendar_today</span> Oct 24, 2024
+                            </span>
+</div>
+<h2 class="text-6xl font-headline font-black italic uppercase leading-none editorial-bleed text-on-surface mb-4">Midnight Neon<br/>Circuit</h2>
+<div class="flex flex-wrap items-center gap-8 text-on-surface-variant font-label text-sm uppercase tracking-widest">
+<span class="flex items-center gap-2"><span class="material-symbols-outlined text-primary">location_on</span> Shoreditch High St.</span>
+<span class="flex items-center gap-2"><span class="material-symbols-outlined text-primary">person</span> Marcus Vane</span>
+<span class="flex items-center gap-2"><span class="material-symbols-outlined text-primary">speed</span> 5'20" /km Pace</span>
+</div>
+</div>
+</div>
+<!-- Secondary Card Stack -->
+<div class="lg:col-span-4 flex flex-col gap-6">
+<!-- Card 2 -->
+<div class="bg-surface-container-low rounded-lg p-8 flex relative overflow-hidden group">
+<div class="absolute left-0 top-0 bottom-0 w-1 bg-primary"></div>
+<div class="flex flex-col justify-between w-full">
+<div>
+<div class="flex justify-between items-start mb-6">
+<span class="bg-surface-container-highest text-on-surface-variant px-3 py-1 rounded-full text-[10px] font-label font-bold tracking-tighter uppercase">GOING</span>
+<span class="text-primary font-label text-sm font-bold">18:30 PM</span>
+</div>
+<h3 class="text-3xl font-headline font-black italic uppercase leading-tight editorial-bleed text-on-surface mb-2">Industrial East Trail</h3>
+<p class="text-on-surface-variant text-xs font-label uppercase tracking-widest mb-4">Stratford Olympic Park</p>
+</div>
+<div class="flex items-center gap-3">
+<div class="w-8 h-8 rounded-full bg-surface-container-highest flex items-center justify-center overflow-hidden">
+<img class="w-full h-full object-cover" data-alt="Portrait of a male athletic runner profile" src="https://lh3.googleusercontent.com/aida-public/AB6AXuDHrTOdCR8DSZ_Bw4cMs1yQyh6WuUhkEvhrl7TLSjP_52tit5gW-lQFegQi8mstaa5R_1xmXrUe0gqTyOc7UaJpHRisiCngmLeDPCJQi0vJbEN9IhhvPWJgnYSliBAv3hR9mzK8CL-k7gohji7VDw1qj7W7iiwQTDqFsIslZVDAY7gvOdyTXb9JnaJcZJ4BdQLe3DuIs-_291J6-7aUw57wK9fNnGfjW_leB0HAZM_tS2sspWSLniyhzXhsq2OFofkrm4NKaf-0yPE"/>
+</div>
+<span class="text-xs font-label uppercase text-zinc-500">Host: David K.</span>
+</div>
+</div>
+</div>
+<!-- Card 3 -->
+<div class="bg-surface-container-low rounded-lg p-8 flex relative overflow-hidden group">
+<div class="absolute left-0 top-0 bottom-0 w-1 bg-primary"></div>
+<div class="flex flex-col justify-between w-full">
+<div>
+<div class="flex justify-between items-start mb-6">
+<span class="bg-primary text-on-primary px-3 py-1 rounded-full text-[10px] font-label font-bold tracking-tighter uppercase">PLANNED</span>
+<span class="text-primary font-label text-sm font-bold">05:15 AM</span>
+</div>
+<h3 class="text-3xl font-headline font-black italic uppercase leading-tight editorial-bleed text-on-surface mb-2">Sunrise Sprints</h3>
+<p class="text-on-surface-variant text-xs font-label uppercase tracking-widest mb-4">Westminster Bridge</p>
+</div>
+<div class="flex items-center gap-3">
+<div class="w-8 h-8 rounded-full bg-surface-container-highest flex items-center justify-center overflow-hidden">
+<img class="w-full h-full object-cover" data-alt="Portrait of a female runner smiling" src="https://lh3.googleusercontent.com/aida-public/AB6AXuAruDCYBmPGnVDRdTNvWRT1OCMEasQcQfpf7n_soltaoHZ9WGL1hqTh9NyoGGiJvbHfkXxQJXNcjn98b3bOECVBTy861EQQHag7NYiUsr7vPYuXJlz6rHHz2pizL6y43nDrxQDJ1RFZst-zLZjBHu0Yq6JXNo0pyNGfdM0MJX4xD3VIfVnl8E77lO1HBslBthtmRgvYQLY6dflUXBIquBDZOxG34XuKX3wRKBApvDoT-hHIgZCox3loCPh3V1A02FuqWLSrv0UsbMA"/>
+</div>
+<span class="text-xs font-label uppercase text-zinc-500">Host: Sarah L.</span>
+</div>
+</div>
+</div>
+</div>
+<!-- Row 2 -->
+<div class="lg:col-span-4 bg-surface-container-low rounded-lg p-8 relative overflow-hidden">
+<div class="absolute left-0 top-0 bottom-0 w-1 bg-primary"></div>
+<div class="mb-8">
+<span class="text-primary font-label text-xs uppercase tracking-[0.2em] mb-2 block">Technical Session</span>
+<h3 class="text-4xl font-headline font-black italic uppercase leading-tight editorial-bleed text-on-surface">VO2 Max Push</h3>
+<p class="text-on-surface-variant text-sm mt-2 font-body">Hard interval training for competitive levels.</p>
+</div>
+<div class="grid grid-cols-2 gap-4 border-t border-outline-variant/20 pt-6">
+<div>
+<span class="block text-[10px] font-label text-zinc-500 uppercase tracking-widest">DISTANCE</span>
+<span class="text-lg font-headline font-bold text-on-surface">12.5 KM</span>
+</div>
+<div>
+<span class="block text-[10px] font-label text-zinc-500 uppercase tracking-widest">ELEVATION</span>
+<span class="text-lg font-headline font-bold text-on-surface">240 M</span>
+</div>
+</div>
+</div>
+<div class="lg:col-span-4 bg-surface-container-low rounded-lg p-8 relative overflow-hidden">
+<div class="absolute left-0 top-0 bottom-0 w-1 bg-primary"></div>
+<div class="mb-8">
+<span class="text-primary font-label text-xs uppercase tracking-[0.2em] mb-2 block">Social Run</span>
+<h3 class="text-4xl font-headline font-black italic uppercase leading-tight editorial-bleed text-on-surface">River Side Chill</h3>
+<p class="text-on-surface-variant text-sm mt-2 font-body">Post-run drinks and networking at Southbank.</p>
+</div>
+<div class="flex items-center justify-between border-t border-outline-variant/20 pt-6">
+<div class="flex -space-x-2">
+<div class="w-8 h-8 rounded-full border-2 border-background bg-zinc-800"></div>
+<div class="w-8 h-8 rounded-full border-2 border-background bg-zinc-700"></div>
+<div class="w-8 h-8 rounded-full border-2 border-background bg-zinc-600"></div>
+<div class="w-8 h-8 rounded-full border-2 border-background bg-primary flex items-center justify-center text-[10px] font-bold">+12</div>
+</div>
+<span class="text-[10px] font-label text-zinc-500 uppercase tracking-widest">24 ATTENDING</span>
+</div>
+</div>
+<div class="lg:col-span-4 bg-surface-container-low rounded-lg overflow-hidden group relative">
+<img class="absolute inset-0 w-full h-full object-cover opacity-30" data-alt="Dynamic shot of a runner's legs on asphalt during golden hour" src="https://lh3.googleusercontent.com/aida-public/AB6AXuBja1kp8cbFYWbPeXj0eYzQ-KNH13tcAaZkCvPz9S7dp-w5yoijrtCG4GrGXqRLQXNOxZ4VO0APVDvU9a4ryWMGJbZBv-tzt1qoNpfHZGCR3ioRUm49LwovoszFqB5fze5tb_9NeZ2_YlFB3yShF3WkTSZv2Do7RMzJMZXe2KlY01NjGVZECWogC1pro2nitWZEwey2nSCHdEGCaSguVwgo1TE_VJGkNBRK7kFV9WDaODn4ZT5VAsQOBWTXOqlEayO5F3H-sw8umJQ"/>
+<div class="relative z-10 p-8 h-full flex flex-col justify-between">
+<h3 class="text-3xl font-headline font-black italic uppercase leading-tight editorial-bleed text-on-surface">Custom Route?</h3>
+<p class="text-on-surface-variant text-sm font-body">Map out your own urban kinetic journey.</p>
+<button class="mt-4 text-primary font-label font-bold uppercase tracking-widest text-xs flex items-center gap-2 group-hover:gap-4 transition-all">
+                            EXPLORE ROUTES <span class="material-symbols-outlined">arrow_forward</span>
+</button>
+</div>
+</div>
+</div>
+</section>
+</main>
+<!-- Footer -->
+<footer class="bg-zinc-950 w-full px-12 py-16 flex flex-col items-center gap-8">
+<div class="text-xl font-black italic text-zinc-100 font-headline tracking-widest">THE RUN</div>
+<div class="flex gap-10">
+<a class="text-zinc-500 hover:text-white transition-all font-label text-xs tracking-widest uppercase" href="#">Privacy</a>
+<a class="text-zinc-500 hover:text-white transition-all font-label text-xs tracking-widest uppercase" href="#">Terms</a>
+<a class="text-zinc-500 hover:text-white transition-all font-label text-xs tracking-widest uppercase" href="#">Support</a>
+<a class="text-zinc-500 hover:text-white transition-all font-label text-xs tracking-widest uppercase" href="#">Press</a>
+</div>
+<div class="text-zinc-700 font-label text-[10px] tracking-[0.3em] uppercase text-center max-w-lg">
+            © 2024 THE RUN. ALL RIGHTS RESERVED. URBAN KINETICISM.
+        </div>
+</footer>
+</body></html>

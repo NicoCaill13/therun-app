@@ -17,6 +17,7 @@ module.exports = {
     'app/event/create.tsx',
     'app/event/[id].tsx',
     'components/ui/*.{ts,tsx}',
+    'components/layout/*.{ts,tsx}',
     '!**/*.d.ts',
     '!**/node_modules/**',
     '!**/index.ts',
