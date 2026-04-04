@@ -88,3 +88,11 @@ Organize imports in the following strict order, separated by a blank line:
 
 - Joue TOUJOURS la commande `npm run test:coverage` avant de valider ton travail.
 - À la fin de chaque itération, propose-moi un "conventional commit".
+
+# Design System Strategy (The Cinematic Athlete)
+
+- BEFORE styling any component, you MUST read the specific `design.md` file located inside its corresponding `tpl/` folders (e.g., `tpl/desktop/unlogued/design.md`).
+- Enforce "The No-Line Rule": ABSOLUTELY NO 1px solid borders for sectioning. Define boundaries through background color shifts.
+- Typography: Use Oversized, massive typography for stats and headers.
+- Colors: Never use 100% white for long body text, use `#adaaaa` (`on_surface_variant`). Use `#ff5722` as the Athletic Orange primary accent.
+- Shapes: Use `full` roundedness for pills/chips and `md` for large containers.
