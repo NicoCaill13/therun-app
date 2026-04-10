@@ -1,5 +1,5 @@
 import type { ReactElement } from "react";
-import { useCallback, useMemo, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 
 import {
   Dimensions,
@@ -15,6 +15,8 @@ import {
 } from "react-native";
 import { useRouter } from "expo-router";
 
+import { useQuery } from "@tanstack/react-query";
+
 import { MaterialIcons } from "@expo/vector-icons";
 import { Image } from "expo-image";
 import {
@@ -28,6 +30,7 @@ import { EventTimeClockModal } from "@/components/ui/EventTimeClockModal";
 import { RoutePolylinePreview } from "@/components/ui/RoutePolylinePreview";
 import { postAddEventRoute } from "@/lib/api/eventRoutesEndpoints";
 import { postCreateEvent } from "@/lib/api/eventsEndpoints";
+import { listRoutes } from "@/lib/api/routesEndpoints";
 import { getAccessToken } from "@/lib/auth/tokenStorage";
 import { DESKTOP_BREAKPOINT } from "@/lib/constants/breakpoints";
 import { shellHorizontalPadding } from "@/lib/constants/layout";
@@ -136,6 +139,26 @@ export default function CreateEventScreen(): ReactElement {
     () => Math.min(112, Math.round(width * 0.065)),
     [width],
   );
+
+  const { data: mineRoutesData } = useQuery({
+    queryKey: ["routes", "mine"],
+    queryFn: async () => {
+      const token = await getAccessToken();
+      if (!token) {
+        throw new Error("Unauthorized");
+      }
+      return listRoutes({ createdByMe: true, page: 1, pageSize: 50 }, token);
+    },
+  });
+
+  const userLibraryRouteCount = mineRoutesData?.items.length ?? 0;
+  const showUserLibraryHub = userLibraryRouteCount > 0;
+
+  useEffect(() => {
+    if (!showUserLibraryHub && routeHub === "library") {
+      setRouteHub(null);
+    }
+  }, [showUserLibraryHub, routeHub]);
 
   const eventDateLabel = useMemo(
     () => formatEventDateLabel(eventDate),
@@ -550,69 +573,73 @@ export default function CreateEventScreen(): ReactElement {
                     : styles.routeCardsCol
                 }
               >
-                <Pressable
-                  onPress={() => {
-                    setRouteHub("library");
-                    router.push({
-                      pathname: "/(app)/route-library",
-                      params: { source: "library" },
-                    });
-                  }}
-                  accessibilityRole="button"
-                  accessibilityLabel="Choose route from my library"
-                  testID="create-event-route-library"
-                  style={({ pressed }) => [
-                    styles.routeCard,
-                    isDesktop && styles.routeCardDesktop,
-                    routeHub === "library" && styles.routeCardSelected,
-                    pressed && styles.routeCardPressed,
-                  ]}
-                >
-                  {isDesktop ? (
-                    <>
-                      <Image
-                        source={{ uri: LIBRARY_PHOTO_URI }}
-                        style={styles.routeCardPhoto}
-                        contentFit="cover"
-                      />
-                      <View style={styles.routeCardScrim} />
-                      <MaterialIcons
-                        name="folder-shared"
-                        size={ICON_LG}
-                        color={ON_SURFACE_VARIANT}
-                        style={styles.routeCardIconCorner}
-                      />
-                      <View style={styles.routeCardTextBlockBottom}>
-                        <Text style={styles.routeCardMeta}>USER_CONTENT</Text>
-                        <Text style={styles.routeCardTitleDesktop}>
-                          MY LIBRARY
-                        </Text>
-                      </View>
-                    </>
-                  ) : (
-                    <>
-                      <MaterialIcons
-                        name="folder-special"
-                        size={ICON_LG}
-                        color={PRIMARY}
-                      />
-                      <View>
-                        <Text style={styles.routeCardTitleMobile}>
-                          MY{"\n"}LIBRARY
-                        </Text>
-                        <Text style={styles.routeCardCaption}>
-                          12 SAVED ROUTES
-                        </Text>
-                      </View>
-                      <MaterialIcons
-                        name="route"
-                        size={100}
-                        color={ON_SURFACE}
-                        style={styles.routeWatermark}
-                      />
-                    </>
-                  )}
-                </Pressable>
+                {showUserLibraryHub ? (
+                  <Pressable
+                    onPress={() => {
+                      setRouteHub("library");
+                      router.push({
+                        pathname: "/(app)/route-library",
+                        params: { source: "library" },
+                      });
+                    }}
+                    accessibilityRole="button"
+                    accessibilityLabel="Choose route from my library"
+                    testID="create-event-route-library"
+                    style={({ pressed }) => [
+                      styles.routeCard,
+                      isDesktop && styles.routeCardDesktop,
+                      routeHub === "library" && styles.routeCardSelected,
+                      pressed && styles.routeCardPressed,
+                    ]}
+                  >
+                    {isDesktop ? (
+                      <>
+                        <Image
+                          source={{ uri: LIBRARY_PHOTO_URI }}
+                          style={styles.routeCardPhoto}
+                          contentFit="cover"
+                        />
+                        <View style={styles.routeCardScrim} />
+                        <MaterialIcons
+                          name="folder-shared"
+                          size={ICON_LG}
+                          color={ON_SURFACE_VARIANT}
+                          style={styles.routeCardIconCorner}
+                        />
+                        <View style={styles.routeCardTextBlockBottom}>
+                          <Text style={styles.routeCardMeta}>USER_CONTENT</Text>
+                          <Text style={styles.routeCardTitleDesktop}>
+                            MY LIBRARY
+                          </Text>
+                        </View>
+                      </>
+                    ) : (
+                      <>
+                        <MaterialIcons
+                          name="folder-special"
+                          size={ICON_LG}
+                          color={PRIMARY}
+                        />
+                        <View>
+                          <Text style={styles.routeCardTitleMobile}>
+                            MY{"\n"}LIBRARY
+                          </Text>
+                          <Text style={styles.routeCardCaption}>
+                            {userLibraryRouteCount === 1
+                              ? "1 SAVED ROUTE"
+                              : `${userLibraryRouteCount} SAVED ROUTES`}
+                          </Text>
+                        </View>
+                        <MaterialIcons
+                          name="route"
+                          size={100}
+                          color={ON_SURFACE}
+                          style={styles.routeWatermark}
+                        />
+                      </>
+                    )}
+                  </Pressable>
+                ) : null}
 
                 <Pressable
                   onPress={() => {

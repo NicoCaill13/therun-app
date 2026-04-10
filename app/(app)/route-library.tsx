@@ -2,6 +2,7 @@ import type { ReactElement } from "react";
 import { useCallback, useEffect, useMemo, useState } from "react";
 
 import {
+  ActivityIndicator,
   Dimensions,
   Pressable,
   ScrollView,
@@ -12,7 +13,8 @@ import {
   View,
 } from "react-native";
 import { useLocalSearchParams, useRouter } from "expo-router";
-import Svg, { Path } from "react-native-svg";
+
+import { useQuery } from "@tanstack/react-query";
 
 import { MaterialIcons } from "@expo/vector-icons";
 import { Image } from "expo-image";
@@ -22,15 +24,19 @@ import {
 } from "react-native-safe-area-context";
 
 import { AppNavBar } from "@/components/layout/TheRunNavBar";
+import {
+  LibraryRouteCardDesktop,
+  LibraryRouteCardMobile,
+} from "@/components/route-library/RouteLibraryCards";
+import { getMeProfile } from "@/lib/api/meProfileEndpoints";
+import { listRoutes } from "@/lib/api/routesEndpoints";
+import { getAccessToken } from "@/lib/auth/tokenStorage";
 import { DESKTOP_BREAKPOINT } from "@/lib/constants/breakpoints";
 import { shellHorizontalPadding } from "@/lib/constants/layout";
-import type { DesktopGridRouteMock, FavoriteRouteMock } from "@/lib/mocks/routeLibrary";
 import {
-  MOCK_DESKTOP_LOCAL_ROUTES,
-  MOCK_FAVORITE_ROUTES,
   ROUTE_LIBRARY_GLOBAL_HERO_URI,
   ROUTE_LIBRARY_PROFILE_URI,
-} from "@/lib/mocks/routeLibrary";
+} from "@/lib/constants/routeLibraryAssets";
 
 const SURFACE_DIM = "#0e0e0e";
 const SURFACE_CONTAINER = "#1a1919";
@@ -41,7 +47,6 @@ const ON_SURFACE = "#ffffff";
 const ON_SURFACE_VARIANT = "#adaaaa";
 const ON_PRIMARY_FIXED = "#000000";
 const PRIMARY = "#ff5722";
-const PRIMARY_DIM = "#ff734a";
 const PRIMARY_FIXED_DIM = "#ff5d2b";
 const PLACEHOLDER_MUTED = "#3f3f46";
 const ERROR_CONTAINER = "#9f0519";
@@ -66,102 +71,15 @@ function parseHubTab(raw: string | undefined): RouteHubTab {
   return raw === "global" ? "global" : "library";
 }
 
-interface FavoriteRouteCardProps {
-  item: FavoriteRouteMock;
-  onPress: () => void;
-  testID?: string;
-}
-
-function FavoriteRouteCard({ item, onPress, testID }: FavoriteRouteCardProps): ReactElement {
-  return (
-    <Pressable
-      onPress={onPress}
-      accessibilityRole="button"
-      accessibilityLabel={`Select route ${item.title}`}
-      testID={testID}
-      style={({ pressed }) => [styles.favCard, pressed && styles.cardPressed]}
-    >
-      <View style={styles.favCardMap}>
-        <Image source={{ uri: item.mapUri }} style={styles.favMapImg} contentFit="cover" />
-        <View style={styles.favMapScrim} />
-        <View style={styles.favPathWrap} pointerEvents="none">
-          <Svg width="100%" height="100%" viewBox="0 0 100 100">
-            <Path
-              d={item.pathD}
-              fill="none"
-              stroke={PRIMARY_DIM}
-              strokeWidth={3}
-              strokeLinecap="round"
-            />
-          </Svg>
-        </View>
-        <View style={styles.favBadgeRow}>
-          <View style={styles.kindBadge}>
-            <Text style={styles.kindBadgeText}>{item.kindLabel}</Text>
-          </View>
-        </View>
-      </View>
-      <View style={styles.favCardFooter}>
-        <View>
-          <Text style={styles.favSlug}>{item.slugLabel}</Text>
-          <Text style={styles.favTitle}>{item.title}</Text>
-        </View>
-        <View style={styles.favDistanceBlock}>
-          <Text style={styles.favDistanceNum}>{item.distanceKm}</Text>
-          <Text style={styles.favKm}>KM</Text>
-        </View>
-      </View>
-    </Pressable>
-  );
-}
-
-interface DesktopRouteCardProps {
-  item: DesktopGridRouteMock;
-  onPress: () => void;
-}
-
-function DesktopRouteCard({ item, onPress }: DesktopRouteCardProps): ReactElement {
-  const badgeIsElite = item.levelBadge === "ELITE";
-
-  return (
-    <Pressable
-      onPress={onPress}
-      accessibilityRole="button"
-      accessibilityLabel={`Select route ${item.metaLabel}`}
-      style={({ pressed }) => [styles.deskCard, pressed && styles.cardPressed]}
-    >
-      <View style={styles.deskAccentBar} />
-      <View style={styles.deskImgWrap}>
-        <Image source={{ uri: item.mapUri }} style={styles.deskImg} contentFit="cover" />
-        <View style={styles.deskImgScrim} />
-        <View
-          style={[
-            styles.levelBadgeFloat,
-            badgeIsElite ? styles.levelBadgeElite : styles.levelBadgeDefault,
-          ]}
-        >
-          <Text
-            style={[
-              styles.levelBadgeText,
-              badgeIsElite && styles.levelBadgeTextElite,
-            ]}
-          >
-            {item.levelBadge}
-          </Text>
-        </View>
-      </View>
-      <View style={styles.deskCardBody}>
-        <Text style={styles.deskMeta}>{item.metaLabel}</Text>
-        <Text style={styles.deskDistance}>{item.distanceLabel}</Text>
-        <View style={styles.deskMetaRow}>
-          <MaterialIcons name="trending-up" size={16} color={ON_SURFACE_VARIANT} />
-          <Text style={styles.deskSmallMeta}>{item.elevation}</Text>
-          <MaterialIcons name="timer" size={16} color={ON_SURFACE_VARIANT} />
-          <Text style={styles.deskSmallMeta}>{item.duration}</Text>
-        </View>
-      </View>
-    </Pressable>
-  );
+function filterRoutesBySearch<T extends { name: string }>(
+  items: T[],
+  rawSearch: string,
+): T[] {
+  const q = rawSearch.trim().toLowerCase();
+  if (!q) {
+    return items;
+  }
+  return items.filter((r) => r.name.toLowerCase().includes(q));
 }
 
 export default function RouteLibraryScreen(): ReactElement {
@@ -195,6 +113,70 @@ export default function RouteLibraryScreen(): ReactElement {
     if (isDesktop) return 40;
     return 100 + insets.bottom;
   }, [isDesktop, insets.bottom]);
+
+  const { data: profile } = useQuery({
+    queryKey: ["me", "profile"],
+    queryFn: async () => {
+      const token = await getAccessToken();
+      if (!token) {
+        throw new Error("Unauthorized");
+      }
+      return getMeProfile(token);
+    },
+  });
+
+  const canGlobal = profile?.planBenefits.globalRouteLibraryAccess === true;
+
+  const {
+    data: mineData,
+    isPending: minePending,
+    isError: mineIsError,
+    error: mineError,
+    refetch: refetchMine,
+  } = useQuery({
+    queryKey: ["routes", "mine"],
+    queryFn: async () => {
+      const token = await getAccessToken();
+      if (!token) {
+        throw new Error("Unauthorized");
+      }
+      return listRoutes({ createdByMe: true, page: 1, pageSize: 50 }, token);
+    },
+    enabled: hub === "library",
+  });
+
+  const {
+    data: globalData,
+    isPending: globalPending,
+    isError: globalIsError,
+    error: globalError,
+    refetch: refetchGlobal,
+  } = useQuery({
+    queryKey: ["routes", "global"],
+    queryFn: async () => {
+      const token = await getAccessToken();
+      if (!token) {
+        throw new Error("Unauthorized");
+      }
+      return listRoutes({ globalDiscovery: true, page: 1, pageSize: 50 }, token);
+    },
+    enabled: hub === "global" && canGlobal,
+  });
+
+  const libraryItems = useMemo(
+    () => filterRoutesBySearch(mineData?.items ?? [], search),
+    [mineData, search],
+  );
+
+  const globalItems = useMemo(
+    () => filterRoutesBySearch(globalData?.items ?? [], search),
+    [globalData, search],
+  );
+
+  const mineErrorMessage =
+    mineError instanceof Error ? mineError.message : "Could not load your routes.";
+  const globalErrorMessage =
+    globalError instanceof Error ? globalError.message : "Could not load routes.";
 
   const content = (
     <>
@@ -335,15 +317,73 @@ export default function RouteLibraryScreen(): ReactElement {
 
             {hub === "library" ? (
               <>
-                <Text style={styles.deskHero}>LOCAL SESSIONS</Text>
+                <Text style={styles.deskHero}>MY ROUTES</Text>
                 <Text style={styles.deskSub}>
-                  Curated performance routes within 50km of your current GPS lock.
+                  Saved routes in your library. Pick one to attach to your event.
                 </Text>
-                <View style={styles.deskGrid}>
-                  {MOCK_DESKTOP_LOCAL_ROUTES.map((item) => (
-                    <DesktopRouteCard key={item.id} item={item} onPress={onRoutePick} />
-                  ))}
-                </View>
+                {minePending ? (
+                  <ActivityIndicator color={PRIMARY_FIXED_DIM} style={styles.routeListSpinner} />
+                ) : mineIsError ? (
+                  <View style={styles.routeListFeedback}>
+                    <Text style={styles.routeListFeedbackText}>{mineErrorMessage}</Text>
+                    <Pressable
+                      onPress={() => {
+                        void refetchMine();
+                      }}
+                      accessibilityRole="button"
+                      accessibilityLabel="Retry loading routes"
+                      style={({ pressed }) => [styles.retryRouteBtn, pressed && styles.cardPressed]}
+                    >
+                      <Text style={styles.retryRouteBtnText}>RETRY</Text>
+                    </Pressable>
+                  </View>
+                ) : libraryItems.length === 0 ? (
+                  <Text style={styles.routeListFeedbackText}>No saved routes yet.</Text>
+                ) : (
+                  <View style={styles.deskGrid}>
+                    {libraryItems.map((item) => (
+                      <LibraryRouteCardDesktop
+                        key={item.id}
+                        item={item}
+                        onPress={onRoutePick}
+                      />
+                    ))}
+                  </View>
+                )}
+              </>
+            ) : canGlobal ? (
+              <>
+                <Text style={styles.deskHero}>GLOBAL LIBRARY</Text>
+                <Text style={styles.deskSub}>Community routes available on your plan.</Text>
+                {globalPending ? (
+                  <ActivityIndicator color={PRIMARY_FIXED_DIM} style={styles.routeListSpinner} />
+                ) : globalIsError ? (
+                  <View style={styles.routeListFeedback}>
+                    <Text style={styles.routeListFeedbackText}>{globalErrorMessage}</Text>
+                    <Pressable
+                      onPress={() => {
+                        void refetchGlobal();
+                      }}
+                      accessibilityRole="button"
+                      accessibilityLabel="Retry loading global routes"
+                      style={({ pressed }) => [styles.retryRouteBtn, pressed && styles.cardPressed]}
+                    >
+                      <Text style={styles.retryRouteBtnText}>RETRY</Text>
+                    </Pressable>
+                  </View>
+                ) : globalItems.length === 0 ? (
+                  <Text style={styles.routeListFeedbackText}>No routes match your search.</Text>
+                ) : (
+                  <View style={styles.deskGrid}>
+                    {globalItems.map((item) => (
+                      <LibraryRouteCardDesktop
+                        key={item.id}
+                        item={item}
+                        onPress={onRoutePick}
+                      />
+                    ))}
+                  </View>
+                )}
               </>
             ) : (
               <View style={styles.premiumWrap}>
@@ -412,19 +452,72 @@ export default function RouteLibraryScreen(): ReactElement {
 
           {hub === "library" ? (
             <>
-              <Text style={styles.sectionTitle}>FAVORITES</Text>
-              {MOCK_FAVORITE_ROUTES.map((item, idx) => (
-                <FavoriteRouteCard
-                  key={item.id}
-                  item={item}
-                  onPress={onRoutePick}
-                  testID={idx === 0 ? "route-library-card-1" : undefined}
-                />
-              ))}
+              <Text style={styles.sectionTitle}>MY ROUTES</Text>
+              {minePending ? (
+                <ActivityIndicator color={PRIMARY_FIXED_DIM} style={styles.routeListSpinner} />
+              ) : mineIsError ? (
+                <View style={styles.routeListFeedback}>
+                  <Text style={styles.routeListFeedbackText}>{mineErrorMessage}</Text>
+                  <Pressable
+                    onPress={() => {
+                      void refetchMine();
+                    }}
+                    accessibilityRole="button"
+                    accessibilityLabel="Retry loading routes"
+                    style={({ pressed }) => [styles.retryRouteBtn, pressed && styles.cardPressed]}
+                  >
+                    <Text style={styles.retryRouteBtnText}>RETRY</Text>
+                  </Pressable>
+                </View>
+              ) : libraryItems.length === 0 ? (
+                <Text style={styles.routeListFeedbackText}>No saved routes yet.</Text>
+              ) : (
+                libraryItems.map((item, idx) => (
+                  <LibraryRouteCardMobile
+                    key={item.id}
+                    item={item}
+                    onPress={onRoutePick}
+                    testID={idx === 0 ? "route-library-card-1" : undefined}
+                  />
+                ))
+              )}
             </>
           ) : null}
 
-          {hub === "global" ? (
+          {hub === "global" && canGlobal ? (
+            <>
+              <Text style={styles.sectionTitle}>GLOBAL HUB</Text>
+              {globalPending ? (
+                <ActivityIndicator color={PRIMARY_FIXED_DIM} style={styles.routeListSpinner} />
+              ) : globalIsError ? (
+                <View style={styles.routeListFeedback}>
+                  <Text style={styles.routeListFeedbackText}>{globalErrorMessage}</Text>
+                  <Pressable
+                    onPress={() => {
+                      void refetchGlobal();
+                    }}
+                    accessibilityRole="button"
+                    accessibilityLabel="Retry loading global routes"
+                    style={({ pressed }) => [styles.retryRouteBtn, pressed && styles.cardPressed]}
+                  >
+                    <Text style={styles.retryRouteBtnText}>RETRY</Text>
+                  </Pressable>
+                </View>
+              ) : globalItems.length === 0 ? (
+                <Text style={styles.routeListFeedbackText}>No routes match your search.</Text>
+              ) : (
+                globalItems.map((item) => (
+                  <LibraryRouteCardMobile
+                    key={item.id}
+                    item={item}
+                    onPress={onRoutePick}
+                  />
+                ))
+              )}
+            </>
+          ) : null}
+
+          {hub === "global" && !canGlobal ? (
             <View style={styles.globalLocked}>
               <View style={styles.globalHeader}>
                 <Text style={styles.globalTitle}>GLOBAL HUB</Text>
@@ -1004,5 +1097,30 @@ const styles = StyleSheet.create({
     fontSize: 16,
     fontWeight: "900",
     letterSpacing: 1,
+  },
+  routeListSpinner: {
+    marginVertical: 24,
+  },
+  routeListFeedback: {
+    gap: 12,
+    marginVertical: 8,
+  },
+  routeListFeedbackText: {
+    color: ON_SURFACE_VARIANT,
+    fontSize: 14,
+    lineHeight: 20,
+    fontWeight: "600",
+  },
+  retryRouteBtn: {
+    alignSelf: "flex-start",
+    backgroundColor: PRIMARY_FIXED_DIM,
+    paddingVertical: 10,
+    paddingHorizontal: 16,
+  },
+  retryRouteBtnText: {
+    color: ON_PRIMARY_FIXED,
+    fontSize: 11,
+    fontWeight: "800",
+    letterSpacing: 1.2,
   },
 });

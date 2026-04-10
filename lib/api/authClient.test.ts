@@ -1,4 +1,4 @@
-import { apiPostJson, apiPostJsonAuth } from '@/lib/api/authClient';
+import { apiGetJsonAuth, apiPostJson, apiPostJsonAuth } from '@/lib/api/authClient';
 
 describe('apiPostJson', () => {
   const originalEnv = process.env.EXPO_PUBLIC_API_URL;
@@ -80,6 +80,45 @@ describe('apiPostJsonAuth', () => {
       expect.objectContaining({
         headers: expect.objectContaining({
           Authorization: 'Bearer secret-token',
+        }),
+      }),
+    );
+  });
+});
+
+describe('apiGetJsonAuth', () => {
+  const originalEnv = process.env.EXPO_PUBLIC_API_URL;
+  const fetchMock = jest.fn();
+
+  beforeEach(() => {
+    globalThis.fetch = fetchMock as unknown as typeof fetch;
+  });
+
+  afterEach(() => {
+    process.env.EXPO_PUBLIC_API_URL = originalEnv;
+    fetchMock.mockReset();
+  });
+
+  it('uses GET and returns unwrapped data', async () => {
+    process.env.EXPO_PUBLIC_API_URL = 'http://localhost:9';
+    fetchMock.mockResolvedValue(
+      new Response(
+        JSON.stringify({ statusCode: 200, path: '/api/me', data: { id: 'u1' }, timestamp: 't' }),
+        {
+          status: 200,
+          headers: { 'Content-Type': 'application/json' },
+        },
+      ),
+    );
+
+    const data = await apiGetJsonAuth<{ id: string }>('/api/me', 'tok');
+    expect(data).toEqual({ id: 'u1' });
+    expect(fetchMock).toHaveBeenCalledWith(
+      'http://localhost:9/api/me',
+      expect.objectContaining({
+        method: 'GET',
+        headers: expect.objectContaining({
+          Authorization: 'Bearer tok',
         }),
       }),
     );

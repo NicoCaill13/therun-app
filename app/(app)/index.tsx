@@ -2,6 +2,7 @@ import type { ReactElement } from "react";
 import { useCallback, useMemo } from "react";
 
 import {
+  ActivityIndicator,
   Dimensions,
   Pressable,
   ScrollView,
@@ -12,6 +13,8 @@ import {
 } from "react-native";
 import { useRouter } from "expo-router";
 
+import { useQuery } from "@tanstack/react-query";
+
 import { MaterialIcons } from "@expo/vector-icons";
 import {
   SafeAreaView,
@@ -19,13 +22,13 @@ import {
 } from "react-native-safe-area-context";
 
 import { AppNavBar } from "@/components/layout/TheRunNavBar";
-import {
-  EventCard,
-  type EventParticipationStatus,
-} from "@/components/ui/EventCard";
-import type { EventKind } from "@/lib/constants/eventKinds";
+import { EventCard } from "@/components/ui/EventCard";
+import { listMyEvents } from "@/lib/api/meEventsEndpoints";
+import { getMeProfile } from "@/lib/api/meProfileEndpoints";
+import { getAccessToken } from "@/lib/auth/tokenStorage";
 import { DESKTOP_BREAKPOINT } from "@/lib/constants/breakpoints";
 import { shellHorizontalPadding } from "@/lib/constants/layout";
+import { meEventToDashboardRow } from "@/lib/dashboard/meEventToDashboardRow";
 
 const SURFACE_DIM = "#0e0e0e";
 const ON_SURFACE = "#ffffff";
@@ -44,50 +47,6 @@ const FAB_ICON_SIZE = 28;
 const HERO_CTA_SPACING = 20;
 const CTA_EVENTS_SPACING = 24;
 
-interface MockEventRow {
-  id: string;
-  title: string;
-  date: string;
-  time: string;
-  location: string;
-  organizer: string;
-  status: EventParticipationStatus;
-  eventKind: EventKind;
-}
-
-const MOCK_UPCOMING_EVENTS: MockEventRow[] = [
-  {
-    id: "1",
-    title: "City Limits Sprint",
-    date: "Sat, Oct 26",
-    time: "18:30",
-    location: "Industrial District, Terminal 4",
-    organizer: "Marcus Vane",
-    status: "GOING",
-    eventKind: "social_run",
-  },
-  {
-    id: "2",
-    title: "Neon Midnight 10K",
-    date: "Tue, Oct 29",
-    time: "23:00",
-    location: "Riverfront Walkway, Sector B",
-    organizer: "Luna Chen",
-    status: "NOT GOING",
-    eventKind: "technical_run",
-  },
-  {
-    id: "3",
-    title: "Ascent Ridge Run",
-    date: "Sun, Nov 3",
-    time: "06:15",
-    location: "East Summit Trailhead",
-    organizer: "Trail Masters",
-    status: "PLANNED",
-    eventKind: "technical_trail",
-  },
-];
-
 export default function UpcomingRunsDashboard(): ReactElement {
   const router = useRouter();
   const { width: winWidth } = useWindowDimensions();
@@ -103,7 +62,49 @@ export default function UpcomingRunsDashboard(): ReactElement {
     router.push("/(app)/create-event");
   }, [router]);
 
-  const [featuredEvent, ...railEvents] = MOCK_UPCOMING_EVENTS;
+  const { data: profile } = useQuery({
+    queryKey: ["me", "profile"],
+    queryFn: async () => {
+      const token = await getAccessToken();
+      if (!token) {
+        throw new Error("Unauthorized");
+      }
+      return getMeProfile(token);
+    },
+  });
+
+  const {
+    data: eventsData,
+    isPending: isEventsPending,
+    isError: isEventsError,
+    error: eventsError,
+    refetch: refetchEvents,
+  } = useQuery({
+    queryKey: ["me", "events", "future"],
+    queryFn: async () => {
+      const token = await getAccessToken();
+      if (!token) {
+        throw new Error("Unauthorized");
+      }
+      return listMyEvents({ scope: "future", page: 1, pageSize: 50 }, token);
+    },
+  });
+
+  const organizerLabel = profile?.displayName ?? "You";
+
+  const eventRows = useMemo(() => {
+    if (!eventsData?.items.length) {
+      return [];
+    }
+    return eventsData.items.map((item) =>
+      meEventToDashboardRow(item, { organizerLabel }),
+    );
+  }, [eventsData, organizerLabel]);
+
+  const [featuredEvent, ...railEvents] = eventRows;
+
+  const errorMessage =
+    eventsError instanceof Error ? eventsError.message : "Could not load events.";
 
   // ─── Desktop ──────────────────────────────────────────────────────────────
 
@@ -146,8 +147,41 @@ export default function UpcomingRunsDashboard(): ReactElement {
     [desktopHeroSize, handleCreateEventPress],
   );
 
-  const desktopEventsGrid = useMemo(
-    () => (
+  const desktopEventsGrid = useMemo((): ReactElement => {
+    if (isEventsPending) {
+      return (
+        <View style={styles.feedbackWrap}>
+          <ActivityIndicator color={PRIMARY_FIXED_DIM} size="large" />
+        </View>
+      );
+    }
+    if (isEventsError) {
+      return (
+        <View style={styles.feedbackWrap}>
+          <Text style={styles.feedbackText}>{errorMessage}</Text>
+          <Pressable
+            onPress={() => {
+              void refetchEvents();
+            }}
+            accessibilityRole="button"
+            accessibilityLabel="Retry loading events"
+            style={({ pressed }) => [styles.retryBtn, pressed && styles.ctaPressed]}
+          >
+            <Text style={styles.retryBtnText}>RETRY</Text>
+          </Pressable>
+        </View>
+      );
+    }
+    if (!featuredEvent) {
+      return (
+        <View style={styles.feedbackWrap}>
+          <Text style={styles.feedbackText}>
+            No upcoming runs you organise. Create an event to see it here.
+          </Text>
+        </View>
+      );
+    }
+    return (
       <View style={styles.desktopGrid}>
         <View style={styles.desktopFeaturedCol}>
           <EventCard
@@ -178,9 +212,15 @@ export default function UpcomingRunsDashboard(): ReactElement {
           ))}
         </View>
       </View>
-    ),
-    [featuredEvent, railEvents],
-  );
+    );
+  }, [
+    errorMessage,
+    featuredEvent,
+    isEventsError,
+    isEventsPending,
+    railEvents,
+    refetchEvents,
+  ]);
 
   if (isDesktop) {
     return (
@@ -220,7 +260,6 @@ export default function UpcomingRunsDashboard(): ReactElement {
         showsVerticalScrollIndicator={false}
         keyboardShouldPersistTaps="handled"
       >
-        {/* Hero */}
         <Text
           style={[
             styles.heroMobileLine1,
@@ -246,10 +285,6 @@ export default function UpcomingRunsDashboard(): ReactElement {
 
         <View style={{ height: HERO_CTA_SPACING }} />
 
-        {/*
-          Visual chrome lives on an inner `View`. RN Web often mishandles
-          background + row layout when applied directly on `Pressable`.
-        */}
         <Pressable
           onPress={handleCreateEventPress}
           accessibilityRole="button"
@@ -273,26 +308,54 @@ export default function UpcomingRunsDashboard(): ReactElement {
 
         <View style={{ height: CTA_EVENTS_SPACING }} />
 
-        {/* Event list */}
-        {MOCK_UPCOMING_EVENTS.map((item, index) => (
-          <View key={item.id}>
-            {index > 0 && <View style={{ height: LIST_VERTICAL_GAP }} />}
-            <EventCard
-              title={item.title}
-              date={item.date}
-              time={item.time}
-              location={item.location}
-              organizer={item.organizer}
-              status={item.status}
-              eventKind={item.eventKind}
-              variant="feed"
-              narrowLayout
-            />
+        {isEventsPending ? (
+          <View style={styles.feedbackWrap}>
+            <ActivityIndicator color={PRIMARY_FIXED_DIM} size="large" />
           </View>
-        ))}
+        ) : null}
+
+        {isEventsError ? (
+          <View style={styles.feedbackWrap}>
+            <Text style={styles.feedbackText}>{errorMessage}</Text>
+            <Pressable
+              onPress={() => {
+                void refetchEvents();
+              }}
+              accessibilityRole="button"
+              accessibilityLabel="Retry loading events"
+              style={({ pressed }) => [styles.retryBtn, pressed && styles.ctaPressed]}
+            >
+              <Text style={styles.retryBtnText}>RETRY</Text>
+            </Pressable>
+          </View>
+        ) : null}
+
+        {!isEventsPending && !isEventsError && eventRows.length === 0 ? (
+          <Text style={styles.feedbackText}>
+            No upcoming runs you organise. Create an event to see it here.
+          </Text>
+        ) : null}
+
+        {!isEventsPending && !isEventsError
+          ? eventRows.map((item, index) => (
+              <View key={item.id}>
+                {index > 0 && <View style={{ height: LIST_VERTICAL_GAP }} />}
+                <EventCard
+                  title={item.title}
+                  date={item.date}
+                  time={item.time}
+                  location={item.location}
+                  organizer={item.organizer}
+                  status={item.status}
+                  eventKind={item.eventKind}
+                  variant="feed"
+                  narrowLayout
+                />
+              </View>
+            ))
+          : null}
       </ScrollView>
 
-      {/* FAB — second access point after scrolling */}
       <Pressable
         onPress={handleCreateEventPress}
         accessibilityRole="button"
@@ -442,5 +505,27 @@ const styles = StyleSheet.create({
   /** Replaces deprecated `gap` between icon and label for older RN Web flex rows. */
   ctaLabelTrailingSpace: {
     marginLeft: 10,
+  },
+  feedbackWrap: {
+    paddingVertical: 24,
+    alignItems: "flex-start",
+    gap: 16,
+  },
+  feedbackText: {
+    color: ON_SURFACE_VARIANT,
+    fontSize: 15,
+    lineHeight: 22,
+    fontWeight: "600",
+  },
+  retryBtn: {
+    backgroundColor: PRIMARY_FIXED_DIM,
+    paddingVertical: 12,
+    paddingHorizontal: 20,
+  },
+  retryBtnText: {
+    color: ON_PRIMARY,
+    fontSize: 12,
+    fontWeight: "800",
+    letterSpacing: 1.4,
   },
 });
