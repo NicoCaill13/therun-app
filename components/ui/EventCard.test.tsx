@@ -12,8 +12,8 @@ const baseProps = {
 };
 
 describe('EventCard', () => {
-  it('renders feed with frame, narrow-layout shadow host, and no inner photo accent strip', () => {
-    render(<EventCard {...baseProps} status="GOING" />);
+  it('renders narrow-layout feed with shadow host, dark surface token, no inner photo accent', () => {
+    render(<EventCard {...baseProps} status="GOING" narrowLayout />);
 
     expect(screen.getByTestId('event-card-shadow-host')).toBeTruthy();
     expect(screen.getByTestId('event-card')).toBeTruthy();
@@ -27,8 +27,8 @@ describe('EventCard', () => {
     expect(screen.getByText('GOING')).toBeTruthy();
   });
 
-  it('omits perimeter frame and shadow host when showPerimeterFrame is false', () => {
-    render(<EventCard {...baseProps} status="GOING" showPerimeterFrame={false} />);
+  it('omits shadow host when narrowLayout and showPerimeterFrame are both false', () => {
+    render(<EventCard {...baseProps} status="GOING" narrowLayout={false} showPerimeterFrame={false} />);
     expect(screen.queryByTestId('event-card-shadow-host')).toBeNull();
     expect(screen.getByTestId('event-card')).toBeTruthy();
     expect(screen.getByText('City Limits Sprint')).toBeTruthy();
@@ -41,15 +41,21 @@ describe('EventCard', () => {
     expect(screen.getByText('NOT GOING')).toBeTruthy();
   });
 
-  it('featured omits shadow host when showPerimeterFrame is false', () => {
+  it('featured omits shadow host when narrowLayout and showPerimeterFrame are false', () => {
     render(
-      <EventCard {...baseProps} status="GOING" variant="featured" showPerimeterFrame={false} />,
+      <EventCard
+        {...baseProps}
+        status="GOING"
+        variant="featured"
+        narrowLayout={false}
+        showPerimeterFrame={false}
+      />,
     );
     expect(screen.queryByTestId('event-card-shadow-host')).toBeNull();
     expect(screen.getByTestId('event-card-accent')).toBeTruthy();
   });
 
-  it('featured variant shows calendar meta and TECHNICAL TRAIL label', () => {
+  it('featured variant shows calendar meta and TECHNICAL TRAIL label (desktop shell)', () => {
     render(
       <EventCard
         {...baseProps}
@@ -58,7 +64,7 @@ describe('EventCard', () => {
         eventKind="technical_trail"
       />,
     );
-    expect(screen.getByTestId('event-card-shadow-host')).toBeTruthy();
+    expect(screen.queryByTestId('event-card-shadow-host')).toBeNull();
     expect(screen.getByTestId('event-card')).toBeTruthy();
     expect(screen.getByTestId('event-card-accent')).toBeTruthy();
     expect(screen.getByText('TECHNICAL TRAIL')).toBeTruthy();
@@ -66,14 +72,22 @@ describe('EventCard', () => {
     expect(screen.getByText('City Limits Sprint')).toBeTruthy();
   });
 
-  it('rail variant shows time row, host line, and SOCIAL TRAIL label', () => {
+  it('rail variant shows time row, host line, and SOCIAL TRAIL label (desktop shell)', () => {
     render(<EventCard {...baseProps} status="GOING" variant="rail" eventKind="social_trail" />);
-    expect(screen.getByTestId('event-card-shadow-host')).toBeTruthy();
+    expect(screen.queryByTestId('event-card-shadow-host')).toBeNull();
     expect(screen.getByTestId('event-card')).toBeTruthy();
     expect(screen.getByTestId('event-card-accent')).toBeTruthy();
     expect(screen.getByText('SOCIAL TRAIL')).toBeTruthy();
     expect(screen.getByText('18:30')).toBeTruthy();
     expect(screen.getByText('HOST: ')).toBeTruthy();
     expect(screen.getByText('MARCUS VANE')).toBeTruthy();
+  });
+
+  it('optional orange perimeter still applies when showPerimeterFrame is true without narrowLayout', () => {
+    render(
+      <EventCard {...baseProps} status="GOING" showPerimeterFrame narrowLayout={false} />,
+    );
+    expect(screen.getByTestId('event-card-shadow-host')).toBeTruthy();
+    expect(screen.getByTestId('event-card')).toBeTruthy();
   });
 });

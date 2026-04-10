@@ -74,6 +74,7 @@ export default function SignUpScreen(): ReactElement {
         email: parsed.data.email,
         firstName,
         lastName,
+        password: parsed.data.password,
         acceptTerms: parsed.data.acceptTerms,
       });
       await persistAccessToken(data.accessToken);

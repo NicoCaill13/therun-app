@@ -1,5 +1,19 @@
 import '@testing-library/jest-native/extend-expect';
 
+jest.mock('expo-document-picker', () => ({
+  getDocumentAsync: jest.fn(async () => ({ canceled: true, assets: null })),
+}));
+
+jest.mock('expo-file-system', () => ({
+  File: class MockExpoFile {
+    // eslint-disable-next-line no-unused-vars
+    constructor(_uri) {}
+    text() {
+      return Promise.resolve('');
+    }
+  },
+}));
+
 // Mock expo-secure-store
 jest.mock('expo-secure-store', () => ({
   getItemAsync: jest.fn(),
@@ -28,10 +42,14 @@ jest.mock('expo-router', () => ({
 }));
 
 // Mock react-native-safe-area-context
-jest.mock('react-native-safe-area-context', () => ({
-  SafeAreaProvider: ({ children }) => children,
-  useSafeAreaInsets: () => ({ top: 0, bottom: 0, left: 0, right: 0 }),
-}));
+jest.mock('react-native-safe-area-context', () => {
+  const RN = require('react-native');
+  return {
+    SafeAreaProvider: ({ children }) => children,
+    SafeAreaView: RN.View,
+    useSafeAreaInsets: () => ({ top: 0, bottom: 0, left: 0, right: 0 }),
+  };
+});
 
 // Mock react-native-reanimated
 jest.mock('react-native-reanimated', () => {

@@ -1,0 +1,248 @@
+<!DOCTYPE html>
+
+<html class="dark" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Route Library Selector</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Lexend:wght@400;700;800;900&amp;family=Manrope:wght@400;500;600&amp;family=Space+Grotesk:wght@500;700&amp;family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+          darkMode: "class",
+          theme: {
+            extend: {
+              "colors": {
+                      "secondary": "#e5e2e1",
+                      "on-primary": "#5c1400",
+                      "inverse-primary": "#b12f00",
+                      "on-tertiary": "#621c7a",
+                      "on-error-container": "#ffa8a3",
+                      "primary-container": "#ff7851",
+                      "on-secondary-container": "#d2d0cf",
+                      "on-secondary-fixed": "#403f3f",
+                      "error-dim": "#d7383b",
+                      "surface-dim": "#0e0e0e",
+                      "inverse-surface": "#fcf8f8",
+                      "tertiary-dim": "#d88cee",
+                      "error-container": "#9f0519",
+                      "surface": "#0e0e0e",
+                      "on-primary-fixed-variant": "#581300",
+                      "surface-tint": "#ff8f6f",
+                      "on-background": "#ffffff",
+                      "primary-fixed": "#ff7851",
+                      "tertiary-fixed": "#e699fd",
+                      "primary-fixed-dim": "#ff5d2b",
+                      "primary-dim": "#ff734a",
+                      "on-secondary": "#525151",
+                      "on-primary-fixed": "#000000",
+                      "background": "#0e0e0e",
+                      "on-tertiary-fixed": "#360049",
+                      "on-tertiary-fixed-variant": "#611b79",
+                      "on-primary-container": "#470e00",
+                      "tertiary-container": "#e699fd",
+                      "surface-container-high": "#201f1f",
+                      "tertiary-fixed-dim": "#d88cee",
+                      "secondary-fixed-dim": "#d6d4d3",
+                      "on-surface": "#ffffff",
+                      "secondary-container": "#474746",
+                      "surface-container-low": "#131313",
+                      "surface-variant": "#262626",
+                      "secondary-fixed": "#e5e2e1",
+                      "tertiary": "#eeacff",
+                      "on-tertiary-container": "#570e6f",
+                      "on-surface-variant": "#adaaaa",
+                      "inverse-on-surface": "#565554",
+                      "surface-container": "#1a1919",
+                      "surface-container-highest": "#262626",
+                      "on-secondary-fixed-variant": "#5c5b5b",
+                      "primary": "#ff8f6f",
+                      "surface-container-lowest": "#000000",
+                      "on-error": "#490006",
+                      "surface-bright": "#2c2c2c",
+                      "error": "#ff716c",
+                      "outline": "#777575",
+                      "outline-variant": "#494847",
+                      "secondary-dim": "#d6d4d3"
+              },
+              "borderRadius": {
+                      "DEFAULT": "0.125rem",
+                      "lg": "0.25rem",
+                      "xl": "0.5rem",
+                      "full": "0.75rem"
+              },
+              "fontFamily": {
+                      "headline": ["Lexend"],
+                      "body": ["Manrope"],
+                      "label": ["Space Grotesk"]
+              }
+            },
+          },
+        }
+    </script>
+<style>
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+        body {
+            background-color: #0e0e0e;
+            color: white;
+            font-family: 'Manrope', sans-serif;
+        }
+        .hide-scrollbar::-webkit-scrollbar {
+            display: none;
+        }
+        .hide-scrollbar {
+            -ms-overflow-style: none;
+            scrollbar-width: none;
+        }
+    </style>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head>
+<body class="bg-surface select-none">
+<!-- Top Navigation Bar (Fixed) -->
+<header class="bg-neutral-950/90 backdrop-blur-md fixed top-0 z-50 flex justify-between items-center w-full px-6 py-4 shadow-[0_4px_30px_rgba(0,0,0,0.8)]">
+<div class="flex items-center gap-4">
+<span class="material-symbols-outlined text-orange-600 active:scale-95 duration-200 cursor-pointer" data-icon="menu">menu</span>
+<h1 class="font-['Lexend'] font-black uppercase tracking-tighter text-2xl text-orange-600">SELECT ROUTE</h1>
+</div>
+<div class="w-8 h-8 rounded-full overflow-hidden bg-surface-container-highest border border-white/10">
+<img alt="Profile" data-alt="Portrait of a determined urban runner with gritty city lighting and high contrast shadows" src="https://lh3.googleusercontent.com/aida-public/AB6AXuBt3EvUzKFyJxn-f1YApvtfdHO23PDO9MukKIXEsbrTQRTVzTW2gdvnfNEinIuYfN-Jazw5hpmBxc9hMKzMQEQ_mYF3JZJ9vacw0JZjcNxypmH-5vQaxIYrj_LLf5yQeiPQpdCw12SPsiI-8Un3CxflWIvQJH7_e485LsZIz2esCqMhf5RWyIvMO6OI3YMxVa3Z3C9BZ6LRcYgyI1tJVpf_k8O3n8HCECR0YNnb_DgcyxgPEOnCANCyfAGA-YuOashQchlL3XOZmNQ"/>
+</div>
+</header>
+<main class="pt-24 pb-32 px-6">
+<!-- Tab Toggle System -->
+<div class="flex gap-2 mb-8 p-1 bg-surface-container rounded-lg">
+<button class="flex-1 py-3 px-4 rounded-md font-headline font-extrabold text-sm tracking-widest bg-neutral-900 text-orange-500 transition-all">
+                MY LIBRARY
+            </button>
+<button class="flex-1 py-3 px-4 rounded-md font-headline font-bold text-sm tracking-widest text-neutral-500 hover:text-neutral-300 transition-all">
+                GLOBAL LIBRARY
+            </button>
+</div>
+<!-- Search Bar -->
+<div class="relative mb-6">
+<span class="material-symbols-outlined absolute left-4 top-1/2 -translate-y-1/2 text-on-surface-variant" data-icon="search">search</span>
+<input class="w-full bg-surface-container-highest border-none rounded-lg py-4 pl-12 pr-4 text-white placeholder:text-on-surface-variant focus:ring-2 focus:ring-orange-500/50 transition-all" placeholder="Search routes..." type="text"/>
+</div>
+<!-- Filter Chips -->
+<div class="flex overflow-x-auto hide-scrollbar gap-3 mb-10 pb-2">
+<button class="flex-none px-6 py-2 rounded-full bg-orange-600 text-on-primary-fixed font-label font-bold text-xs uppercase tracking-widest">5KM</button>
+<button class="flex-none px-6 py-2 rounded-full bg-surface-container-highest text-on-surface-variant font-label font-bold text-xs uppercase tracking-widest">10KM</button>
+<button class="flex-none px-6 py-2 rounded-full bg-surface-container-highest text-on-surface-variant font-label font-bold text-xs uppercase tracking-widest">TRAIL</button>
+<button class="flex-none px-6 py-2 rounded-full bg-surface-container-highest text-on-surface-variant font-label font-bold text-xs uppercase tracking-widest">ROAD</button>
+<button class="flex-none px-6 py-2 rounded-full bg-surface-container-highest text-on-surface-variant font-label font-bold text-xs uppercase tracking-widest">MARATHON</button>
+</div>
+<!-- Active Library Section -->
+<section class="space-y-6 mb-12">
+<h2 class="font-headline text-3xl font-black italic tracking-tighter text-white mb-4">FAVORITES</h2>
+<!-- Route Card 1 -->
+<div class="bg-surface-container-low rounded-xl overflow-hidden shadow-2xl group active:scale-[0.98] transition-transform">
+<div class="h-40 w-full relative bg-surface-container-highest">
+<img alt="Map" class="w-full h-full object-cover opacity-40 mix-blend-luminosity" data-alt="Stylized dark minimalist street map of Berlin at night with glowing orange lines tracing a running path" src="https://lh3.googleusercontent.com/aida-public/AB6AXuB2NYbfb9JRGGvYBDApEkaZEmS_ckuqC0vPjAx1m60GHcn905qn_JEZqSzTi-BTmrpK6VOqZa7spBKwNi3aFOxYamOO8Ib4pTHPRfKZsq79_1jVxqEQO4BilHE3r2OYPHnH64wHzOIVQZRkzRpFK2DxQayrW828TPl2Zo8FoL7OEfoymhWcc9Konr6LohNrXMvg4nQ6h3MGxLmOgSOe1wkYX9jH4fhK4gz6m_zmF-tq8P6Z5UYcxeXbMDhCkeJjnl8mjzzI4ddNJfo"/>
+<div class="absolute inset-0 bg-gradient-to-t from-surface-container-low to-transparent"></div>
+<!-- Mock path line -->
+<svg class="absolute inset-0 w-full h-full p-8" fill="none" stroke="#ff734a" stroke-linecap="round" stroke-width="3" viewbox="0 0 100 100">
+<path d="M10,80 C30,70 50,90 70,60 S90,20 85,10"></path>
+</svg>
+<div class="absolute bottom-4 left-4 flex gap-2">
+<span class="bg-orange-600 text-black font-label text-[10px] font-black px-2 py-0.5 rounded">ROAD</span>
+</div>
+</div>
+<div class="p-5 flex justify-between items-end">
+<div>
+<p class="font-label text-orange-500 text-[10px] tracking-[0.2em] uppercase mb-1">NEUKÖLLN LOOP</p>
+<h3 class="font-headline text-xl font-bold text-white">Urban Night Burn</h3>
+</div>
+<div class="text-right">
+<span class="font-headline text-4xl font-black text-white tracking-tighter">8.4</span>
+<span class="font-label text-xs text-on-surface-variant font-bold ml-1">KM</span>
+</div>
+</div>
+</div>
+<!-- Route Card 2 -->
+<div class="bg-surface-container-low rounded-xl overflow-hidden shadow-2xl group active:scale-[0.98] transition-transform">
+<div class="h-40 w-full relative bg-surface-container-highest">
+<img alt="Map" class="w-full h-full object-cover opacity-40 mix-blend-luminosity" data-alt="High contrast dark map of London streets with a vibrant orange glowing circuit through a park" src="https://lh3.googleusercontent.com/aida-public/AB6AXuBxBU02msZjSfa66iezPAZOyUEw-JtQMgHw5ZDBYl77emp-xPdti1yGEYlKFEEDwp1SF81WwICJf12BsUT46P-qMtJBQDjGFTT-aHuVvBAYmxtYLAJMEu9mWn01y9F6IeoLa3RzqGYRkO2ufcEa9cMsOzVPYEHm6fls7KSTsek1e67x9zlqSZhSNbYvjmXJQXA0zwWGvWCQdOKXPWBd9InTbw0OGifPQa30Cpvz6IQ9vamd60JUQRfQNvylwHdFdcFtHraJUvZZc9k"/>
+<div class="absolute inset-0 bg-gradient-to-t from-surface-container-low to-transparent"></div>
+<svg class="absolute inset-0 w-full h-full p-8" fill="none" stroke="#ff734a" stroke-linecap="round" stroke-width="3" viewbox="0 0 100 100">
+<path d="M20,20 Q50,10 80,40 T20,80"></path>
+</svg>
+<div class="absolute bottom-4 left-4 flex gap-2">
+<span class="bg-orange-600 text-black font-label text-[10px] font-black px-2 py-0.5 rounded">TRAIL</span>
+</div>
+</div>
+<div class="p-5 flex justify-between items-end">
+<div>
+<p class="font-label text-orange-500 text-[10px] tracking-[0.2em] uppercase mb-1">TIERGARTEN EXPRESS</p>
+<h3 class="font-headline text-xl font-bold text-white">Forest Escape</h3>
+</div>
+<div class="text-right">
+<span class="font-headline text-4xl font-black text-white tracking-tighter">12.2</span>
+<span class="font-label text-xs text-on-surface-variant font-bold ml-1">KM</span>
+</div>
+</div>
+</div>
+</section>
+<!-- Global Library (Locked State) -->
+<section class="mt-16 relative">
+<div class="flex justify-between items-center mb-6">
+<h2 class="font-headline text-3xl font-black italic tracking-tighter text-white opacity-40">GLOBAL HUB</h2>
+<span class="material-symbols-outlined text-orange-500" data-icon="lock">lock</span>
+</div>
+<div class="space-y-6 blur-sm pointer-events-none opacity-20">
+<div class="bg-surface-container-low rounded-xl h-24 flex items-center px-6">
+<div class="w-12 h-12 rounded-lg bg-surface-container-highest"></div>
+<div class="ml-4 flex-1">
+<div class="h-4 w-32 bg-surface-container-highest rounded mb-2"></div>
+<div class="h-3 w-16 bg-surface-container-highest rounded"></div>
+</div>
+</div>
+<div class="bg-surface-container-low rounded-xl h-24 flex items-center px-6">
+<div class="w-12 h-12 rounded-lg bg-surface-container-highest"></div>
+<div class="ml-4 flex-1">
+<div class="h-4 w-40 bg-surface-container-highest rounded mb-2"></div>
+<div class="h-3 w-20 bg-surface-container-highest rounded"></div>
+</div>
+</div>
+</div>
+<!-- Overlay Upgrade CTA -->
+<div class="absolute inset-0 flex flex-col items-center justify-center pt-10">
+<div class="bg-neutral-900/80 backdrop-blur-xl p-8 rounded-2xl border border-white/5 text-center shadow-2xl">
+<p class="font-headline font-bold text-white text-lg mb-4">Unlock 500+ Pro Routes</p>
+<button class="w-full py-4 px-8 rounded-md border-2 border-orange-500 text-orange-500 font-headline font-black tracking-widest text-xs uppercase hover:bg-orange-500 hover:text-black transition-all active:scale-95">
+                        UPGRADE TO PREMIUM
+                    </button>
+<p class="mt-4 font-label text-[10px] text-on-surface-variant tracking-widest uppercase">Start 7-day free trial</p>
+</div>
+</div>
+</section>
+</main>
+<!-- Bottom Navigation Bar -->
+<nav class="fixed bottom-0 left-0 w-full flex justify-around items-center px-4 pb-6 pt-2 bg-neutral-950 shadow-[0_-10px_40px_rgba(0,0,0,0.9)] z-50">
+<a class="flex flex-col items-center justify-center text-neutral-600 py-2 px-4 hover:text-orange-400 transition-all active:scale-90 duration-150" href="#">
+<span class="material-symbols-outlined mb-1" data-icon="explore">explore</span>
+<span class="font-['Lexend'] font-bold text-[10px] tracking-widest uppercase">EXPLORE</span>
+</a>
+<a class="flex flex-col items-center justify-center text-neutral-600 py-2 px-4 hover:text-orange-400 transition-all active:scale-90 duration-150" href="#">
+<span class="material-symbols-outlined mb-1" data-icon="play_arrow">play_arrow</span>
+<span class="font-['Lexend'] font-bold text-[10px] tracking-widest uppercase">RUN</span>
+</a>
+<a class="flex flex-col items-center justify-center text-orange-500 bg-neutral-900 rounded-md py-2 px-4 hover:text-orange-400 transition-all active:scale-90 duration-150" href="#">
+<span class="material-symbols-outlined mb-1" data-icon="map" style="font-variation-settings: 'FILL' 1;">map</span>
+<span class="font-['Lexend'] font-bold text-[10px] tracking-widest uppercase">LIBRARY</span>
+</a>
+<a class="flex flex-col items-center justify-center text-neutral-600 py-2 px-4 hover:text-orange-400 transition-all active:scale-90 duration-150" href="#">
+<span class="material-symbols-outlined mb-1" data-icon="analytics">analytics</span>
+<span class="font-['Lexend'] font-bold text-[10px] tracking-widest uppercase">STATS</span>
+</a>
+</nav>
+<!-- Floating Close Action (Contextual Suppression Handled via Design) -->
+<button class="fixed bottom-28 right-6 w-14 h-14 bg-orange-600 rounded-full shadow-2xl flex items-center justify-center active:scale-90 transition-transform z-40">
+<span class="material-symbols-outlined text-black text-3xl font-bold" data-icon="close">close</span>
+</button>
+</body></html>

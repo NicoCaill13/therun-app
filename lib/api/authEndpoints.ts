@@ -1,7 +1,8 @@
 import type { AuthSuccessPayload, RegisterRequestBody } from '@/lib/api/types';
 import { apiPostJson } from '@/lib/api/authClient';
 
-const DEFAULT_LOGIN_PATH = '/api/auth/login';
+/** Matches `UserController`: `@Controller('user')` + `@Post('login')` under global prefix `api`. */
+const DEFAULT_LOGIN_PATH = '/api/user/login';
 
 function getLoginPath(): string {
   const fromEnv = process.env.EXPO_PUBLIC_AUTH_LOGIN_PATH;

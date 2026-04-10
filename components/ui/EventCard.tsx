@@ -18,6 +18,9 @@ import {
 } from '@/lib/constants/eventKinds';
 
 const SURFACE_CONTAINER_LOW = '#131313';
+
+/** Dark gray plate for compact layouts (see DESIGN.md surface-container). */
+const CARD_SURFACE_NARROW = '#1a1919';
 const SURFACE_CONTAINER_HIGHEST = '#262626';
 const ON_SURFACE = '#ffffff';
 const ON_SURFACE_VARIANT = '#adaaaa';
@@ -51,13 +54,24 @@ const CARD_SHADOW_RESET: ViewStyle = {
   shadowOffset: { width: 0, height: 0 },
 };
 
-/** Depth lift when `showPerimeterFrame` (non-desktop); host has no overflow so shadow is not clipped. */
-const CARD_NARROW_SHADOW_OFFSET_Y = 8;
-const CARD_NARROW_SHADOW_BLUR = 22;
-const CARD_NARROW_SHADOW_OPACITY_WEB = 0.42;
-const CARD_NARROW_SHADOW_OPACITY_IOS = 0.38;
+/**
+ * Narrow-layout (`!isDesktop`) elevation: CSS `box-shadow` on web, shadow* on iOS, elevation on Android.
+ * Applied on `NarrowShadowHost` only so inner `overflow: hidden` does not clip the halo.
+ */
+const CARD_NARROW_SHADOW_OFFSET_Y = 12;
+const CARD_NARROW_SHADOW_RADIUS = 18;
+const CARD_NARROW_SHADOW_BLUR_WEB = 40;
+const CARD_NARROW_SHADOW_OPACITY_WEB_OUTER = 0.58;
+const CARD_NARROW_SHADOW_OPACITY_WEB_INNER = 0.44;
+const CARD_NARROW_SHADOW_OPACITY_IOS = 0.55;
 const CARD_NARROW_SHADOW_COLOR = '#000000';
-const CARD_NARROW_ELEVATION_ANDROID = 12;
+const CARD_NARROW_ELEVATION_ANDROID = 22;
+
+/** Composed `box-shadow` for Expo / RN Web (mirrors native halo strength). */
+const NARROW_EVENT_CARD_BOX_SHADOW_CSS = [
+  `0px ${CARD_NARROW_SHADOW_OFFSET_Y}px ${CARD_NARROW_SHADOW_BLUR_WEB}px rgba(0, 0, 0, ${CARD_NARROW_SHADOW_OPACITY_WEB_OUTER})`,
+  `0px 5px 18px rgba(0, 0, 0, ${CARD_NARROW_SHADOW_OPACITY_WEB_INNER})`,
+].join(', ');
 
 const CARD_NARROW_DROP_SHADOW: ViewStyle =
   Platform.select<ViewStyle>({
@@ -65,14 +79,14 @@ const CARD_NARROW_DROP_SHADOW: ViewStyle =
       shadowColor: CARD_NARROW_SHADOW_COLOR,
       shadowOffset: { width: 0, height: CARD_NARROW_SHADOW_OFFSET_Y },
       shadowOpacity: CARD_NARROW_SHADOW_OPACITY_IOS,
-      shadowRadius: CARD_NARROW_SHADOW_BLUR,
+      shadowRadius: CARD_NARROW_SHADOW_RADIUS,
     },
     android: {
       elevation: CARD_NARROW_ELEVATION_ANDROID,
       shadowColor: CARD_NARROW_SHADOW_COLOR,
     },
     web: {
-      boxShadow: `0px ${CARD_NARROW_SHADOW_OFFSET_Y}px ${CARD_NARROW_SHADOW_BLUR}px rgba(0, 0, 0, ${CARD_NARROW_SHADOW_OPACITY_WEB})`,
+      boxShadow: NARROW_EVENT_CARD_BOX_SHADOW_CSS,
     },
     default: {
       elevation: CARD_NARROW_ELEVATION_ANDROID,
@@ -106,11 +120,15 @@ export interface EventCardProps {
   /** Merged onto the root `View` of the card (after base styles). */
   containerStyle?: StyleProp<ViewStyle>;
   /**
-   * Orange perimeter border and drop shadow on the card shell. Narrow (non-desktop) layouts
-   * use `true`; wide grid typically passes `false`.
-   * @default true
+   * Orange perimeter border on the card shell (optional; dashboard keeps this off on mobile).
+   * @default false
    */
   showPerimeterFrame?: boolean;
+  /**
+   * Compact breakpoint: dark gray surface + elevation host. Set to `!isDesktop` on the dashboard.
+   * @default false
+   */
+  narrowLayout?: boolean;
 }
 
 interface PillStyle {
@@ -138,18 +156,22 @@ function FeedEventCard(props: Omit<EventCardProps, 'variant'>): ReactElement {
     status,
     eventKind,
     containerStyle,
-    showPerimeterFrame = true,
+    showPerimeterFrame = false,
+    narrowLayout = false,
   } = props;
   const pill = getStatusPillStyle(status);
   const dateTimeLine = `${date.toUpperCase()} • ${time}`;
+
+  const useElevationHost = narrowLayout || showPerimeterFrame;
 
   const inner = (
     <View
       style={[
         styles.cardRow,
+        narrowLayout && styles.cardSurfaceNarrow,
         showPerimeterFrame && styles.cardFrame,
         showPerimeterFrame && WEB_OUTLINE_RESET,
-        !showPerimeterFrame && CARD_SHADOW_RESET,
+        !useElevationHost && CARD_SHADOW_RESET,
         containerStyle,
       ]}
       testID="event-card"
@@ -176,7 +198,7 @@ function FeedEventCard(props: Omit<EventCardProps, 'variant'>): ReactElement {
     </View>
   );
 
-  if (showPerimeterFrame) {
+  if (useElevationHost) {
     return <NarrowShadowHost>{inner}</NarrowShadowHost>;
   }
   return inner;
@@ -193,18 +215,22 @@ function FeaturedEventCard(props: Omit<EventCardProps, 'variant'>): ReactElement
     eventKind,
     fillAvailableHeight,
     containerStyle,
-    showPerimeterFrame = true,
+    showPerimeterFrame = false,
+    narrowLayout = false,
   } = props;
   const pill = getStatusPillStyle(status);
   const dateLabel = `${date} · ${time}`;
   const illustration = getEventKindIllustrationSource(eventKind);
 
+  const useElevationHost = narrowLayout || showPerimeterFrame;
+
   const rootStyle: StyleProp<ViewStyle> = [
     styles.cardPhoto,
     fillAvailableHeight ? styles.cardPhotoFill : styles.cardFeaturedMinHeight,
+    narrowLayout && styles.cardSurfaceNarrow,
     showPerimeterFrame && styles.cardFrame,
     showPerimeterFrame && WEB_OUTLINE_RESET,
-    !showPerimeterFrame && CARD_SHADOW_RESET,
+    !useElevationHost && CARD_SHADOW_RESET,
     containerStyle,
   ];
 
@@ -252,7 +278,7 @@ function FeaturedEventCard(props: Omit<EventCardProps, 'variant'>): ReactElement
     </View>
   );
 
-  if (showPerimeterFrame) {
+  if (useElevationHost) {
     return <NarrowShadowHost>{inner}</NarrowShadowHost>;
   }
   return inner;
@@ -267,19 +293,23 @@ function RailEventCard(props: Omit<EventCardProps, 'variant'>): ReactElement {
     status,
     eventKind,
     containerStyle,
-    showPerimeterFrame = true,
+    showPerimeterFrame = false,
+    narrowLayout = false,
   } = props;
   const pill = getStatusPillStyle(status);
   const illustration = getEventKindIllustrationSource(eventKind);
+
+  const useElevationHost = narrowLayout || showPerimeterFrame;
 
   const inner = (
     <View
       style={[
         styles.cardPhoto,
         styles.cardRailMinHeight,
+        narrowLayout && styles.cardSurfaceNarrow,
         showPerimeterFrame && styles.cardFrame,
         showPerimeterFrame && WEB_OUTLINE_RESET,
-        !showPerimeterFrame && CARD_SHADOW_RESET,
+        !useElevationHost && CARD_SHADOW_RESET,
         containerStyle,
       ]}
       testID="event-card"
@@ -314,7 +344,7 @@ function RailEventCard(props: Omit<EventCardProps, 'variant'>): ReactElement {
     </View>
   );
 
-  if (showPerimeterFrame) {
+  if (useElevationHost) {
     return <NarrowShadowHost>{inner}</NarrowShadowHost>;
   }
   return inner;
@@ -324,10 +354,11 @@ export function EventCard({
   variant = 'feed',
   fillAvailableHeight,
   containerStyle,
-  showPerimeterFrame = true,
+  showPerimeterFrame = false,
+  narrowLayout = false,
   ...rest
 }: EventCardProps): ReactElement {
-  const shared = { ...rest, containerStyle, showPerimeterFrame };
+  const shared = { ...rest, containerStyle, showPerimeterFrame, narrowLayout };
   if (variant === 'featured') {
     return <FeaturedEventCard {...shared} fillAvailableHeight={fillAvailableHeight} />;
   }
@@ -340,6 +371,7 @@ export function EventCard({
 const styles = StyleSheet.create({
   cardShadowHost: {
     alignSelf: 'stretch',
+    marginVertical: 4,
   },
   cardRow: {
     flexDirection: 'row',
@@ -350,6 +382,9 @@ const styles = StyleSheet.create({
     position: 'relative',
     backgroundColor: SURFACE_CONTAINER_LOW,
     overflow: 'hidden',
+  },
+  cardSurfaceNarrow: {
+    backgroundColor: CARD_SURFACE_NARROW,
   },
   cardFrame: {
     borderWidth: CARD_FRAME_BORDER_WIDTH,

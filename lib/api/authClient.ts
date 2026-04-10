@@ -52,3 +52,32 @@ export async function apiPostJson<TResponse, TBody extends object>(
 
   return unwrapEnvelope<TResponse>(payload);
 }
+
+export async function apiPostJsonAuth<TResponse, TBody extends object>(
+  path: string,
+  body: TBody,
+  accessToken: string,
+): Promise<TResponse> {
+  const url = joinUrl(path);
+  let response: Response;
+  try {
+    response = await fetch(url, {
+      method: "POST",
+      headers: {
+        Accept: "application/json",
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${accessToken}`,
+      },
+      body: JSON.stringify(body),
+    });
+  } catch (e) {
+    throw normalizeNetworkError(e);
+  }
+
+  const payload: unknown = await response.json().catch(() => null);
+  if (!response.ok) {
+    throw normalizeApiErrorFromResponse(response.status, payload);
+  }
+
+  return unwrapEnvelope<TResponse>(payload);
+}

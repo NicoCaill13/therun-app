@@ -21,13 +21,12 @@
  *
  * [2] CREATE FULL ACCOUNT (sign up)
  *   POST /api/user/register
- *   Body: { email: string, firstName: string, lastName?: string, acceptTerms: boolean }
+ *   Body: { email, firstName, lastName?, password, acceptTerms }
  *   Response.data: { accessToken, user: { id, email, firstName, lastName, isGuest, plan }, mergedFromGuest }
  *
  * [3] LOG IN (sign in)
- *   NOTE: No dedicated login endpoint found in backend controllers at discovery time.
- *   The backend issues a JWT on register. Login flow TBD — check with backend team.
- *   Placeholder route: /api/auth/login (to confirm with backend).
+ *   POST /api/user/login
+ *   Body: { email, password }
  * =============================================================================
  */
 
@@ -48,7 +47,10 @@ import { SafeAreaView } from "react-native-safe-area-context";
 
 import { AuthNavBar } from "@/components/layout/TheRunNavBar";
 import { DESKTOP_BREAKPOINT } from "@/lib/constants/breakpoints";
-import { SHELL_PADDING_X_DESKTOP, SHELL_PADDING_X_MOBILE } from "@/lib/constants/layout";
+import {
+  SHELL_PADDING_X_DESKTOP,
+  SHELL_PADDING_X_MOBILE,
+} from "@/lib/constants/layout";
 
 const COLORS = {
   surface_dim: "#0e0e0e",
@@ -114,10 +116,7 @@ export default function UnloguedIndex(): ReactElement {
           >
             {({ pressed }) => (
               <View
-                style={[
-                  styles.primaryButton,
-                  pressed && styles.btnPressed,
-                ]}
+                style={[styles.primaryButton, pressed && styles.btnPressed]}
               >
                 <MaterialIcons
                   name="qr-code-scanner"
@@ -150,7 +149,9 @@ export default function UnloguedIndex(): ReactElement {
         {({ pressed }) => (
           <View
             style={[
-              isDesktop ? styles.createAccountButtonDesktop : styles.btnSecondary,
+              isDesktop
+                ? styles.createAccountButtonDesktop
+                : styles.btnSecondary,
               pressed && styles.btnPressed,
             ]}
           >

@@ -1,0 +1,217 @@
+<!DOCTYPE html>
+
+<html class="dark" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Lexend:wght@400;700;800;900&amp;family=Manrope:wght@400;500;600&amp;family=Space+Grotesk:wght@500;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+      tailwind.config = {
+        darkMode: "class",
+        theme: {
+          extend: {
+            "colors": {
+                "tertiary": "#eeacff",
+                "on-error-container": "#ffa8a3",
+                "error": "#ff716c",
+                "on-surface": "#ffffff",
+                "outline-variant": "#494847",
+                "on-secondary-fixed-variant": "#5c5b5b",
+                "secondary-container": "#474746",
+                "inverse-primary": "#b12f00",
+                "inverse-on-surface": "#565554",
+                "primary-container": "#ff7851",
+                "surface-dim": "#0e0e0e",
+                "surface-tint": "#ff8f6f",
+                "on-tertiary-container": "#570e6f",
+                "on-primary-fixed-variant": "#581300",
+                "surface-container": "#1a1919",
+                "surface-bright": "#2c2c2c",
+                "on-primary": "#5c1400",
+                "secondary-fixed-dim": "#d6d4d3",
+                "on-surface-variant": "#adaaaa",
+                "secondary-dim": "#d6d4d3",
+                "outline": "#777575",
+                "tertiary-dim": "#d88cee",
+                "primary": "#ff8f6f",
+                "surface-variant": "#262626",
+                "surface-container-lowest": "#000000",
+                "on-secondary": "#525151",
+                "inverse-surface": "#fcf8f8",
+                "on-error": "#490006",
+                "on-primary-fixed": "#000000",
+                "tertiary-fixed-dim": "#d88cee",
+                "secondary": "#e5e2e1",
+                "on-tertiary-fixed-variant": "#611b79",
+                "primary-fixed": "#ff7851",
+                "on-primary-container": "#470e00",
+                "tertiary-fixed": "#e699fd",
+                "on-background": "#ffffff",
+                "primary-dim": "#ff734a",
+                "error-dim": "#d7383b",
+                "error-container": "#9f0519",
+                "secondary-fixed": "#e5e2e1",
+                "surface": "#0e0e0e",
+                "background": "#0e0e0e",
+                "primary-fixed-dim": "#ff5d2b",
+                "tertiary-container": "#e699fd",
+                "surface-container-low": "#131313",
+                "on-tertiary": "#621c7a",
+                "surface-container-highest": "#262626",
+                "surface-container-high": "#201f1f",
+                "on-secondary-container": "#d2d0cf",
+                "on-tertiary-fixed": "#360049",
+                "on-secondary-fixed": "#403f3f"
+            },
+            "borderRadius": {
+                "DEFAULT": "0.125rem",
+                "lg": "0.25rem",
+                "xl": "0.5rem",
+                "full": "0.75rem"
+            },
+            "fontFamily": {
+                "headline": ["Lexend"],
+                "body": ["Manrope"],
+                "label": ["Space Grotesk"]
+            }
+          },
+        },
+      }
+    </script>
+<style>
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+        .text-glow {
+            text-shadow: 0 0 15px rgba(255, 143, 111, 0.4);
+        }
+        .inner-glow {
+            box-shadow: inset 0 1px 0 0 rgba(44, 44, 44, 1);
+        }
+        ::-webkit-scrollbar { width: 8px; }
+        ::-webkit-scrollbar-track { background: #0e0e0e; }
+        ::-webkit-scrollbar-thumb { background: #262626; border-radius: 4px; }
+    </style>
+</head>
+<body class="bg-surface text-on-surface font-body selection:bg-primary-container selection:text-on-primary-container">
+<!-- Top Navigation Anchor (Manual Implementation of JSON TopAppBar for Desktop) -->
+<header class="fixed top-0 left-0 w-full z-[100] bg-zinc-950/80 backdrop-blur-xl flex justify-between items-center px-6 pt-4 pb-2 inner-glow">
+<div class="flex items-center gap-4">
+<span class="material-symbols-outlined text-orange-500 cursor-pointer hover:scale-95 transition-transform" data-icon="arrow_back">arrow_back</span>
+<span class="font-headline font-black text-orange-600 tracking-tighter text-xl">THE RUN</span>
+</div>
+<div class="flex items-center gap-6">
+<button class="font-label text-zinc-400 hover:text-white transition-colors tracking-widest text-xs">CANCEL</button>
+<span class="material-symbols-outlined text-orange-500 cursor-pointer hover:scale-95 transition-transform" data-icon="check">check</span>
+</div>
+</header>
+<main class="min-h-screen pt-24 pb-32 max-w-7xl mx-auto px-6 lg:px-12">
+<!-- Header Section: Aggressive Asymmetry -->
+<section class="mb-16 md:mb-24 flex flex-col items-start lg:flex-row lg:items-end lg:justify-between gap-8">
+<h1 class="font-headline font-black text-6xl md:text-8xl lg:text-9xl tracking-tighter leading-none -ml-1 md:-ml-2">
+                CREATE<br/><span class="text-primary text-glow">RUN</span>
+</h1>
+<div class="max-w-md text-right lg:pb-4 hidden md:block">
+<p class="font-label text-xs uppercase tracking-[0.2em] text-on-surface-variant mb-2">Technical Broadcast 04-24</p>
+<p class="text-on-surface-variant leading-relaxed">Design the next mission. Define the route, set the pace, and mobilize the urban kinetic community.</p>
+</div>
+</section>
+<!-- Main Form Container -->
+<form class="space-y-12 max-w-4xl mx-auto">
+<!-- Oversized Event Title -->
+<div class="group">
+<label class="font-label text-[0.7rem] tracking-[0.3em] text-primary mb-3 block">EVENT IDENTITY</label>
+<input class="w-full bg-surface-container-highest border-none focus:ring-0 text-4xl md:text-6xl font-headline font-extrabold p-8 rounded-md placeholder:text-surface-bright text-white uppercase tracking-tighter transition-all focus:bg-surface-container-high" placeholder="CHASE THE MIDNIGHT" type="text"/>
+</div>
+<div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+<!-- Date Selection -->
+<div class="p-8 bg-surface-container-high rounded-md flex flex-col justify-between min-h-[160px]">
+<div class="flex items-center gap-2 mb-4">
+<span class="material-symbols-outlined text-primary" data-icon="calendar_today">calendar_today</span>
+<label class="font-label text-[0.7rem] tracking-[0.2em] text-on-surface-variant">TARGET DATE</label>
+</div>
+<input class="bg-transparent border-none text-3xl font-headline font-bold text-white focus:ring-0 w-full p-0" type="date"/>
+</div>
+<!-- Time Selection -->
+<div class="p-8 bg-surface-container-high rounded-md flex flex-col justify-between min-h-[160px]">
+<div class="flex items-center gap-2 mb-4">
+<span class="material-symbols-outlined text-primary" data-icon="schedule">schedule</span>
+<label class="font-label text-[0.7rem] tracking-[0.2em] text-on-surface-variant">START TIME</label>
+</div>
+<input class="bg-transparent border-none text-3xl font-headline font-bold text-white focus:ring-0 w-full p-0" type="time"/>
+</div>
+</div>
+<!-- Meeting Point -->
+<div class="p-8 bg-surface-container-high rounded-md">
+<div class="flex items-center gap-2 mb-4">
+<span class="material-symbols-outlined text-primary" data-icon="location_on">location_on</span>
+<label class="font-label text-[0.7rem] tracking-[0.2em] text-on-surface-variant">MEETING POINT</label>
+</div>
+<div class="flex items-center gap-4">
+<input class="bg-transparent border-none focus:ring-0 text-xl md:text-2xl font-headline font-bold text-white w-full p-0 placeholder:text-surface-variant" placeholder="Concrete Jungle Plaza, East Side" type="text"/>
+<span class="material-symbols-outlined text-zinc-500 cursor-pointer hover:text-white" data-icon="map">map</span>
+</div>
+</div>
+<!-- Route Selection Hub -->
+<div class="space-y-6 pt-8">
+<div class="flex items-baseline justify-between">
+<h2 class="font-headline font-black text-4xl tracking-tighter">ROUTE SELECTION</h2>
+<span class="font-label text-[0.6rem] tracking-widest text-primary bg-primary/10 px-3 py-1 rounded-full">BETA ACCESS</span>
+</div>
+<div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+<!-- My Library Card -->
+<div class="group relative overflow-hidden h-64 bg-surface-container-highest rounded-md cursor-pointer hover:scale-[1.01] transition-all">
+<img class="absolute inset-0 w-full h-full object-cover opacity-30 group-hover:opacity-50 transition-opacity" data-alt="gritty black and white photo of an empty urban street at night with high contrast neon signs" src="https://lh3.googleusercontent.com/aida-public/AB6AXuCxGT5pb_No9RuD7ShyZoA0AFyV1N-GQg7Ex3-Mm-mAkwK3REnWGPLes1_9YnkRXLjgrXJT2aSwv8barH1vG6uI5l5a_0j7QPBLBAEPn76avlhWU06fquI71EM8LbUqo2E00NmMrFTrVWH3-sn27Qo4TDpSV4NoOxDycsZVo1dnnNkDhlY3v7ZnZ4cBVPZGqGZsJuTD12i9_rkWD5EQOk_rUmvE33AuMNBE69HwxogTGjJzHFH6O2RwFrIR_4yE3JLtyr4POFrPLq4"/>
+<div class="absolute inset-0 bg-gradient-to-t from-surface-dim to-transparent"></div>
+<div class="absolute bottom-6 left-6">
+<label class="font-label text-[0.6rem] tracking-[0.2em] text-primary">USER_CONTENT</label>
+<h3 class="font-headline font-bold text-2xl">MY LIBRARY</h3>
+</div>
+<span class="absolute top-6 right-6 material-symbols-outlined text-on-surface-variant" data-icon="folder_shared">folder_shared</span>
+</div>
+<!-- Global Library Card -->
+<div class="group relative overflow-hidden h-64 bg-surface-container-highest rounded-md cursor-pointer hover:scale-[1.01] transition-all">
+<img class="absolute inset-0 w-full h-full object-cover opacity-30 group-hover:opacity-50 transition-opacity" data-alt="dramatic wide angle shot of a runner illuminated by street lights on a bridge at dusk" src="https://lh3.googleusercontent.com/aida-public/AB6AXuDQgEqdpncydJFEXzQfssWWGdqzL-hakhDuNo6f4V9VmkzAFun9a_UKEmowFD56z0onSnMAc1dSkeFCK5ygGvLFzVmMMLFUXCjJ3sgJh64AoJ80gLCgqzyGFx-6ape13cvB7Ml0YIcNqUZTnBCRGF2DBoFsL1F1KKFZuk3CxVJ1CYXnYZtK3NEzhhgSeAPtV_TFDvAaooM-Vm_Nph1-4A7y0sZYRmvNMp0pU7JFAhJzUejqaJLs7W_lf75VEjuhiXd7G8lCc6ZdG_g"/>
+<div class="absolute inset-0 bg-gradient-to-t from-surface-dim to-transparent"></div>
+<div class="absolute bottom-6 left-6">
+<div class="flex items-center gap-2 mb-1">
+<span class="material-symbols-outlined text-[16px] text-yellow-500" data-icon="workspace_premium" style="font-variation-settings: 'FILL' 1;">workspace_premium</span>
+<label class="font-label text-[0.6rem] tracking-[0.2em] text-yellow-500">PREMIUM_NETWORK</label>
+</div>
+<h3 class="font-headline font-bold text-2xl">GLOBAL LIBRARY</h3>
+</div>
+<span class="absolute top-6 right-6 material-symbols-outlined text-on-surface-variant" data-icon="public">public</span>
+</div>
+</div>
+</div>
+<!-- GPX Dropzone -->
+<div class="pt-4">
+<div class="w-full py-16 px-8 border-2 border-dashed border-surface-variant rounded-md bg-surface-container-low flex flex-col items-center justify-center gap-4 hover:bg-surface-container transition-colors cursor-pointer group">
+<div class="w-16 h-16 rounded-full bg-surface-container-highest flex items-center justify-center group-hover:scale-110 transition-transform">
+<span class="material-symbols-outlined text-primary text-3xl" data-icon="upload_file">upload_file</span>
+</div>
+<div class="text-center">
+<p class="font-headline font-bold text-lg mb-1 tracking-tight uppercase">UPLOAD GPX FILE</p>
+<p class="font-body text-sm text-on-surface-variant">Drag and drop or click to browse</p>
+</div>
+</div>
+</div>
+<!-- Description -->
+<div class="group">
+<label class="font-label text-[0.7rem] tracking-[0.3em] text-on-surface-variant mb-4 block">MISSION BRIEFING (DESCRIPTION)</label>
+<textarea class="w-full bg-surface-container-high border-none focus:ring-0 text-xl font-body p-8 rounded-md placeholder:text-surface-variant text-on-surface transition-all focus:bg-surface-container-highest resize-none" placeholder="Describe the intensity, the vibe, and any specific gear requirements..." rows="4"></textarea>
+</div>
+<!-- Submit Button (Primary) -->
+<div class="pt-8 pb-16">
+<button class="w-full bg-primary-fixed-dim hover:bg-primary transition-all py-8 rounded-md flex items-center justify-center gap-4 group" type="submit">
+<span class="font-headline font-black text-2xl md:text-3xl tracking-[0.2em] text-on-primary-fixed uppercase">PLAN THE RUN</span>
+<span class="material-symbols-outlined text-on-primary-fixed group-hover:translate-x-2 transition-transform" data-icon="trending_flat">trending_flat</span>
+</button>
+</div>
+</form>
+</main>
+<!-- Bottom Nav Shell (Suppressed based on focused task context) -->
+<!-- Suppressed to prioritize the "Create" focus canvas -->
+</body></html>

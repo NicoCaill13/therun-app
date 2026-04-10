@@ -22,5 +22,6 @@ export interface RegisterRequestBody {
   email: string;
   firstName: string;
   lastName?: string;
+  password: string;
   acceptTerms: boolean;
 }

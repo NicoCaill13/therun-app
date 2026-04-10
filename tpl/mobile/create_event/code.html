@@ -1,0 +1,221 @@
+<!DOCTYPE html>
+
+<html class="dark" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>THE RUN - Create Event</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Lexend:wght@400;700;800;900&amp;family=Manrope:wght@400;600&amp;family=Space+Grotesk:wght@500;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    "colors": {
+                        "tertiary": "#eeacff",
+                        "on-error-container": "#ffa8a3",
+                        "error": "#ff716c",
+                        "on-surface": "#ffffff",
+                        "outline-variant": "#494847",
+                        "on-secondary-fixed-variant": "#5c5b5b",
+                        "secondary-container": "#474746",
+                        "inverse-primary": "#b12f00",
+                        "inverse-on-surface": "#565554",
+                        "primary-container": "#ff7851",
+                        "surface-dim": "#0e0e0e",
+                        "surface-tint": "#ff8f6f",
+                        "on-tertiary-container": "#570e6f",
+                        "on-primary-fixed-variant": "#581300",
+                        "surface-container": "#1a1919",
+                        "surface-bright": "#2c2c2c",
+                        "on-primary": "#5c1400",
+                        "secondary-fixed-dim": "#d6d4d3",
+                        "on-surface-variant": "#adaaaa",
+                        "secondary-dim": "#d6d4d3",
+                        "outline": "#777575",
+                        "tertiary-dim": "#d88cee",
+                        "primary": "#ff8f6f",
+                        "surface-variant": "#262626",
+                        "surface-container-lowest": "#000000",
+                        "on-secondary": "#525151",
+                        "inverse-surface": "#fcf8f8",
+                        "on-error": "#490006",
+                        "on-primary-fixed": "#000000",
+                        "tertiary-fixed-dim": "#d88cee",
+                        "secondary": "#e5e2e1",
+                        "on-tertiary-fixed-variant": "#611b79",
+                        "primary-fixed": "#ff7851",
+                        "on-primary-container": "#470e00",
+                        "tertiary-fixed": "#e699fd",
+                        "on-background": "#ffffff",
+                        "primary-dim": "#ff734a",
+                        "error-dim": "#d7383b",
+                        "error-container": "#9f0519",
+                        "secondary-fixed": "#e5e2e1",
+                        "surface": "#0e0e0e",
+                        "background": "#0e0e0e",
+                        "primary-fixed-dim": "#ff5d2b",
+                        "tertiary-container": "#e699fd",
+                        "surface-container-low": "#131313",
+                        "on-tertiary": "#621c7a",
+                        "surface-container-highest": "#262626",
+                        "surface-container-high": "#201f1f",
+                        "on-secondary-container": "#d2d0cf",
+                        "on-tertiary-fixed": "#360049",
+                        "on-secondary-fixed": "#403f3f"
+                    },
+                    "borderRadius": {
+                        "DEFAULT": "0.125rem",
+                        "lg": "0.25rem",
+                        "xl": "0.5rem",
+                        "full": "0.75rem"
+                    },
+                    "fontFamily": {
+                        "headline": ["Lexend"],
+                        "body": ["Manrope"],
+                        "label": ["Space Grotesk"]
+                    }
+                }
+            }
+        }
+    </script>
+<style>
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+        .liquid-gradient {
+            background: linear-gradient(135deg, #ff8f6f 0%, #ff7851 100%);
+        }
+        .inner-glow {
+            box-shadow: inset 0 1px 0 0 rgba(255, 255, 255, 0.05);
+        }
+        .ambient-shadow {
+            box-shadow: 0 32px 64px -12px rgba(0, 0, 0, 0.8);
+        }
+    </style>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+</head>
+<body class="bg-surface-dim text-on-surface font-body selection:bg-primary-container/30">
+<!-- Top Navigation Bar -->
+<header class="fixed top-0 left-0 w-full z-50 bg-zinc-950/80 backdrop-blur-xl flex justify-between items-center px-6 pt-4 pb-2">
+<button class="text-zinc-400 font-label text-xs tracking-widest hover:text-on-surface transition-colors">CANCEL</button>
+<h1 class="font-headline font-black text-primary-fixed-dim tracking-tighter text-lg">THE RUN</h1>
+<button class="material-symbols-outlined text-primary-fixed-dim" data-icon="check">check</button>
+</header>
+<main class="pt-24 pb-32 px-6 max-w-md mx-auto">
+<!-- Header Section -->
+<section class="mb-12">
+<h2 class="font-headline text-[3.5rem] font-black leading-[0.9] -tracking-[0.05em] text-on-surface uppercase text-left break-words mb-4">
+                CREATE<br/>RUN
+            </h2>
+<div class="h-1 w-24 bg-primary-fixed-dim"></div>
+</section>
+<!-- Main Form -->
+<div class="space-y-10">
+<!-- Event Title -->
+<div class="space-y-3">
+<label class="font-label text-[0.75rem] font-bold text-on-surface-variant tracking-[0.2em] uppercase">EVENT TITLE</label>
+<input class="w-full bg-surface-container-highest border-none rounded-md px-4 py-6 font-headline text-xl font-bold text-on-surface focus:ring-1 focus:ring-primary/40 placeholder:text-zinc-700 transition-all" placeholder="URBAN MIDNIGHT SPRINT" type="text"/>
+</div>
+<!-- Date & Time Row -->
+<div class="flex gap-4">
+<div class="flex-1 space-y-3">
+<label class="font-label text-[0.75rem] font-bold text-on-surface-variant tracking-[0.2em] uppercase">DATE</label>
+<div class="w-full bg-surface-container-highest rounded-md px-4 py-5 flex items-center gap-3">
+<span class="material-symbols-outlined text-primary" data-icon="calendar_today">calendar_today</span>
+<span class="font-headline font-bold">OCT 24</span>
+</div>
+</div>
+<div class="flex-1 space-y-3">
+<label class="font-label text-[0.75rem] font-bold text-on-surface-variant tracking-[0.2em] uppercase">START TIME</label>
+<div class="w-full bg-surface-container-highest rounded-md px-4 py-5 flex items-center gap-3">
+<span class="material-symbols-outlined text-primary" data-icon="schedule">schedule</span>
+<span class="font-headline font-bold">22:00</span>
+</div>
+</div>
+</div>
+<!-- Meeting Point -->
+<div class="space-y-3">
+<label class="font-label text-[0.75rem] font-bold text-on-surface-variant tracking-[0.2em] uppercase">MEETING POINT</label>
+<div class="relative">
+<input class="w-full bg-surface-container-highest border-none rounded-md pl-12 pr-4 py-5 font-body font-semibold text-on-surface focus:ring-1 focus:ring-primary/40 placeholder:text-zinc-700 transition-all" placeholder="CENTRAL PLAZA, SECTOR 7" type="text"/>
+<span class="material-symbols-outlined absolute left-4 top-1/2 -translate-y-1/2 text-primary" data-icon="location_on">location_on</span>
+</div>
+</div>
+<!-- Route Selection Hub -->
+<div class="space-y-6">
+<label class="font-label text-[0.75rem] font-bold text-on-surface-variant tracking-[0.2em] uppercase">ROUTE SELECTION</label>
+<div class="grid gap-4 grid-cols-1">
+<!-- My Library Card -->
+<div class="group relative bg-surface-container-high rounded-md p-5 flex flex-col justify-between hover:bg-surface-container-highest transition-all cursor-pointer overflow-hidden">
+<div class="z-10">
+<span class="material-symbols-outlined text-primary text-3xl" data-icon="folder_special">folder_special</span>
+</div>
+<div class="z-10">
+<h4 class="font-headline font-bold text-lg leading-tight uppercase">MY<br/>LIBRARY</h4>
+<p class="font-label text-[10px] text-zinc-500 mt-1">12 SAVED ROUTES</p>
+</div>
+<div class="absolute -right-4 -bottom-4 opacity-10 group-hover:opacity-20 transition-opacity">
+<span class="material-symbols-outlined text-[100px]" data-icon="route">route</span>
+</div>
+</div>
+<!-- Global Library Card -->
+<div class="group relative bg-surface-container-high rounded-md p-5 flex flex-col justify-between hover:bg-surface-container-highest transition-all cursor-pointer overflow-hidden">
+<div class="z-10 flex justify-between items-start">
+<span class="material-symbols-outlined text-primary text-3xl" data-icon="public">public</span>
+<span class="bg-primary-fixed-dim text-on-primary-fixed px-2 py-0.5 rounded-full font-label text-[8px] font-bold tracking-widest flex items-center gap-1">
+<span class="material-symbols-outlined text-[10px]" data-icon="workspace_premium" style="font-variation-settings: 'FILL' 1;">workspace_premium</span>
+                                PREMIUM
+                            </span>
+</div>
+<div class="z-10">
+<h4 class="font-headline font-bold text-lg leading-tight uppercase">GLOBAL<br/>HUB</h4>
+<p class="font-label text-[10px] text-zinc-500 mt-1">COMMUNITY ROUTES</p>
+</div>
+<div class="absolute -right-4 -bottom-4 opacity-10 group-hover:opacity-20 transition-opacity">
+<span class="material-symbols-outlined text-[100px]" data-icon="explore">explore</span>
+</div>
+</div>
+</div>
+<!-- GPX Upload Dropzone -->
+<div class="w-full bg-surface-container-low border-2 border-dashed border-outline-variant/30 rounded-md p-8 flex flex-col items-center justify-center text-center space-y-3 group hover:border-primary/40 transition-all cursor-pointer">
+<div class="w-12 h-12 bg-surface-container-highest rounded-full flex items-center justify-center group-hover:scale-110 transition-transform">
+<span class="material-symbols-outlined text-primary" data-icon="upload_file">upload_file</span>
+</div>
+<div>
+<p class="font-headline font-bold text-sm uppercase">UPLOAD GPX FILE</p>
+<p class="font-label text-[10px] text-zinc-500">MAX FILE SIZE 5MB</p>
+</div>
+</div>
+</div>
+<!-- Description -->
+<div class="space-y-3">
+<label class="font-label text-[0.75rem] font-bold text-on-surface-variant tracking-[0.2em] uppercase">DESCRIPTION</label>
+<textarea class="w-full bg-surface-container-highest border-none rounded-md px-4 py-5 font-body text-sm text-on-surface focus:ring-1 focus:ring-primary/40 placeholder:text-zinc-700 transition-all" placeholder="Briefing: High intensity intervals through the financial district. Bring hydration and reflectors." rows="4"></textarea>
+</div>
+<!-- Map Preview (Aesthetic Placeholder) -->
+<div class="w-full h-48 bg-surface-container rounded-md overflow-hidden relative grayscale contrast-125 opacity-60">
+<img class="w-full h-full object-cover" data-alt="abstract stylized dark satellite map of an urban city center with glowing orange path highlights and tech overlay" src="https://lh3.googleusercontent.com/aida-public/AB6AXuCw_vT9qESpz8h_Yar9h_P0eWGQ15Bpkgx1rxZ3q_FVF75G7Nd8Ozc-6mkuY5QaHcgZZNzANQJOwlDBOJjwG6G_dkMDgyAEgktG0_jwEA-Qd2AlowtMmUsP9ipaogrPnFCTDur9eC9IM3KdqT08p2WFHDE_MZZv908UtNRiRZ8l3UR6w2yxOQA6k9t5UYhOW_5jCKJKSj6YgrZYZ157SgZq_DPH20SGZwP3-wc-H-M1KpVkgfEFhAanIs2aDfhGAtxPqc4d_Cc9fSQ"/>
+<div class="absolute inset-0 bg-gradient-to-t from-surface-dim via-transparent to-transparent"></div>
+<div class="absolute bottom-4 left-4 bg-zinc-950/80 backdrop-blur-md px-3 py-1.5 rounded-full border border-white/5">
+<p class="font-label text-[10px] tracking-tighter text-on-surface flex items-center gap-2">
+<span class="w-2 h-2 rounded-full bg-primary animate-pulse"></span>
+                        MAP PREVIEW UNAVAILABLE
+                    </p>
+</div>
+</div>
+</div>
+</main>
+<!-- Bottom Navigation Bar (Contextual Action) -->
+<div class="fixed bottom-0 left-0 w-full bg-zinc-950 px-6 py-6 pb-10 z-50 inner-glow">
+<button class="w-full liquid-gradient text-on-primary-fixed font-headline font-black text-lg py-5 rounded-md tracking-tighter active:scale-95 transition-transform uppercase">
+            PLAN THE RUN
+        </button>
+</div>
+</body></html>

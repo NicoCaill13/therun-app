@@ -1,9 +1,11 @@
 import type { ReactElement, ReactNode } from 'react';
+import { useCallback } from 'react';
 
 import { MaterialIcons } from '@expo/vector-icons';
 import { usePathname, useRouter } from 'expo-router';
 import { Pressable, StyleSheet, Text, useWindowDimensions, View } from 'react-native';
 
+import { clearAccessToken } from '@/lib/auth/tokenStorage';
 import { DESKTOP_BREAKPOINT } from '@/lib/constants/breakpoints';
 import { SHELL_PADDING_X_DESKTOP, SHELL_PADDING_X_MOBILE } from '@/lib/constants/layout';
 
@@ -121,15 +123,36 @@ function AuthNavTrailing({
 }
 
 function AppNavTrailing(): ReactElement {
+  const router = useRouter();
+
+  const onLogout = useCallback(async (): Promise<void> => {
+    await clearAccessToken();
+    router.replace('/(auth)/sign-in');
+  }, [router]);
+
   return (
-    <Pressable
-      accessibilityRole="button"
-      accessibilityLabel="Notifications"
-      hitSlop={8}
-      style={styles.trailingIconWrap}
-    >
-      <MaterialIcons name="notifications-none" size={NOTIFICATION_ICON_SIZE} color={ON_SURFACE_VARIANT} />
-    </Pressable>
+    <View style={styles.appTrailingRow}>
+      <Pressable
+        accessibilityRole="button"
+        accessibilityLabel="Notifications"
+        hitSlop={8}
+        style={styles.trailingIconWrap}
+      >
+        <MaterialIcons name="notifications-none" size={NOTIFICATION_ICON_SIZE} color={ON_SURFACE_VARIANT} />
+      </Pressable>
+      <Pressable
+        onPress={() => {
+          void onLogout();
+        }}
+        accessibilityRole="button"
+        accessibilityLabel="Log out"
+        hitSlop={8}
+        style={styles.trailingIconWrap}
+        testID="app-nav-log-out"
+      >
+        <MaterialIcons name="logout" size={NOTIFICATION_ICON_SIZE} color={ON_SURFACE_VARIANT} />
+      </Pressable>
+    </View>
   );
 }
 
@@ -235,5 +258,10 @@ const styles = StyleSheet.create({
     padding: 4,
     justifyContent: 'center',
     alignItems: 'center',
+  },
+  appTrailingRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 4,
   },
 });

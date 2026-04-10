@@ -1,0 +1,268 @@
+<!DOCTYPE html>
+
+<html class="dark" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Route Library Selector</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Lexend:wght@100..900&amp;family=Manrope:wght@200..800&amp;family=Space+Grotesk:wght@300..700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    "colors": {
+                        "secondary": "#e5e2e1",
+                        "on-primary": "#5c1400",
+                        "inverse-primary": "#b12f00",
+                        "on-tertiary": "#621c7a",
+                        "on-error-container": "#ffa8a3",
+                        "primary-container": "#ff7851",
+                        "on-secondary-container": "#d2d0cf",
+                        "on-secondary-fixed": "#403f3f",
+                        "error-dim": "#d7383b",
+                        "surface-dim": "#0e0e0e",
+                        "inverse-surface": "#fcf8f8",
+                        "tertiary-dim": "#d88cee",
+                        "error-container": "#9f0519",
+                        "surface": "#0e0e0e",
+                        "on-primary-fixed-variant": "#581300",
+                        "surface-tint": "#ff8f6f",
+                        "on-background": "#ffffff",
+                        "primary-fixed": "#ff7851",
+                        "tertiary-fixed": "#e699fd",
+                        "primary-fixed-dim": "#ff5d2b",
+                        "primary-dim": "#ff734a",
+                        "on-secondary": "#525151",
+                        "on-primary-fixed": "#000000",
+                        "background": "#0e0e0e",
+                        "on-tertiary-fixed": "#360049",
+                        "on-tertiary-fixed-variant": "#611b79",
+                        "on-primary-container": "#470e00",
+                        "tertiary-container": "#e699fd",
+                        "surface-container-high": "#201f1f",
+                        "tertiary-fixed-dim": "#d88cee",
+                        "secondary-fixed-dim": "#d6d4d3",
+                        "on-surface": "#ffffff",
+                        "secondary-container": "#474746",
+                        "surface-container-low": "#131313",
+                        "surface-variant": "#262626",
+                        "secondary-fixed": "#e5e2e1",
+                        "tertiary": "#eeacff",
+                        "on-tertiary-container": "#570e6f",
+                        "on-surface-variant": "#adaaaa",
+                        "inverse-on-surface": "#565554",
+                        "surface-container": "#1a1919",
+                        "surface-container-highest": "#262626",
+                        "on-secondary-fixed-variant": "#5c5b5b",
+                        "primary": "#ff8f6f",
+                        "surface-container-lowest": "#000000",
+                        "on-error": "#490006",
+                        "surface-bright": "#2c2c2c",
+                        "error": "#ff716c",
+                        "outline": "#777575",
+                        "outline-variant": "#494847",
+                        "secondary-dim": "#d6d4d3"
+                    },
+                    "borderRadius": {
+                        "DEFAULT": "0.125rem",
+                        "lg": "0.25rem",
+                        "xl": "0.5rem",
+                        "full": "0.75rem"
+                    },
+                    "fontFamily": {
+                        "headline": ["Lexend"],
+                        "body": ["Manrope"],
+                        "label": ["Space Grotesk"]
+                    }
+                }
+            }
+        }
+    </script>
+<style>
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+        .text-glow {
+            text-shadow: 0 0 20px rgba(255, 143, 111, 0.4);
+        }
+        .no-scrollbar::-webkit-scrollbar {
+            display: none;
+        }
+    </style>
+</head>
+<body class="bg-surface text-on-surface font-body selection:bg-primary selection:text-on-primary">
+<!-- TopAppBar -->
+<header class="fixed top-0 left-0 w-full z-50 bg-neutral-950/90 backdrop-blur-md shadow-[0_4px_30px_rgba(0,0,0,0.8)] px-6 py-4 flex justify-between items-center">
+<div class="flex items-center gap-4">
+<button class="active:scale-95 duration-200 text-orange-600">
+<span class="material-symbols-outlined text-2xl">menu</span>
+</button>
+<h1 class="font-headline font-black uppercase tracking-tighter text-2xl text-orange-600 italic">SELECT ROUTE</h1>
+</div>
+<div class="flex items-center gap-8">
+<nav class="hidden md:flex gap-6 font-label text-[12px] tracking-[0.2em] font-bold">
+<a class="text-neutral-500 hover:text-orange-400 transition-colors" href="#">EXPLORE</a>
+<a class="text-orange-500" href="#">LIBRARY</a>
+<a class="text-neutral-500 hover:text-orange-400 transition-colors" href="#">STATS</a>
+</nav>
+<div class="w-10 h-10 bg-surface-variant rounded-full overflow-hidden border border-outline-variant/20">
+<img alt="Profile" class="w-full h-full object-cover" data-alt="close up professional portrait of a marathon runner with intense expression in dark dramatic lighting" src="https://lh3.googleusercontent.com/aida-public/AB6AXuBerY5S6zEtMu9IFCeh5fv5EL0pXnd9kW0r9nhoshIEdzcfjk52SiEHmOIiJgqlsvCQsZAz58w3D6d399yf3xsSlkgftodcQjGJAncxqkEFIU8Sg8T9y5v_zFZgZLOYN_zRRL_XjWAOuu_SFiCXRl4V4JjB0oUxCbAACRlB6AyzxtjRSbg18iKLR095pkZqlOHgXKS8rVwBKcCWt8Hwioy6aF1SP2yX4yp2wxI36J9ZVkWNhAWOFcZfPXsGNZ3O-Ex3sQYegtuPxCw"/>
+</div>
+</div>
+</header>
+<main class="pt-24 pb-32 min-h-screen px-6 lg:px-12 max-w-screen-2xl mx-auto flex flex-col lg:flex-row gap-12">
+<!-- Filter/Search Sidebar -->
+<aside class="w-full lg:w-72 flex-shrink-0 space-y-10">
+<section>
+<h2 class="font-label text-primary tracking-widest text-[10px] mb-4 uppercase">Search Routes</h2>
+<div class="relative">
+<input class="w-full bg-surface-container-highest border-none focus:ring-1 focus:ring-primary/40 rounded-md py-4 pl-12 font-label text-sm uppercase tracking-widest text-on-surface" placeholder="BERLIN SUBURBS..." type="text"/>
+<span class="material-symbols-outlined absolute left-4 top-1/2 -translate-y-1/2 text-on-surface-variant">search</span>
+</div>
+</section>
+<section>
+<h2 class="font-label text-primary tracking-widest text-[10px] mb-4 uppercase">Surface Type</h2>
+<div class="flex flex-col gap-2">
+<button class="group flex items-center justify-between p-4 bg-primary text-on-primary-fixed rounded-md transition-all">
+<span class="font-headline font-bold text-sm tracking-tighter">ALL TERRAIN</span>
+<span class="material-symbols-outlined text-sm">check_circle</span>
+</button>
+<button class="group flex items-center justify-between p-4 bg-surface-container-low hover:bg-surface-container transition-all rounded-md">
+<span class="font-headline font-bold text-sm tracking-tighter text-on-surface-variant group-hover:text-on-surface">URBAN ASPHALT</span>
+</button>
+<button class="group flex items-center justify-between p-4 bg-surface-container-low hover:bg-surface-container transition-all rounded-md">
+<span class="font-headline font-bold text-sm tracking-tighter text-on-surface-variant group-hover:text-on-surface">GRAVEL TRAILS</span>
+</button>
+<button class="group flex items-center justify-between p-4 bg-surface-container-low hover:bg-surface-container transition-all rounded-md">
+<span class="font-headline font-bold text-sm tracking-tighter text-on-surface-variant group-hover:text-on-surface">NIGHT SPRINT</span>
+</button>
+</div>
+</section>
+<section>
+<h2 class="font-label text-primary tracking-widest text-[10px] mb-4 uppercase">Difficulty Range</h2>
+<div class="flex flex-wrap gap-2">
+<span class="px-4 py-2 bg-surface-container-highest rounded-full font-label text-[10px] border border-outline-variant/10">0-10KM</span>
+<span class="px-4 py-2 bg-primary/20 text-primary rounded-full font-label text-[10px] border border-primary/30">10-25KM</span>
+<span class="px-4 py-2 bg-surface-container-highest rounded-full font-label text-[10px] border border-outline-variant/10">25KM+</span>
+</div>
+</section>
+</aside>
+<!-- Main Grid -->
+<section class="flex-grow">
+<div class="mb-12">
+<h2 class="font-headline text-[3.5rem] leading-none font-black -ml-1 mb-2 tracking-tighter text-glow">LOCAL SESSIONS</h2>
+<p class="font-body text-on-surface-variant max-w-xl">Curated performance routes within 50km of your current GPS lock.</p>
+</div>
+<div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
+<!-- Route Card 1 -->
+<div class="group relative bg-surface-container-low overflow-hidden rounded-md transition-transform hover:-translate-y-2 cursor-pointer">
+<div class="absolute top-0 left-0 w-1 h-full bg-primary z-10"></div>
+<div class="h-56 relative overflow-hidden bg-neutral-900">
+<img class="w-full h-full object-cover opacity-60 group-hover:scale-110 transition-transform duration-700" data-alt="top down satellite map view of an urban city center with a glowing orange neon line tracing a running path" data-location="Berlin" src="https://lh3.googleusercontent.com/aida-public/AB6AXuDlDHCBzoYVLYZkV_L1e7iAw8Px_fJbv06BLJtUF4Ul3pCFjxlvA5UTvk8uOyZwaTyAN32XIgWzNi37_kYcY_veHafUmmYJxXjrhAIy1ffM2Um3XlxUweRraa3yw6jeGSNgKhfduEvtXdTyMNcAilL3WA6XXpkzfdvuTLKox8KMcMppmu9QqAJHovaATaloZNF_32cFHZCs6ZnnTn5bzALgvYiyANwAuZ2jPaYA8smTazibMbejQkewEC_JGfYKG22bgFi48e0muN8"/>
+<div class="absolute inset-0 bg-gradient-to-t from-surface-container-low via-transparent to-transparent"></div>
+<div class="absolute top-4 right-4 bg-primary text-on-primary font-label font-bold text-[10px] px-3 py-1 rounded-full">LEVEL 4</div>
+</div>
+<div class="p-6 pt-0">
+<span class="font-label text-primary text-[10px] tracking-widest font-bold">KREUZBERG LOOP</span>
+<h3 class="font-headline text-3xl font-black italic tracking-tighter leading-tight mb-2">12.4 KM</h3>
+<div class="flex items-center gap-4 text-on-surface-variant">
+<div class="flex items-center gap-1">
+<span class="material-symbols-outlined text-sm">trending_up</span>
+<span class="font-label text-[10px]">142M</span>
+</div>
+<div class="flex items-center gap-1">
+<span class="material-symbols-outlined text-sm">timer</span>
+<span class="font-label text-[10px]">55m EST</span>
+</div>
+</div>
+</div>
+</div>
+<!-- Route Card 2 -->
+<div class="group relative bg-surface-container-low overflow-hidden rounded-md transition-transform hover:-translate-y-2 cursor-pointer">
+<div class="h-56 relative overflow-hidden bg-neutral-900">
+<img class="w-full h-full object-cover opacity-40 group-hover:scale-110 transition-transform duration-700" data-alt="abstract architectural map of skyscraper grid with a sharp orange neon path winding through the streets" data-location="New York" src="https://lh3.googleusercontent.com/aida-public/AB6AXuD_BTt4aZrWtGto-7nQ0ahoJrzq-foew3ieaxq060-8HCp4-JQXjZ_xC8TukO021rXkvEOeWRB2dw541wtl7ClBJXAgT_4vHBIchTNPq3ovfMCYeOhxvfdz9fdROXdIvQxw-hv6DyJBTrdE38wP6oMHbojHK_qwzLTtUcVSHIxTRiUBZ4CP-L0fhcixbB30byVCMYODe9DiKYihwnhLshwv4JETOjs464v4BqiNhNqoneVRFu2fl_GeWeBgRcW25oagKMoF6yaylxc"/>
+<div class="absolute inset-0 bg-gradient-to-t from-surface-container-low via-transparent to-transparent"></div>
+<div class="absolute top-4 right-4 bg-surface-container-highest text-on-surface font-label font-bold text-[10px] px-3 py-1 rounded-full">LEVEL 2</div>
+</div>
+<div class="p-6 pt-0">
+<span class="font-label text-primary text-[10px] tracking-widest font-bold">RIVER FRONTAGE</span>
+<h3 class="font-headline text-3xl font-black italic tracking-tighter leading-tight mb-2">08.2 KM</h3>
+<div class="flex items-center gap-4 text-on-surface-variant">
+<div class="flex items-center gap-1">
+<span class="material-symbols-outlined text-sm">trending_up</span>
+<span class="font-label text-[10px]">12M</span>
+</div>
+<div class="flex items-center gap-1">
+<span class="material-symbols-outlined text-sm">timer</span>
+<span class="font-label text-[10px]">35m EST</span>
+</div>
+</div>
+</div>
+</div>
+<!-- Route Card 3 -->
+<div class="group relative bg-surface-container-low overflow-hidden rounded-md transition-transform hover:-translate-y-2 cursor-pointer">
+<div class="h-56 relative overflow-hidden bg-neutral-900">
+<img class="w-full h-full object-cover opacity-50 group-hover:scale-110 transition-transform duration-700" data-alt="topographical map visualization of a mountain trail with a bright orange path ascending a steep ridge" data-location="Chamonix" src="https://lh3.googleusercontent.com/aida-public/AB6AXuD5E15v_4toAe4N_mwsBKVEDNqWwJ2IHgbLQJ0S5UtQgY97arRb7rVsvrFRfb3M1ZnncaYYSvkv7_HAST9Kdup_gp7zVeTcJmlgyDzD32RhpQzgseFznTPV4RDtrcnrqS2scRpOQ-mk4oi58J0si_4skO6GysrA_DHHIj9URAQ033fb7nr7IPh3CUrPInoSvvBcIaJu4J7lxZTgRZuRwdsQdjG2X3yxwdHf2bGhQzDv10iJKhrIkanfywbZ9IPpVdX6xtuyW4Is8uw"/>
+<div class="absolute inset-0 bg-gradient-to-t from-surface-container-low via-transparent to-transparent"></div>
+<div class="absolute top-4 right-4 bg-error-container text-on-error-container font-label font-bold text-[10px] px-3 py-1 rounded-full">ELITE</div>
+</div>
+<div class="p-6 pt-0">
+<span class="font-label text-primary text-[10px] tracking-widest font-bold">RIDGE RUNNER</span>
+<h3 class="font-headline text-3xl font-black italic tracking-tighter leading-tight mb-2">21.1 KM</h3>
+<div class="flex items-center gap-4 text-on-surface-variant">
+<div class="flex items-center gap-1">
+<span class="material-symbols-outlined text-sm">trending_up</span>
+<span class="font-label text-[10px]">890M</span>
+</div>
+<div class="flex items-center gap-1">
+<span class="material-symbols-outlined text-sm">timer</span>
+<span class="font-label text-[10px]">2h 10m EST</span>
+</div>
+</div>
+</div>
+</div>
+</div>
+<!-- Premium Upsell Area -->
+<div class="mt-16 relative rounded-xl overflow-hidden bg-surface-container-low border border-outline-variant/10">
+<div class="absolute inset-0">
+<img class="w-full h-full object-cover opacity-30 blur-sm scale-105" data-alt="wide cinematic shot of an empty street in paris at night under streetlights with a slight moody fog and orange accents" src="https://lh3.googleusercontent.com/aida-public/AB6AXuAORr7BMgPvAn7zqgZSmg7EY-t8GcaKqKbh45ZjjUasJZmzjJL6hVjFk6LZGRhW3XUhKF8QTNq3g4GD8BYXQmJuFe2qVQAwfJtERyxN0axdFYadYBDzpqa02ALHyIwxFTir--zcO45pVSSvFMKuxVVYBVj5JlK2aIfkZUrA3BHsutD4WpCOMOD0ni-HAbZeavsIVpxE82i-IOy0NkJg-J5DDgla3n3bp9rBdQVV6LUyExsXj7KH8IrIqkdvCfCDXWm7QIK8hPsqP_4"/>
+</div>
+<div class="relative z-20 p-12 flex flex-col md:flex-row items-center justify-between gap-8 backdrop-blur-sm bg-neutral-950/40">
+<div class="max-w-2xl text-center md:text-left">
+<div class="inline-flex items-center gap-2 mb-4 bg-primary px-3 py-1 rounded-full">
+<span class="material-symbols-outlined text-xs text-on-primary-fixed" style="font-variation-settings: 'FILL' 1;">stars</span>
+<span class="font-label text-[10px] font-black text-on-primary-fixed tracking-widest uppercase">Elite Access</span>
+</div>
+<h2 class="font-headline text-4xl md:text-6xl font-black tracking-tighter leading-none mb-4 uppercase italic">GLOBAL ROUTES</h2>
+<p class="font-body text-lg text-on-surface-variant leading-relaxed">Unlock iconic runs in Tokyo, London, and New York. Experience the world's most aggressive performance paths with zero latency.</p>
+</div>
+<button class="whitespace-nowrap px-10 py-5 bg-gradient-to-br from-primary to-primary-container text-on-primary-fixed font-headline font-black text-xl tracking-tight rounded-md hover:scale-105 active:scale-95 transition-all shadow-xl shadow-primary/20">
+                        UNLOCK THE WORLD
+                    </button>
+</div>
+</div>
+</section>
+</main>
+<!-- BottomNavBar -->
+<nav class="fixed bottom-0 left-0 w-full flex justify-around items-center px-4 pb-6 pt-2 bg-neutral-950 shadow-[0_-10px_40px_rgba(0,0,0,0.9)] z-50">
+<a class="flex flex-col items-center justify-center text-neutral-600 py-2 px-4 hover:text-orange-400 transition-all active:scale-90 duration-150" href="#">
+<span class="material-symbols-outlined mb-1">explore</span>
+<span class="font-headline font-bold text-[10px] tracking-widest uppercase">EXPLORE</span>
+</a>
+<a class="flex flex-col items-center justify-center text-neutral-600 py-2 px-4 hover:text-orange-400 transition-all active:scale-90 duration-150" href="#">
+<span class="material-symbols-outlined mb-1">play_arrow</span>
+<span class="font-headline font-bold text-[10px] tracking-widest uppercase">RUN</span>
+</a>
+<a class="flex flex-col items-center justify-center text-orange-500 bg-neutral-900 rounded-md py-2 px-4 transition-all active:scale-90 duration-150" href="#">
+<span class="material-symbols-outlined mb-1">map</span>
+<span class="font-headline font-bold text-[10px] tracking-widest uppercase">LIBRARY</span>
+</a>
+<a class="flex flex-col items-center justify-center text-neutral-600 py-2 px-4 hover:text-orange-400 transition-all active:scale-90 duration-150" href="#">
+<span class="material-symbols-outlined mb-1">analytics</span>
+<span class="font-headline font-bold text-[10px] tracking-widest uppercase">STATS</span>
+</a>
+</nav>
+</body></html>
